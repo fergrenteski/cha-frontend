@@ -7,7 +7,8 @@ import {
     IconButton,
     Box,
     Chip,
-    useTheme
+    useTheme,
+    useMediaQuery
 } from '@mui/material';
 import {
     Favorite,
@@ -16,13 +17,16 @@ import {
 } from '@mui/icons-material';
 
 const GiftCard = ({
-      gift,
-      onSelect,
-      onFavorite,
-    }) => {
+                      gift,
+                      onSelect,
+                      onFavorite,
+                  }) => {
     const [isSelected, setIsSelected] = useState(false);
     const [isFavorited, setIsFavorited] = useState(false);
     const theme = useTheme();
+
+    // Media query apenas para celular
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     const handleSelect = () => {
         setIsSelected(!isSelected);
@@ -37,12 +41,14 @@ const GiftCard = ({
     // Caso não tenha Produto
     if (!gift) return null;
 
+
+
     return (
         <Card
             sx={{
-                height: '100%',
                 minHeight: '500px',
-                maxWidth: '300px',
+                height: '100%',
+                width: isMobile ? '450px' : '300px',
                 borderRadius: 3,
                 boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -51,21 +57,22 @@ const GiftCard = ({
                     boxShadow: '0 12px 40px rgba(0,0,0,0.12)',
                 },
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
+                flexGrow: 1, // permite expandir igualmente no grid pai
             }}
         >
-            {/* Image Section */}
+        {/* Image Section */}
             <Box
                 sx={{
                     position: 'relative',
-                    height: 250,
+                    height: isMobile ? 300 : 250,
                     background: theme.palette.background.paper,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
                 }}
             >
-            {/* Image */}
+                {/* Image */}
                 <Box
                     component="img"
                     src={gift.image}
@@ -109,8 +116,8 @@ const GiftCard = ({
                         sx={{
                             fontWeight: 600,
                             color: 'text.primary',
-                            fontSize: '1rem',
-                            minHeight: '45px',
+                            fontSize: '0.9rem',
+                            minHeight: '50px',
                             display: '-webkit-box',
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: 'vertical',
@@ -128,11 +135,13 @@ const GiftCard = ({
                     color="text.secondary"
                     sx={{
                         mb: 2,
-                        lineHeight: 1.5,
-                        fontSize: '0.85rem',
+                        lineHeight: 1.1,
+                        minHeight: '50px',
+                        width: '100%',
+                        fontSize: '0.75rem',
                         flexGrow: 1,
                         display: '-webkit-box',
-                        WebkitLineClamp: 2,
+                        WebkitLineClamp: 3,
                         WebkitBoxOrient: 'vertical',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis'
@@ -141,9 +150,13 @@ const GiftCard = ({
                     {gift.description}
                 </Typography>
 
-
                 {/* Price and Capacity */}
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Box sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mb: 2
+                }}>
                     <Typography
                         variant="h6"
                         component="span"
