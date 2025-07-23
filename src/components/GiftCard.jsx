@@ -1,3 +1,4 @@
+// components/GiftCard.js
 import React, { useState } from 'react';
 import {
     Card,
@@ -10,16 +11,19 @@ import {
     useTheme,
     useMediaQuery
 } from '@mui/material';
+
 import {
     Favorite,
     FavoriteBorder,
-    Check
+    Check,
+    Block
 } from '@mui/icons-material';
 
 const GiftCard = ({
                       gift,
-                      onSelect,
                       onFavorite,
+                      onAddToCart,
+                      onRemoveFromCart
                   }) => {
     const [isSelected, setIsSelected] = useState(false);
     const [isFavorited, setIsFavorited] = useState(false);
@@ -28,20 +32,28 @@ const GiftCard = ({
     // Media query apenas para celular
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-    const handleSelect = () => {
-        setIsSelected(!isSelected);
-        onSelect?.(gift, !isSelected);
-    };
+    // Item Disponível
+    const isUnavailable = gift.available === false;
 
-    const handleFavorite = () => {
+
+    const handleFavorite = (e) => {
+        e.stopPropagation();
         setIsFavorited(!isFavorited);
         onFavorite?.(gift, !isFavorited);
     };
 
+    const handleSelect = (e) => {
+        setIsSelected(!isSelected);
+        e.stopPropagation();
+        if(!isSelected) {
+            onAddToCart(gift, isSelected);
+        } else {
+            onRemoveFromCart(gift.id, isSelected);
+        }
+    };
+
     // Caso não tenha Produto
     if (!gift) return null;
-
-
 
     return (
         <Card
@@ -61,7 +73,7 @@ const GiftCard = ({
                 flexGrow: 1, // permite expandir igualmente no grid pai
             }}
         >
-        {/* Image Section */}
+            {/* Image Section */}
             <Box
                 sx={{
                     position: 'relative',
@@ -69,10 +81,11 @@ const GiftCard = ({
                     background: theme.palette.background.paper,
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    overflow: 'hidden'
                 }}
             >
-                {/* Image */}
+                {/* Imagem com blur se indisponível */}
                 <Box
                     component="img"
                     src={gift.image}
@@ -81,30 +94,58 @@ const GiftCard = ({
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover',
+                        filter: isUnavailable ? 'grayscale(100%) blur(2px) brightness(0.7)' : 'none',
+                        transition: '0.3s ease'
                     }}
                 />
-                {/* Favorite Button */}
-                <IconButton
-                    onClick={handleFavorite}
-                    sx={{
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        backgroundColor: 'rgba(255,255,255,0.9)',
-                        backdropFilter: 'blur(10px)',
-                        '&:hover': {
-                            backgroundColor: 'white',
-                            transform: 'scale(1.1)'
-                        },
-                        transition: 'all 0.2s ease'
-                    }}
-                >
-                    {isFavorited ? (
-                        <Favorite sx={{ color: '#e91e63' }} />
-                    ) : (
-                        <FavoriteBorder sx={{ color: '#9e9e9e' }} />
-                    )}
-                </IconButton>
+
+                {/* Overlay cinza escuro com ícone se indisponível */}
+                {isUnavailable && (
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            zIndex: 2,
+                            color: 'white',
+                            flexDirection: 'column'
+                        }}
+                    >
+                        <Block sx={{ fontSize: 40, mb: 1 }} />
+                        <Typography variant="subtitle2">Indisponível</Typography>
+                    </Box>
+                )}
+
+                {/* Favorite Button visível apenas se disponível */}
+                {!isUnavailable && (
+                    <IconButton
+                        onClick={handleFavorite}
+                        sx={{
+                            position: 'absolute',
+                            top: 8,
+                            right: 8,
+                            backgroundColor: 'rgba(255,255,255,0.9)',
+                            backdropFilter: 'blur(10px)',
+                            '&:hover': {
+                                backgroundColor: 'white',
+                                transform: 'scale(1.1)'
+                            },
+                            transition: 'all 0.2s ease'
+                        }}
+                    >
+                        {isFavorited ? (
+                            <Favorite sx={{ color: '#e91e63' }} />
+                        ) : (
+                            <FavoriteBorder sx={{ color: '#9e9e9e' }} />
+                        )}
+                    </IconButton>
+                )}
             </Box>
 
             <CardContent sx={{ p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
@@ -125,7 +166,7 @@ const GiftCard = ({
                             textOverflow: 'ellipsis',
                         }}
                     >
-                        {gift.name.toUpperCase()}
+                        {gift.name?.toUpperCase()}
                     </Typography>
                 </Box>
 
@@ -165,7 +206,7 @@ const GiftCard = ({
                             color: 'text.primary'
                         }}
                     >
-                        R$ {gift.price.toFixed(2).replace('.', ',')}
+                        R$ {gift.price?.toFixed(2).replace('.', ',')}
                     </Typography>
                     <Chip
                         label={gift.capacity || gift.category || 'Produto'}
@@ -178,29 +219,39 @@ const GiftCard = ({
                         }}
                     />
                 </Box>
-
-                {/* Action Buttons */}
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button
-                        variant="contained"
-                        onClick={handleSelect}
-                        startIcon={isSelected ? <Check /> : null}
-                        sx={{
-                            flex: 1,
-                            py: 1,
-                            borderRadius: 2,
-                            fontWeight: 600,
-                            textTransform: 'none',
-                            fontSize: '0.85rem',
-                            backgroundColor: isSelected ? '#4caf50' : '#212121',
-                            '&:hover': {
-                                backgroundColor: isSelected ? '#45a049' : '#424242'
-                            }
-                        }}
-                    >
-                        {isSelected ? 'Selecionado' : 'Selecionar'}
-                    </Button>
-                </Box>
+                <Button
+                    variant="contained"
+                    onClick={isUnavailable ? null : handleSelect}
+                    startIcon={isSelected && !isUnavailable ? <Check /> : null}
+                    disabled={isUnavailable}
+                    sx={{
+                        flex: 1,
+                        py: 1,
+                        borderRadius: 2,
+                        fontWeight: 600,
+                        textTransform: 'none',
+                        fontSize: '0.85rem',
+                        backgroundColor: isUnavailable
+                            ? '#9e9e9e'
+                            : isSelected
+                                ? '#4caf50'
+                                : '#212121',
+                        color: '#ffffff',
+                        '&:hover': {
+                            backgroundColor: isUnavailable
+                                ? '#9e9e9e'
+                                : isSelected
+                                    ? '#45a049'
+                                    : '#424242'
+                        }
+                    }}
+                >
+                    {isUnavailable
+                        ? 'Indisponível'
+                        : isSelected
+                            ? 'Selecionado'
+                            : 'Selecionar'}
+                </Button>
             </CardContent>
         </Card>
     );

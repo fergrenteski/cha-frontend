@@ -16,7 +16,8 @@ const giftList = [
         price: 199.00,
         capacity: "6 unidades",
         image: "/images/pratos.webp",
-        category: "Cozinha"
+        category: "Cozinha",
+        available: true
     },
     {
         id: 3,
@@ -25,7 +26,8 @@ const giftList = [
         price: 89.90,
         capacity: "4 xícaras + bandeja",
         image: "/images/kit-cafe.webp",
-        category: "Cozinha"
+        category: "Cozinha",
+        available: false
     },
     {
         id: 4,
@@ -58,10 +60,11 @@ const giftList = [
         id: 7,
         name: "Abajur de Mesa com Cúpula de Linho",
         description: "Iluminação suave e aconchegante para qualquer ambiente.",
-        price: 99.00,
+        price: 33.00,
         capacity: "30cm altura",
         image: "/images/abajur.jpeg",
-        category: "Decoração"
+        category: "Decoração",
+        available: false
     },
     {
         id: 8,
