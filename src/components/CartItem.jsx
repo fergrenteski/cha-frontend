@@ -49,10 +49,10 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                         alt={item.name}
                         variant="rounded"
                         sx={{
-                            width: isMobile ? 150 : 80,
-                            height: isMobile ? 150 : 80,
+                            width: isMobile ? 150 : 120,
+                            height: isMobile ? 150 : 120,
                             backgroundColor: '#f5f5f5',
-                            alignSelf: isMobile ? 'center' : 'flex-start'
+                            alignSelf: isMobile ? 'center' : 'center'
                         }}
                     />
 
@@ -62,28 +62,22 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                             {item.name}
                         </Typography>
 
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1, minHeight: 40 }}>
                             {item.description || 'Sem descrição'}
                         </Typography>
 
-                        {!isMobile && (
-                            <Typography variant="h6" color="primary" sx={{ fontWeight: 700, mb: 1 }}>
-                                R$ {item.price?.toFixed(2) || '0.00'}
-                            </Typography>
-                        )}
-
-                        {/* Quantidade + Subtotal */}
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                flexDirection: isMobile ? 'column' : 'row',
-                                alignItems: isMobile ? 'flex-start' : 'center',
-                                gap: 1,
-                                justifyContent: 'space-between'
-                            }}
-                        >
-                            {/* Controles de quantidade */}
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: isMobile ? 'space-around' : "",width: '100%' }}>
+                        <Box sx={{
+                            display: 'flex',
+                            gap: 1,
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                        }}>
+                            {!isMobile && (
+                                <Typography variant="h6" color="primary" sx={{ fontWeight: 700, fontSize: '1.05rem' }}>
+                                    R$ {item.price?.toFixed(2) || '0.00'}
+                                </Typography>
+                            )}
+                            <Box>
                                 <IconButton
                                     onClick={() => handleQuantityChange(item.quantity - 1)}
                                     size="small"
@@ -98,7 +92,7 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                                     size="small"
                                     inputProps={{
                                         min: 1,
-                                        style: { textAlign: 'center', width: '50px' }
+                                        style: { textAlign: 'center', width: '20px' }
                                     }}
                                     sx={{
                                         '& .MuiOutlinedInput-root': {
@@ -115,33 +109,32 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                                 >
                                     <AddIcon />
                                 </IconButton>
-                                {/* Botão remover (mobile) */}
-                                {isMobile && (
-                                    <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-                                        <IconButton
-                                            onClick={onRemove}
-                                            color="error"
-                                            sx={{
-                                                '&:hover': {
-                                                    backgroundColor: 'rgba(244, 67, 54, 0.08)'
-                                                }
-                                            }}
-                                        >
-                                            <DeleteIcon />
-                                        </IconButton>
-                                    </Box>
-                                )}
                             </Box>
-
                             {/* Subtotal */}
-                            <Box sx={{ textAlign: isMobile ? 'left' : 'right', mt: isMobile ? 1 : 0, minWidth: '200px' }}>
+                            <Box sx={{ textAlign: 'right'}}>
                                 <Typography variant="body2" color="text.secondary">
                                     Subtotal
                                 </Typography>
-                                <Typography variant="h6" sx={{ fontWeight: 700,color: 'primary.main' }}>
+                                <Typography variant="h6" sx={{ fontWeight: 700,color: 'primary.main', fontSize: '1.05rem' }}>
                                     R$ {((item.price || 0) * item.quantity).toFixed(2)}
                                 </Typography>
                             </Box>
+                            {/* Botão remover (mobile) */}
+                            {isMobile && (
+                                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                                    <IconButton
+                                        onClick={onRemove}
+                                        color="error"
+                                        sx={{
+                                            '&:hover': {
+                                                backgroundColor: 'rgba(244, 67, 54, 0.08)'
+                                            }
+                                        }}
+                                    >
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </Box>
+                            )}
                         </Box>
                     </Box>
 

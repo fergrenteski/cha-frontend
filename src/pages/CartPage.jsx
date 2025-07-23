@@ -36,7 +36,7 @@ const CartPage = () => {
 
     const navigate = useNavigate();
     const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
     // Função para remover item com feedback visual
     const handleRemoveItem = (itemId, itemName) => {
@@ -50,10 +50,14 @@ const CartPage = () => {
 
     // Função para atualizar quantidade
     const handleUpdateQuantity = (itemId, newQuantity) => {
-        if (newQuantity <= 0) {
-            const item = cartItems.find(item => item.id === itemId);
-            handleRemoveItem(itemId, item?.name || 'Item');
-        } else {
+        if (newQuantity > 99) {
+            setSnackbar({
+                open: true,
+                message: `Não é possível colocar mais de 99 itens`,
+                severity: 'warning'
+            });
+        }
+        else {
             updateQuantity(itemId, newQuantity);
         }
     };
