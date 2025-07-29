@@ -1,17 +1,22 @@
 // pages/GiftListPage.js
 import React, { useState } from 'react';
-import { Grid, Container, Snackbar, Alert } from '@mui/material';
+import { Grid, Container, Snackbar, Alert, CircularProgress, Box, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import GiftCard from '../components/GiftCard';
-import giftList from '../data/giftList';
 import Header from "../components/Header.jsx";
-import { useCart } from '../contexts/CartContext'; // Import do contexto
+import { useCart } from '../hooks/useCart';
+import { useAuth } from '../hooks/useAuth';
+import { useProducts } from '../hooks/useProducts';
 
 const GiftListPage = () => {
     const navigate = useNavigate();
+    const { logout } = useAuth();
 
     // Usar o contexto do carrinho
     const { addItem, removeItem, totalItems, isItemInCart } = useCart();
+
+    // Usar o hook de produtos
+    const { products, loading: productsLoading, error: productsError } = useProducts();
 
     const [snackbar, setSnackbar] = useState({
         open: false,
@@ -20,34 +25,25 @@ const GiftListPage = () => {
     });
 
     // Função para adicionar item ao carrinho
-    const handleAddToCart = (gift) => {
+    const handleAddToCart = (product) => {
         // Adiciona o item ao carrinho (ou aumenta a quantidade se já existir)
-        addItem({
-            id: gift.id,
-            name: gift.name,
-            price: gift.price,
-            image: gift.image,
-            description: gift.description,
-            category: gift.category || 'Presente',
-            quantity: 1,
-            available: gift.available,
-        });
+        addItem(product, 1);
 
         setSnackbar({
             open: true,
-            message: `${gift.name} adicionado ao carrinho!`,
+            message: `${product.name} adicionado ao carrinho!`,
             severity: 'success'
         });
     };
 
     // Função para remover item do carrinho
-    const handleRemoveFromCart = (giftId) => {
-        const gift = giftList.find(g => g.id === giftId);
-        removeItem(giftId);
+    const handleRemoveFromCart = (productId) => {
+        const product = products.find(p => p._id === productId);
+        removeItem(productId);
 
         setSnackbar({
             open: true,
-            message: `${gift?.name || 'Item'} removido do carrinho!`,
+            message: `${product?.name || 'Item'} removido do carrinho!`,
             severity: 'warning'
         });
     };
@@ -73,18 +69,72 @@ const GiftListPage = () => {
         navigate('/account');
     };
 
+    const handleAdminClick = () => {
+        navigate('/admin');
+    };
+
     const handleFavoritesClick = () => {
         navigate('/favorites');
     };
 
     const handleLogoutClick = () => {
-        localStorage.removeItem('authToken');
-        navigate('/login');
+        logout();
+        navigate('/auth');
     };
 
     const handleCloseSnackbar = () => {
         setSnackbar(prev => ({ ...prev, open: false }));
     };
+
+    // Renderizar loading
+    if (productsLoading) {
+        return (
+            <>
+                <Header
+                    cartItemCount={totalItems}
+                    currentPage="products"
+                    onCartClick={handleCartClick}
+                    onLogoClick={handleLogoClick}
+                    onProductClick={handleProductClick}
+                    onAlbumClick={handleAlbumClick}
+                    onAccountClick={handleAccountClick}
+                    onFavoritesClick={handleFavoritesClick}
+                    onLogoutClick={handleLogoutClick}
+                />
+                <Container maxWidth="xl" sx={{ py: 4 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                        <CircularProgress size={60} />
+                    </Box>
+                </Container>
+            </>
+        );
+    }
+
+    // Renderizar erro
+    if (productsError) {
+        return (
+            <>
+                <Header
+                    cartItemCount={totalItems}
+                    currentPage="products"
+                    onCartClick={handleCartClick}
+                    onLogoClick={handleLogoClick}
+                    onProductClick={handleProductClick}
+                    onAlbumClick={handleAlbumClick}
+                    onAccountClick={handleAccountClick}
+                    onFavoritesClick={handleFavoritesClick}
+                    onLogoutClick={handleLogoutClick}
+                />
+                <Container maxWidth="xl" sx={{ py: 4 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                        <Typography variant="h6" color="error" textAlign="center">
+                            Erro ao carregar produtos: {productsError}
+                        </Typography>
+                    </Box>
+                </Container>
+            </>
+        );
+    }
 
     return (
         <>
@@ -96,24 +146,33 @@ const GiftListPage = () => {
                 onProductClick={handleProductClick}
                 onAlbumClick={handleAlbumClick}
                 onAccountClick={handleAccountClick}
+                onAdminClick={handleAdminClick}
                 onFavoritesClick={handleFavoritesClick}
                 onLogoutClick={handleLogoutClick}
             />
 
             <Container maxWidth="xl" sx={{ py: 4 }}>
                 <Grid container spacing={3} justifyContent="center">
-                    {giftList.map((gift) => (
-                        <Grid item key={gift.id} xs={12} sm={6} md={4} sx={{ display: 'flex', justifyContent: 'center' }}>
+                    {products.map((product) => (
+                        <Grid item key={product._id} xs={12} sm={6} md={4} sx={{ display: 'flex', justifyContent: 'center' }}>
                             <GiftCard
-                                gift={gift}
+                                gift={product}
                                 onFavorite={null}
-                                onAddToCart={() => handleAddToCart(gift)}
+                                onAddToCart={() => handleAddToCart(product)}
                                 onRemoveFromCart={handleRemoveFromCart}
-                                isInCart={isItemInCart(gift.id)}
+                                isInCart={isItemInCart(product._id)}
                             />
                         </Grid>
                     ))}
                 </Grid>
+
+                {products.length === 0 && !productsLoading && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '40vh' }}>
+                        <Typography variant="h6" color="text.secondary" textAlign="center">
+                            Nenhum produto encontrado
+                        </Typography>
+                    </Box>
+                )}
             </Container>
 
             <Snackbar

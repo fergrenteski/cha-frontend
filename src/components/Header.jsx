@@ -31,7 +31,8 @@ const Header = ({
                     onAlbumClick,
                     onAccountClick,
                     onFavoritesClick,
-                    onLogoutClick
+                    onLogoutClick,
+                    onAdminClick
                 }) => {
     const [anchorEl, setAnchorEl] = useState(null);
     const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
@@ -119,6 +120,22 @@ const Header = ({
                         >
                             Álbum
                         </Button>
+                        
+                        <Button
+                            onClick={onAdminClick}
+                            sx={{
+                                color: '#212121',
+                                fontWeight: 600,
+                                textTransform: 'none',
+                                fontSize: '1rem',
+                                '&:hover': {
+                                    backgroundColor: 'transparent',
+                                    color: theme.palette.primary.main
+                                }
+                            }}
+                        >
+                            Admin
+                        </Button>
                     </Box>
                 )}
 
@@ -182,6 +199,9 @@ const Header = ({
                                 </MenuItem>
                                 <MenuItem onClick={() => handleMenuItemClick(onAlbumClick)}>
                                     <ListItemText primary="Álbum" />
+                                </MenuItem>
+                                <MenuItem onClick={() => handleMenuItemClick(onAdminClick)}>
+                                    <ListItemText primary="Admin" />
                                 </MenuItem>
                                 <Divider />
                                 <MenuItem onClick={() => handleMenuItemClick(onAccountClick)}>

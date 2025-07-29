@@ -15,20 +15,33 @@ import {
 } from '@mui/icons-material';
 
 const CartSummary = ({
-                         items = [],
-                         onCheckout,
-                         onContinueShopping
-                     }) => {
+                items = [],
+                totalPrice = 0,
+                onCheckout,
+                onContinueShopping,
+                participants = [],
+                minimumValue = 0
+            }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     // Cálculos
-    const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const subtotal = totalPrice;
     const total = subtotal; // Sem frete para presentes
     const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
-    // Progresso até R$ 100
-    const progressPercentage = Math.min((subtotal / 100) * 100, 100);
+    // Progresso baseado no valor mínimo (se houver convidados)
+    const targetValue = participants.length > 0 ? minimumValue : 100;
+    const progressPercentage = Math.min((subtotal / targetValue) * 100, 100);
+    
+    // Textos para evitar ternários aninhados
+    const guestText = participants.length > 1 ? 's' : '';
+    const progressText = participants.length > 0 
+        ? `Valor mínimo (você + ${participants.length} convidado${guestText})`
+        : 'Valor mínimo (apenas você)';
+    const successText = participants.length > 0 
+        ? `Valor mínimo atingido (você + ${participants.length} convidado${guestText})!`
+        : 'Valor mínimo atingido!';
 
     return (
         <Card
@@ -69,9 +82,8 @@ const CartSummary = ({
                     </Typography>
                 </Box>
 
-
-                {/* Progress Bar até R$ 100 */}
-                {subtotal > 0 && subtotal <= 100 && (
+                {/* Progress Bar */}
+                {subtotal > 0 && subtotal < targetValue && (
                     <Box sx={{ mb: 2 }}>
                         <Box sx={{
                             display: 'flex',
@@ -79,19 +91,11 @@ const CartSummary = ({
                             alignItems: 'center',
                             mb: 1
                         }}>
-                            <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{ fontSize: '0.8rem' }}
-                            >
-                                Progresso até R$ 100
+                            <Typography variant="body2" color="text.secondary">
+                                {progressText}
                             </Typography>
-                            <Typography
-                                variant="body2"
-                                color="primary.main"
-                                sx={{ fontSize: '0.8rem', fontWeight: 600 }}
-                            >
-                                {progressPercentage.toFixed(0)}%
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                R$ {subtotal.toFixed(2)} / R$ {targetValue.toFixed(2)}
                             </Typography>
                         </Box>
                         <LinearProgress
@@ -103,28 +107,26 @@ const CartSummary = ({
                                 backgroundColor: theme.palette.grey[200],
                                 '& .MuiLinearProgress-bar': {
                                     borderRadius: 4,
-                                    backgroundColor: theme.palette.primary.main
+                                    backgroundColor: progressPercentage >= 100
+                                        ? theme.palette.success.main 
+                                        : theme.palette.primary.main
                                 }
                             }}
                         />
                         <Typography
                             variant="body2"
-                            sx={{
-                                color: 'text.secondary',
-                                fontSize: '0.75rem',
-                                textAlign: 'center',
-                                mt: 1
-                            }}
+                            color="warning.main"
+                            sx={{ fontSize: '0.75rem', mt: 1, textAlign: 'center' }}
                         >
-                            {subtotal < 100
-                                ? `Faltam R$ ${(100 - subtotal).toFixed(2).replace('.', ',')} para chegar aos R$ 100!`
-                                : 'Meta de R$ 100 alcançada! 🎉'
-                            }
+                            Faltam R$ {(targetValue - subtotal).toFixed(2).replace('.', ',')} para o valor mínimo
                         </Typography>
                     </Box>
                 )}
 
-                {subtotal > 100 && (
+                <Divider sx={{ my: 2 }} />
+
+                {/* Mensagem de sucesso quando meta é atingida */}
+                {subtotal >= targetValue && (
                     <Box sx={{
                         p: 2,
                         backgroundColor: theme.palette.success.light,
@@ -140,7 +142,7 @@ const CartSummary = ({
                                 fontWeight: 600
                             }}
                         >
-                            🎉 Meta de R$ 100 superada!
+                            🎉 {successText}
                         </Typography>
                     </Box>
                 )}
@@ -180,7 +182,7 @@ const CartSummary = ({
                         variant="contained"
                         onClick={onCheckout}
                         startIcon={<ShoppingCartCheckout />}
-                        disabled={items.length === 0}
+                        disabled={items.length === 0 || subtotal < targetValue}
                         sx={{
                             py: 1.5,
                             borderRadius: 2,
@@ -197,7 +199,10 @@ const CartSummary = ({
                             }
                         }}
                     >
-                        Finalizar Compra
+                        {subtotal < targetValue ? 
+                            `Valor mínimo: R$ ${targetValue.toFixed(2).replace('.', ',')}` : 
+                            'Finalizar Compra'
+                        }
                     </Button>
 
                     <Button

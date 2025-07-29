@@ -18,6 +18,7 @@ import {
 } from '@mui/icons-material';
 
 const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
+    const product = item.product || {};
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -45,25 +46,25 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                 >
                     {/* Imagem */}
                     <Avatar
-                        src={item.image}
-                        alt={item.name}
+                        src={product.image || ''}
+                        alt={product.name || 'Produto'}
                         variant="rounded"
                         sx={{
                             width: isMobile ? 150 : 120,
                             height: isMobile ? 150 : 120,
                             backgroundColor: '#f5f5f5',
-                            alignSelf: isMobile ? 'center' : 'center'
+                            alignSelf: 'center'
                         }}
                     />
 
                     {/* Informações */}
                     <Box sx={{ flexGrow: 1, width: '100%' }}>
                         <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.05rem' }}>
-                            {item.name}
+                            {product.name || 'Produto sem nome'}
                         </Typography>
 
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 1, minHeight: 40 }}>
-                            {item.description || 'Sem descrição'}
+                            {product.description || 'Sem descrição'}
                         </Typography>
 
                         <Box sx={{
@@ -74,7 +75,7 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                         }}>
                             {!isMobile && (
                                 <Typography variant="h6" color="primary" sx={{ fontWeight: 700, fontSize: '1.05rem' }}>
-                                    R$ {item.price?.toFixed(2) || '0.00'}
+                                    R$ {product.price?.toFixed(2) || '0.00'}
                                 </Typography>
                             )}
                             <Box>
@@ -116,7 +117,7 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                                     Subtotal
                                 </Typography>
                                 <Typography variant="h6" sx={{ fontWeight: 700,color: 'primary.main', fontSize: '1.05rem' }}>
-                                    R$ {((item.price || 0) * item.quantity).toFixed(2)}
+                                    R$ {((product.price || 0) * item.quantity).toFixed(2)}
                                 </Typography>
                             </Box>
                             {/* Botão remover (mobile) */}

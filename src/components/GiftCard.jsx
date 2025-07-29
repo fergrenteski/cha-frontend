@@ -23,9 +23,9 @@ const GiftCard = ({
                       gift,
                       onFavorite,
                       onAddToCart,
-                      onRemoveFromCart
+                      onRemoveFromCart,
+                      isInCart = false
                   }) => {
-    const [isSelected, setIsSelected] = useState(false);
     const [isFavorited, setIsFavorited] = useState(false);
     const theme = useTheme();
 
@@ -34,7 +34,9 @@ const GiftCard = ({
 
     // Item Disponível
     const isUnavailable = gift.available === false;
-
+    
+    // Usar o estado do carrinho ao invés do estado local
+    const isSelected = isInCart;
 
     const handleFavorite = (e) => {
         e.stopPropagation();
@@ -43,12 +45,11 @@ const GiftCard = ({
     };
 
     const handleSelect = (e) => {
-        setIsSelected(!isSelected);
         e.stopPropagation();
         if(!isSelected) {
-            onAddToCart(gift, isSelected);
+            onAddToCart(gift);
         } else {
-            onRemoveFromCart(gift.id, isSelected);
+            onRemoveFromCart(gift._id);
         }
     };
 

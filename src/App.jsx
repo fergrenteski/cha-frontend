@@ -3,11 +3,18 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { CartProvider } from './contexts/CartContext'; // Import do CartProvider
+import { CartProvider } from './contexts/CartContext';
+import { AuthProvider } from './contexts/AuthContext';
 
 // Import das páginas
 import GiftListPage from './pages/GiftListPage';
 import CartPage from './pages/CartPage';
+import AccountPage from './pages/AccountPage';
+import AuthPage from './pages/AuthPage';
+import ProductsAdminPage from './pages/ProductsAdminPage';
+
+// Import dos componentes
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Configuração do tema (opcional)
 const theme = createTheme({
@@ -29,21 +36,59 @@ function App() {
         <ThemeProvider theme={theme}>
             <CssBaseline />
             <Router>
-                {/* Envolver toda a aplicação com o CartProvider */}
-                <CartProvider>
-                    <div className="App">
-                        <Routes>
-                            <Route path="/" element={<GiftListPage />} />
-                            <Route path="/products" element={<GiftListPage />} />
-                            <Route path="/cart" element={<CartPage />} />
-                            {/*<Route path="/album" element={<AlbumPage />} />*/}
-                            {/*<Route path="/account" element={<AccountPage />} />*/}
-                            {/*<Route path="/favorites" element={<FavoritesPage />} />*/}
-                            {/*<Route path="/login" element={<LoginPage />} />*/}
-                            {/* Adicione outras rotas conforme necessário */}
-                        </Routes>
-                    </div>
-                </CartProvider>
+                <AuthProvider>
+                    <CartProvider>
+                        <div className="App">
+                            <Routes>
+                                <Route path="/auth" element={<AuthPage />} />
+                                <Route 
+                                    path="/" 
+                                    element={
+                                            <GiftListPage />
+                                    } 
+                                />
+                                <Route 
+                                    path="/products" 
+                                    element={
+                                            <GiftListPage />
+                                    } 
+                                />
+                                <Route 
+                                    path="/cart" 
+                                    element={
+                                            <CartPage />
+                                    } 
+                                />
+                                <Route 
+                                    path="/account" 
+                                    element={
+                                        <ProtectedRoute>
+                                            <AccountPage />
+                                        </ProtectedRoute>
+                                    } 
+                                />
+                                <Route 
+                                    path="/admin" 
+                                    element={
+                                        <ProtectedRoute>
+                                            <ProductsAdminPage />
+                                        </ProtectedRoute>
+                                    } 
+                                />
+                                <Route 
+                                    path="/admin/products" 
+                                    element={
+                                        <ProtectedRoute>
+                                            <ProductsAdminPage />
+                                        </ProtectedRoute>
+                                    } 
+                                />
+                                {/*<Route path="/album" element={<AlbumPage />} />*/}
+                                {/*<Route path="/favorites" element={<FavoritesPage />} />*/}
+                            </Routes>
+                        </div>
+                    </CartProvider>
+                </AuthProvider>
             </Router>
         </ThemeProvider>
     );
