@@ -49,34 +49,6 @@ const GiftListPage = () => {
     };
 
     // Handlers de navegação
-    const handleCartClick = () => {
-        navigate('/cart');
-    };
-
-    const handleLogoClick = () => {
-        navigate('/');
-    };
-
-    const handleProductClick = () => {
-        navigate('/products');
-    };
-
-    const handleAlbumClick = () => {
-        navigate('/album');
-    };
-
-    const handleAccountClick = () => {
-        navigate('/account');
-    };
-
-    const handleAdminClick = () => {
-        navigate('/admin');
-    };
-
-    const handleFavoritesClick = () => {
-        navigate('/favorites');
-    };
-
     const handleLogoutClick = () => {
         logout();
         navigate('/auth');
@@ -93,13 +65,15 @@ const GiftListPage = () => {
                 <Header
                     cartItemCount={totalItems}
                     currentPage="products"
-                    onCartClick={handleCartClick}
-                    onLogoClick={handleLogoClick}
-                    onProductClick={handleProductClick}
-                    onAlbumClick={handleAlbumClick}
-                    onAccountClick={handleAccountClick}
-                    onFavoritesClick={handleFavoritesClick}
+                    onAlbumClick={() => navigate('/album')}
+                    onCartClick={() => navigate('/cart')}
+                    onLogoClick={() => navigate('/')}
+                    onProductClick={() => navigate('/products')}
+                    onAccountClick={() => navigate('/account')}
+                    onAdminClick={() => navigate('/admin')}
                     onLogoutClick={handleLogoutClick}
+                    onLoginClick={() => navigate('/auth')}
+                    onFavoritesClick={() => navigate('/favorites')}
                 />
                 <Container maxWidth="xl" sx={{ py: 4 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
@@ -117,13 +91,15 @@ const GiftListPage = () => {
                 <Header
                     cartItemCount={totalItems}
                     currentPage="products"
-                    onCartClick={handleCartClick}
-                    onLogoClick={handleLogoClick}
-                    onProductClick={handleProductClick}
-                    onAlbumClick={handleAlbumClick}
-                    onAccountClick={handleAccountClick}
-                    onFavoritesClick={handleFavoritesClick}
+                    onAlbumClick={() => navigate('/album')}
+                    onCartClick={() => navigate('/cart')}
+                    onLogoClick={() => navigate('/')}
+                    onProductClick={() => navigate('/products')}
+                    onAccountClick={() => navigate('/account')}
+                    onAdminClick={() => navigate('/admin')}
                     onLogoutClick={handleLogoutClick}
+                    onLoginClick={() => navigate('/auth')}
+                    onFavoritesClick={() => navigate('/favorites')}
                 />
                 <Container maxWidth="xl" sx={{ py: 4 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
@@ -139,25 +115,25 @@ const GiftListPage = () => {
     return (
         <>
             <Header
-                cartItemCount={totalItems} // Usando totalItems do contexto
+                cartItemCount={totalItems}
                 currentPage="products"
-                onCartClick={handleCartClick}
-                onLogoClick={handleLogoClick}
-                onProductClick={handleProductClick}
-                onAlbumClick={handleAlbumClick}
-                onAccountClick={handleAccountClick}
-                onAdminClick={handleAdminClick}
-                onFavoritesClick={handleFavoritesClick}
+                onAlbumClick={() => navigate('/album')}
+                onCartClick={() => navigate('/cart')}
+                onLogoClick={() => navigate('/')}
+                onProductClick={() => navigate('/products')}
+                onAccountClick={() => navigate('/account')}
+                onAdminClick={() => navigate('/admin')}
                 onLogoutClick={handleLogoutClick}
+                onLoginClick={() => navigate('/auth')}
+                onFavoritesClick={() => navigate('/favorites')}
             />
 
             <Container maxWidth="xl" sx={{ py: 4 }}>
-                <Grid container spacing={3} justifyContent="center">
+                <Grid container spacing={2} justifyContent="center">
                     {products.map((product) => (
-                        <Grid item key={product._id} xs={12} sm={6} md={4} sx={{ display: 'flex', justifyContent: 'center' }}>
+                        <Grid key={product._id} size={{xs: 12, sm: 6, md: 4, lg: 3}} sx={{ display: 'flex', justifyContent: 'center' }}>
                             <GiftCard
                                 gift={product}
-                                onFavorite={null}
                                 onAddToCart={() => handleAddToCart(product)}
                                 onRemoveFromCart={handleRemoveFromCart}
                                 isInCart={isItemInCart(product._id)}

@@ -421,6 +421,298 @@ export const cartAPI = {
         
         return handleResponse(response);
     },
+
+    checkout: async () => {
+        const authToken = localStorage.getItem('authToken');
+        const guestToken = localStorage.getItem('guestToken');
+        
+        const body = {};
+        
+        if (!authToken && guestToken) {
+            body.guestToken = guestToken;
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/cart/checkout`, {
+            method: 'POST',
+            headers: createHeaders(!!authToken),
+            body: JSON.stringify(body),
+        });
+        
+        return handleResponse(response);
+    },
+
+    // Migrar carrinho de guest para usuário autenticado
+    migrateGuestCart: async () => {
+        const guestToken = localStorage.getItem('guestToken');
+        
+        if (!guestToken) {
+            return; // Não há carrinho de guest para migrar
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/cart/migrate`, {
+            method: 'POST',
+            headers: createHeaders(true), // Requer autenticação
+            body: JSON.stringify({ guestToken }),
+        });
+        
+        const result = await handleResponse(response);
+        
+        // Limpar token de guest após migração bem-sucedida
+        localStorage.removeItem('guestToken');
+        
+        return result;
+    },
+};
+
+// ===================
+// SERVIÇOS DE FAVORITOS
+// ===================
+
+export const favoritesAPI = {
+    // Obter favoritos
+    getFavorites: async () => {
+        const authToken = localStorage.getItem('authToken');
+        const guestToken = localStorage.getItem('guestToken');
+        
+        let url = `${API_BASE_URL}/favorites`;
+        let headers = createHeaders(false);
+        
+        if (authToken) {
+            headers.Authorization = `Bearer ${authToken}`;
+        } else if (guestToken) {
+            url += `?guestToken=${guestToken}`;
+        }
+        
+        const response = await fetch(url, { headers });
+        
+        return handleResponse(response);
+    },
+
+    // Adicionar produto aos favoritos
+    addToFavorites: async (productId) => {
+        const authToken = localStorage.getItem('authToken');
+        const guestToken = localStorage.getItem('guestToken');
+        
+        const body = { productId };
+        
+        if (!authToken && guestToken) {
+            body.guestToken = guestToken;
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/favorites/add`, {
+            method: 'POST',
+            headers: createHeaders(!!authToken),
+            body: JSON.stringify(body),
+        });
+        
+        return handleResponse(response);
+    },
+
+    // Remover produto dos favoritos
+    removeFromFavorites: async (productId) => {
+        const authToken = localStorage.getItem('authToken');
+        const guestToken = localStorage.getItem('guestToken');
+        
+        const body = { productId };
+        
+        if (!authToken && guestToken) {
+            body.guestToken = guestToken;
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/favorites/remove`, {
+            method: 'POST',
+            headers: createHeaders(!!authToken),
+            body: JSON.stringify(body),
+        });
+        
+        return handleResponse(response);
+    },
+
+    // Limpar todos os favoritos
+    clearFavorites: async () => {
+        const authToken = localStorage.getItem('authToken');
+        const guestToken = localStorage.getItem('guestToken');
+        
+        const body = {};
+        
+        if (!authToken && guestToken) {
+            body.guestToken = guestToken;
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/favorites/clear`, {
+            method: 'POST',
+            headers: createHeaders(!!authToken),
+            body: JSON.stringify(body),
+        });
+        
+        return handleResponse(response);
+    },
+
+    // Verificar se produto está nos favoritos
+    isProductInFavorites: async (productId) => {
+        const authToken = localStorage.getItem('authToken');
+        const guestToken = localStorage.getItem('guestToken');
+        
+        let url = `${API_BASE_URL}/favorites/check/${productId}`;
+        let headers = createHeaders(false);
+        
+        if (authToken) {
+            headers.Authorization = `Bearer ${authToken}`;
+        } else if (guestToken) {
+            url += `?guestToken=${guestToken}`;
+        }
+        
+        const response = await fetch(url, { headers });
+        
+        return handleResponse(response);
+    },
+
+    // Migrar favoritos de guest para usuário autenticado
+    migrateGuestFavorites: async () => {
+        const guestToken = localStorage.getItem('guestToken');
+        
+        if (!guestToken) {
+            return; // Não há favoritos de guest para migrar
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/favorites/migrate`, {
+            method: 'POST',
+            headers: createHeaders(true), // Requer autenticação
+            body: JSON.stringify({ guestToken }),
+        });
+        
+        return handleResponse(response);
+    },
+};
+
+// API de Pedidos
+export const ordersAPI = {
+    // Criar novo pedido
+    async createOrder(notes = '') {
+        // Gerar número do pedido único
+        const timestamp = Date.now();
+        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        const orderNumber = `ORD-${timestamp}-${random}`;
+        
+        const response = await fetch(`${API_BASE_URL}/orders/create`, {
+            method: 'POST',
+            headers: createHeaders(true),
+            body: JSON.stringify({ 
+                orderNumber,
+                notes 
+            }),
+        });
+        
+        return handleResponse(response);
+    },
+
+    // Obter pedidos do usuário
+    async getUserOrders(filters = {}) {
+        const queryParams = new URLSearchParams();
+        
+        if (filters.status) queryParams.append('status', filters.status);
+        if (filters.page) queryParams.append('page', filters.page);
+        if (filters.limit) queryParams.append('limit', filters.limit);
+
+        const response = await fetch(`${API_BASE_URL}/orders?${queryParams}`, {
+            method: 'GET',
+            headers: createHeaders(true),
+        });
+        
+        return handleResponse(response);
+    },
+
+    // Obter detalhes de um pedido
+    async getOrderDetails(orderId) {
+        const response = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
+            method: 'GET',
+            headers: createHeaders(true),
+        });
+        
+        return handleResponse(response);
+    },
+
+    // Cancelar pedido
+    async cancelOrder(orderId, cancelReason = '') {
+        const response = await fetch(`${API_BASE_URL}/orders/${orderId}/cancel`, {
+            method: 'PUT',
+            headers: createHeaders(true),
+            body: JSON.stringify({ cancelReason }),
+        });
+        
+        return handleResponse(response);
+    },
+
+    // Atualizar status do pedido (admin)
+    async updateOrderStatus(orderId, status) {
+        const response = await fetch(`${API_BASE_URL}/orders/${orderId}/status`, {
+            method: 'PUT',
+            headers: createHeaders(true),
+            body: JSON.stringify({ status }),
+        });
+        
+        return handleResponse(response);
+    },
+
+    // Obter estatísticas dos pedidos
+    async getOrderStats() {
+        const response = await fetch(`${API_BASE_URL}/orders/stats`, {
+            method: 'GET',
+            headers: createHeaders(true),
+        });
+        
+        return handleResponse(response);
+    },
+
+    // Obter estatísticas dos pedidos
+    async getAllOrderStats() {
+        const response = await fetch(`${API_BASE_URL}/orders/stats/admin`, {
+            method: 'GET',
+            headers: createHeaders(true),
+        });
+        
+        return handleResponse(response);
+    },
+
+    // Obter todos os pedidos (admin) - usa rota de usuário por enquanto
+    async getAllOrders(filters = {}) {
+        // Por enquanto, usamos getUserOrders que retorna os pedidos do usuário logado
+        // Idealmente, deveria haver uma rota específica para admin
+        return this.getUserOrders(filters);
+    },
+};
+
+// API de Usuários (Admin)
+const usersAPI = {
+    // Obter todos os usuários (admin)
+    async getAllUsers() {
+        const response = await fetch(`${API_BASE_URL}/users`, {
+            method: 'GET',
+            headers: createHeaders(true),
+        });
+        
+        return handleResponse(response);
+    },
+
+    // Excluir usuário (admin)
+    async deleteUser(userId) {
+        const response = await fetch(`${API_BASE_URL}/users/${userId}/delete`, {
+            method: 'DELETE',
+            headers: createHeaders(true),
+        });
+        
+        return handleResponse(response);
+    },
+
+    // Alternar status de admin do usuário (admin)
+    async toggleUserAdmin(userId) {
+        const response = await fetch(`${API_BASE_URL}/users/${userId}/admin`, {
+            method: 'POST',
+            headers: createHeaders(true),
+        });
+        
+        return handleResponse(response);
+    }
 };
 
 // Exportação padrão com todas as APIs
@@ -429,6 +721,9 @@ const api = {
     profile: profileAPI,
     products: productsAPI,
     cart: cartAPI,
+    favorites: favoritesAPI,
+    orders: ordersAPI,
+    users: usersAPI,
 };
 
 export default api;

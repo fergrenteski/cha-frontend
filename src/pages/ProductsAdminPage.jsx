@@ -12,6 +12,7 @@ import {
     TableRow,
     IconButton,
     Box,
+    Fade,
     Chip,
     Alert,
     Snackbar,
@@ -132,15 +133,9 @@ const ProductsAdminPage = () => {
         setLocalCategories(categories);
     }, [categories]);
 
-    // Handlers de navegação
-    const handleCartClick = () => navigate('/cart');
-    const handleLogoClick = () => navigate('/');
-    const handleProductClick = () => navigate('/products');
-    const handleAccountClick = () => navigate('/account');
-    const handleAdminClick = () => navigate('/admin');
     const handleLogoutClick = () => {
         logout();
-        navigate('/auth');
+        navigate('/');
     };
 
     // Handler de busca
@@ -347,64 +342,55 @@ const ProductsAdminPage = () => {
     );
 
     return (
-        <Box sx={{ minHeight: '100vh' }}>
+        <>
             <Header
                 cartItemCount={totalItems}
                 currentPage="admin"
-                onCartClick={handleCartClick}
-                onLogoClick={handleLogoClick}
-                onProductClick={handleProductClick}
-                onAccountClick={handleAccountClick}
-                onAdminClick={handleAdminClick}
+                onAlbumClick={() => navigate('/album')}
+                onCartClick={() => navigate('/cart')}
+                onLogoClick={() => navigate('/')}
+                onProductClick={() => navigate('/products')}
+                onAccountClick={() => navigate('/account')}
+                onAdminClick={() => navigate('/admin')}
                 onLogoutClick={handleLogoutClick}
+                onLoginClick={() => navigate('/auth')}
+                onFavoritesClick={() => navigate('/favorites')}
             />
 
             <Container maxWidth="xl" sx={{ py: 4 }}>
-                {/* Header da página */}
-                <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+                <Fade in timeout={800}>
                     <Box>
-                        <Typography variant="h4" component="h1" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                            Administração de Produtos
-                        </Typography>
-                        <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-                            Gerencie produtos, categorias e estoque
-                        </Typography>
-                    </Box>
-                    
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Tooltip title="Atualizar lista">
-                            <IconButton 
-                                onClick={refreshProducts}
-                                disabled={productsLoading}
-                                sx={{ 
-                                    bgcolor: 'background.paper',
-                                    boxShadow: 1,
-                                    '&:hover': { boxShadow: 2 }
-                                }}
-                            >
-                                <RefreshIcon />
-                            </IconButton>
-                        </Tooltip>
-                        
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={() => openDialog('create')}
-                            sx={{
-                                bgcolor: 'primary.main',
-                                boxShadow: 2,
-                                '&:hover': { boxShadow: 4 }
-                            }}
-                        >
-                            Novo Produto
-                        </Button>
-                    </Box>
-                </Box>
+                        {/* Header da página */}
+                        <Box sx={{ mt: 4, mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+                            <Box>
+                                <Typography variant="h4" component="h1" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                                    Administração de Produtos
+                                </Typography>
+                                <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
+                                    Gerencie produtos, categorias e estoque
+                                </Typography>
+                            </Box>
+                            
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                <Button
+                                    variant="contained"
+                                    startIcon={<AddIcon />}
+                                    onClick={() => openDialog('create')}
+                                    sx={{
+                                        bgcolor: 'primary.main',
+                                        boxShadow: 2,
+                                        '&:hover': { boxShadow: 4 }
+                                    }}
+                                >
+                                    Novo Produto
+                                </Button>
+                            </Box>
+                        </Box>
 
                 {/* Filtros */}
                 <Paper sx={{ p: 3, mb: 3, borderRadius: 2, boxShadow: 1 }}>
                     <Grid container spacing={3} alignItems="center">
-                        <Grid item size={{xs: 12, sm: 6, md: 3}}>
+                        <Grid size={{xs: 12, sm: 6, md: 3}}>
                             <TextField
                                 fullWidth
                                 placeholder="Buscar produtos..."
@@ -425,7 +411,7 @@ const ProductsAdminPage = () => {
                             />
                         </Grid>
                         
-                        <Grid item size={{xs: 12, sm: 6, md: 3}}>
+                        <Grid size={{xs: 12, sm: 6, md: 3}}>
                             <FormControl fullWidth>
                                 <InputLabel>Categoria</InputLabel>
                                 <Select
@@ -444,7 +430,7 @@ const ProductsAdminPage = () => {
                             </FormControl>
                         </Grid>
                         
-                        <Grid item size={{xs: 12, sm: 6, md: 3}}>
+                        <Grid size={{xs: 12, sm: 6, md: 3}}>
                             <FormControl fullWidth>
                                 <InputLabel>Disponibilidade</InputLabel>
                                 <Select
@@ -460,7 +446,7 @@ const ProductsAdminPage = () => {
                             </FormControl>
                         </Grid>
                         
-                        <Grid item size={{xs: 12, sm: 6, md: 3}}>
+                        <Grid size={{xs: 12, sm: 6, md: 3}}>
                             <Button
                                 fullWidth
                                 variant="outlined"
@@ -631,19 +617,21 @@ const ProductsAdminPage = () => {
 
                 {/* FAB para mobile */}
                 {isMobile && (
-                    <Fab
-                        color="primary"
-                        onClick={() => openDialog('create')}
-                        sx={{
-                            position: 'fixed',
-                            bottom: 24,
-                            right: 24,
-                            zIndex: 1000
-                        }}
-                    >
-                        <AddIcon />
-                    </Fab>
-                )}
+                        <Fab
+                            color="primary"
+                            onClick={() => openDialog('create')}
+                            sx={{
+                                position: 'fixed',
+                                bottom: 24,
+                                right: 24,
+                                zIndex: 1000
+                            }}
+                        >
+                            <AddIcon />
+                        </Fab>
+                    )}
+                    </Box>
+                </Fade>
             </Container>
 
             {/* Dialog do formulário */}
@@ -869,7 +857,7 @@ const ProductsAdminPage = () => {
                             <EditIcon /> Informações Básicas
                         </Typography>
                         <Grid container spacing={3}>
-                            <Grid item size={{xs: 12, md: 6}}>
+                            <Grid size={{xs: 12, md: 6}}>
                                 <TextField
                                     fullWidth
                                     label="Nome do Produto"
@@ -886,7 +874,7 @@ const ProductsAdminPage = () => {
                                 />
                             </Grid>
                             
-                            <Grid item size={{xs: 12, md: 6}}>
+                            <Grid size={{xs: 12, md: 6}}>
                                 <FormControl fullWidth>
                                     <InputLabel>Categoria</InputLabel>
                                     <Select
@@ -909,7 +897,7 @@ const ProductsAdminPage = () => {
                                 </FormControl>
                             </Grid>
                             
-                            <Grid item size={{xs: 12}}>
+                            <Grid size={{xs: 12}}>
                                 <TextField
                                     fullWidth
                                     label="Descrição"
@@ -936,7 +924,7 @@ const ProductsAdminPage = () => {
                             💰 Preço e Estoque
                         </Typography>
                         <Grid container spacing={3}>
-                            <Grid item size={{xs: 12, sm: 6, md: 4}}>
+                            <Grid size={{xs: 12, sm: 6, md: 4}}>
                                 <TextField
                                     fullWidth
                                     label="Preço"
@@ -956,7 +944,7 @@ const ProductsAdminPage = () => {
                                 />
                             </Grid>
                             
-                            <Grid item size={{xs: 12, sm: 6, md: 4}}>
+                            <Grid size={{xs: 12, sm: 6, md: 4}}>
                                 <TextField
                                     fullWidth
                                     label="Estoque"
@@ -973,7 +961,7 @@ const ProductsAdminPage = () => {
                                 />
                             </Grid>
                             
-                            <Grid item size={{xs: 12, sm: 6, md: 4}}>
+                            <Grid size={{xs: 12, sm: 6, md: 4}}>
                                 <TextField
                                     fullWidth
                                     label="Capacidade"
@@ -998,7 +986,7 @@ const ProductsAdminPage = () => {
                             <PhotoIcon /> Imagem e Configurações
                         </Typography>
                         <Grid container spacing={3} alignItems="flex-start">
-                            <Grid item size={{xs: 12, md: 6}}>
+                            <Grid size={{xs: 12, md: 6}}>
                                 <TextField
                                     fullWidth
                                     label="URL da Imagem (opcional)"
@@ -1058,7 +1046,7 @@ const ProductsAdminPage = () => {
                                 )}
                             </Grid>
                             
-                            <Grid item size={{xs: 12, md: 3}}>
+                            <Grid size={{xs: 12, md: 3}}>
                                 <Paper sx={{ 
                                     p: 2, 
                                     textAlign: 'center',
@@ -1185,7 +1173,7 @@ const ProductsAdminPage = () => {
                     {snackbar.message}
                 </Alert>
             </Snackbar>
-        </Box>
+        </>
     );
 };
 

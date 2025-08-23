@@ -25,7 +25,8 @@ const EmptyCart = ({ onContinueShopping }) => {
                 textAlign: 'center',
                 py: isMobile ? 6 : 8,
                 px: 3,
-                minHeight: '60vh'
+                minHeight: '60vh',
+                mt: 4
             }}
         >
             {/* Icon */}
@@ -34,7 +35,7 @@ const EmptyCart = ({ onContinueShopping }) => {
                     width: isMobile ? 120 : 150,
                     height: isMobile ? 120 : 150,
                     borderRadius: '50%',
-                    backgroundColor: theme.palette.grey[100],
+                    backgroundColor: theme.palette.primary.main + '22',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -44,7 +45,7 @@ const EmptyCart = ({ onContinueShopping }) => {
                 <ShoppingCartOutlined
                     sx={{
                         fontSize: isMobile ? 60 : 80,
-                        color: theme.palette.grey[400]
+                        color: theme.palette.primary.main
                     }}
                 />
             </Box>

@@ -11,7 +11,8 @@ import {
     LinearProgress
 } from '@mui/material';
 import {
-    ShoppingCartCheckout
+    WhatsApp,
+    Login
 } from '@mui/icons-material';
 
 const CartSummary = ({
@@ -20,7 +21,9 @@ const CartSummary = ({
                 onCheckout,
                 onContinueShopping,
                 participants = [],
-                minimumValue = 0
+                minimumValue = 0,
+                isAuthenticated = false,
+                onLogin
             }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -36,12 +39,33 @@ const CartSummary = ({
     
     // Textos para evitar ternários aninhados
     const guestText = participants.length > 1 ? 's' : '';
-    const progressText = participants.length > 0 
-        ? `Valor mínimo (você + ${participants.length} convidado${guestText})`
-        : 'Valor mínimo (apenas você)';
-    const successText = participants.length > 0 
-        ? `Valor mínimo atingido (você + ${participants.length} convidado${guestText})!`
-        : 'Valor mínimo atingido!';
+    const progressText = `Valor mínimo (você + ${participants.length} convidado${guestText})`;
+    const successText = `Valor mínimo atingido (você + ${participants.length} convidado${guestText})!`;
+
+    // Função para determinar o texto do botão
+    const getButtonText = () => {
+        if (!isAuthenticated) return 'Fazer Login para Enviar';
+        if (subtotal < targetValue) return `Valor mínimo: R$ ${targetValue.toFixed(2).replace('.', ',')}`;
+        return 'Enviar pelo WhatsApp';
+    };
+
+    // Função para determinar o ícone do botão
+    const getButtonIcon = () => {
+        if (!isAuthenticated) return <Login />;
+        return <WhatsApp />;
+    };
+
+    // Função para determinar a cor do botão
+    const getButtonColor = () => {
+        if (!isAuthenticated) return '#1976d2'; // Azul para login
+        return '#25D366'; // Verde do WhatsApp
+    };
+
+    // Função para determinar a cor do hover
+    const getButtonHoverColor = () => {
+        if (!isAuthenticated) return '#1565c0';
+        return '#128C7E';
+    };
 
     return (
         <Card
@@ -180,18 +204,18 @@ const CartSummary = ({
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <Button
                         variant="contained"
-                        onClick={onCheckout}
-                        startIcon={<ShoppingCartCheckout />}
-                        disabled={items.length === 0 || subtotal < targetValue}
+                        onClick={!isAuthenticated ? onLogin : onCheckout}
+                        startIcon={getButtonIcon()}
+                        disabled={items.length === 0 || (!isAuthenticated ? false : subtotal < targetValue)}
                         sx={{
                             py: 1.5,
                             borderRadius: 2,
                             fontWeight: 600,
                             textTransform: 'none',
                             fontSize: '1rem',
-                            backgroundColor: '#212121',
+                            backgroundColor: getButtonColor(),
                             '&:hover': {
-                                backgroundColor: '#424242'
+                                backgroundColor: getButtonHoverColor()
                             },
                             '&:disabled': {
                                 backgroundColor: theme.palette.grey[300],
@@ -199,10 +223,7 @@ const CartSummary = ({
                             }
                         }}
                     >
-                        {subtotal < targetValue ? 
-                            `Valor mínimo: R$ ${targetValue.toFixed(2).replace('.', ',')}` : 
-                            'Finalizar Compra'
-                        }
+                        {getButtonText()}
                     </Button>
 
                     <Button
@@ -237,7 +258,10 @@ const CartSummary = ({
                             lineHeight: 1.4
                         }}
                     >
-                        Pagamento 100% seguro via PIX, cartão de crédito ou débito
+                        {!isAuthenticated 
+                            ? ' Faça login para Terminar seu pedido'
+                            : ' Seu pedido será enviado via WhatsApp com todos os detalhes'
+                        }
                     </Typography>
                 </Box>
             </CardContent>

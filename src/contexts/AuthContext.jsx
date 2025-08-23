@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { authAPI, profileAPI } from '../services/api';
+import { authAPI, profileAPI, cartAPI, favoritesAPI } from '../services/api';
 
 export const AuthContext = createContext();
 
@@ -34,6 +34,22 @@ export const AuthProvider = ({ children }) => {
         try {
             await authAPI.login(email, password);
             
+            // Migrar carrinho de guest se existir
+            try {
+                await cartAPI.migrateGuestCart();
+            } catch (migrationError) {
+                console.warn('Erro ao migrar carrinho de guest:', migrationError);
+                // Não falhar o login por causa da migração
+            }
+
+            // Migrar favoritos de guest se existir
+            try {
+                await favoritesAPI.migrateGuestFavorites();
+            } catch (migrationError) {
+                console.warn('Erro ao migrar favoritos de guest:', migrationError);
+                // Não falhar o login por causa da migração
+            }
+            
             // Buscar perfil completo do usuário
             const userProfile = await profileAPI.getProfile();
             setUser(userProfile);
@@ -50,6 +66,22 @@ export const AuthProvider = ({ children }) => {
     const register = async (userData) => {
         try {
             await authAPI.register(userData);
+            
+            // Migrar carrinho de guest se existir
+            try {
+                await cartAPI.migrateGuestCart();
+            } catch (migrationError) {
+                console.warn('Erro ao migrar carrinho de guest:', migrationError);
+                // Não falhar o registro por causa da migração
+            }
+
+            // Migrar favoritos de guest se existir
+            try {
+                await favoritesAPI.migrateGuestFavorites();
+            } catch (migrationError) {
+                console.warn('Erro ao migrar favoritos de guest:', migrationError);
+                // Não falhar o registro por causa da migração
+            }
             
             // Buscar perfil completo do usuário após registro
             const userProfile = await profileAPI.getProfile();

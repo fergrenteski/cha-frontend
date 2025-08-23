@@ -1,6 +1,7 @@
 import React, { createContext, useReducer, useEffect, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { cartAPI, authAPI } from '../services/api';
+import { cartAPI, ordersAPI, authAPI } from '../services/api';
+import { useAuth } from '../hooks/useAuth';
 
 // Tipos de ações
 const CART_ACTIONS = {
@@ -75,6 +76,7 @@ export const CartContext = createContext();
 // Provider
 export const CartProvider = ({ children }) => {
     const [cartState, dispatch] = useReducer(cartReducer, initialState);
+    const { user } = useAuth(); // Obter informações do usuário logado
 
     // Função para garantir token de convidado
     const ensureGuestToken = async () => {
@@ -91,13 +93,19 @@ export const CartProvider = ({ children }) => {
         }
     };
 
-    // Carregar carrinho na inicialização
+    // Carregar carrinho na inicialização ou quando autenticação muda
     useEffect(() => {
         const loadCart = async () => {
             dispatch({ type: CART_ACTIONS.SET_LOADING, payload: true });
             
             try {
                 await ensureGuestToken();
+                
+                // Aguardar um pouco se acabou de fazer login para permitir migração
+                if (user && localStorage.getItem('guestToken')) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
                 const cart = await cartAPI.getCart();
                 dispatch({ type: CART_ACTIONS.SET_CART, payload: { cart } });
             } catch (error) {
@@ -109,7 +117,7 @@ export const CartProvider = ({ children }) => {
         };
 
         loadCart();
-    }, []);
+    }, [user]); // Dependência do user para recarregar quando login/logout
 
     // Função para adicionar item ao carrinho
     const addItem = useCallback(async (product, quantity = 1) => {
@@ -227,7 +235,7 @@ export const CartProvider = ({ children }) => {
 
     // Função para adicionar participante
     const addParticipant = useCallback(async (name) => {
-        if (!name || !name.trim()) return;
+        if (!name?.trim()) return;
         
         dispatch({ type: CART_ACTIONS.SET_LOADING, payload: true });
         dispatch({ type: CART_ACTIONS.CLEAR_ERROR });
@@ -246,7 +254,7 @@ export const CartProvider = ({ children }) => {
 
     // Função para remover participante
     const removeParticipant = useCallback(async (name) => {
-        if (!name || !name.trim()) return;
+        if (!name?.trim()) return;
         
         dispatch({ type: CART_ACTIONS.SET_LOADING, payload: true });
         dispatch({ type: CART_ACTIONS.CLEAR_ERROR });
@@ -263,6 +271,119 @@ export const CartProvider = ({ children }) => {
         }
     }, []);
 
+    // Função para finalizar compra (checkout via WhatsApp)
+    const handleCheckout = useCallback(async () => {
+        dispatch({ type: CART_ACTIONS.SET_LOADING, payload: true });
+        dispatch({ type: CART_ACTIONS.CLEAR_ERROR });
+        
+        try {
+            // Verificar se o usuário está logado
+            if (!user) {
+                dispatch({ type: CART_ACTIONS.SET_ERROR, payload: 'É necessário fazer login para enviar o pedido' });
+                return { 
+                    success: false, 
+                    error: 'É necessário fazer login para enviar o pedido',
+                    requiresLogin: true 
+                };
+            }
+
+            // Função para criar mensagem formatada do WhatsApp
+            const createWhatsAppMessage = (items, participants, totalPrice, orderNumber) => {
+                const currentDate = new Date().toLocaleDateString('pt-BR');
+                const currentTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                
+                // Nome do organizador (usuário logado)
+                let organizerName = 'Voce (organizador)';
+                if (user?.firstName && user?.lastName) {
+                    organizerName = `${user.firstName} ${user.lastName} (organizador)`;
+                } else if (user?.firstName) {
+                    organizerName = `${user.firstName} (organizador)`;
+                }
+                
+                let message = `*PEDIDO DE CHA DE CASA NOVA*\n\n`;
+                message += `*Numero do Pedido:* ${orderNumber}\n`;
+                message += `Data: ${currentDate} as ${currentTime}\n\n`;
+                
+                // Lista de participantes (incluindo quem está comprando)
+                message += `*PARTICIPANTES:*\n`;
+                message += `1. ${organizerName}\n`;
+                if (participants.length > 0) {
+                    participants.forEach((participant, index) => {
+                        message += `${index + 2}. ${participant}\n`;
+                    });
+                }
+                message += `\n`;
+                
+                // Lista de produtos
+                message += `*PRODUTOS SELECIONADOS:*\n`;
+                items.forEach((item, index) => {
+                    const productName = item.product.name;
+                    const quantity = item.quantity;
+                    const unitPrice = item.product.price;
+                    const totalItemPrice = unitPrice * quantity;
+                    
+                    message += `${index + 1}. ${productName}\n`;
+                    message += `   Quantidade: ${quantity}x\n`;
+                    message += `   Valor unitario: R$ ${unitPrice.toFixed(2).replace('.', ',')}\n`;
+                    message += `   Subtotal: R$ ${totalItemPrice.toFixed(2).replace('.', ',')}\n\n`;
+                });
+                
+                // Total
+                message += `*VALOR TOTAL: R$ ${totalPrice.toFixed(2).replace('.', ',')}*\n\n`;
+                
+                // Informações adicionais
+                message += `*Observacoes:*\n`;
+                message += `- Total de ${items.length} ${items.length === 1 ? 'produto' : 'produtos'} selecionado${items.length === 1 ? '' : 's'}\n`;
+                message += `- ${participants.length + 1} ${participants.length + 1 === 1 ? 'participante' : 'participantes'} no cha\n\n`;
+                
+                message += `Obrigado!`;
+                
+                return message;
+            };
+
+            // Criar pedido no backend primeiro para obter o número do pedido
+            let orderData;
+            try {
+                orderData = await ordersAPI.createOrder();
+                console.log('Pedido criado no backend:', orderData);
+            } catch (backendError) {
+                console.error('Erro ao criar pedido no backend:', backendError);
+                return { 
+                    success: false, 
+                    error: backendError.message || 'Erro ao criar pedido no backend',
+                };
+            }
+
+            // Criar mensagem formatada para WhatsApp com o número do pedido
+            const whatsappMessage = createWhatsAppMessage(
+                cartState.items, 
+                cartState.participants, 
+                cartState.totalPrice,
+                orderData.orderNumber || orderData._id || 'N/A'
+            );
+            
+            // Número do WhatsApp (sem espaços e caracteres especiais)
+            const phoneNumber = "5541988987128";
+            
+            // URL do WhatsApp
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(whatsappMessage)}`;
+            
+            return {
+                success: true,
+                whatsapp_url: whatsappUrl,
+                message: whatsappMessage,
+                orderNumber: orderData.orderNumber || orderData._id,
+                orderId: orderData._id
+            };
+        } catch (error) {
+            console.error('Erro ao preparar checkout:', error);
+            dispatch({ type: CART_ACTIONS.SET_ERROR, payload: error.message });
+            throw error;
+        } finally {
+            dispatch({ type: CART_ACTIONS.SET_LOADING, payload: false });
+        }
+    }, [cartState.items, cartState.participants, cartState.totalPrice, user]);
+
     const value = useMemo(() => ({
         // Estado
         items: cartState.items,
@@ -271,6 +392,8 @@ export const CartProvider = ({ children }) => {
         totalPrice: cartState.totalPrice,
         loading: cartState.loading,
         error: cartState.error,
+        isAuthenticated: !!user,
+        user: user,
         // Actions
         addItem,
         removeItem,
@@ -281,8 +404,9 @@ export const CartProvider = ({ children }) => {
         refreshCart,
         clearError,
         addParticipant,
-        removeParticipant
-    }), [cartState, addItem, removeItem, updateQuantity, clearCart, isItemInCart, getItemQuantity, refreshCart, clearError, addParticipant, removeParticipant]);
+        removeParticipant,
+        handleCheckout
+    }), [cartState, addItem, removeItem, updateQuantity, clearCart, isItemInCart, getItemQuantity, refreshCart, clearError, addParticipant, removeParticipant, handleCheckout, user]);
 
     return (
         <CartContext.Provider value={value}>

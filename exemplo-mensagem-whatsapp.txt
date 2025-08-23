@@ -1,0 +1,32 @@
+*PEDIDO DE CHA DE CASA NOVA*
+
+Data: 22/08/2025 as 18:30
+
+PARTICIPANTES:
+1. João Silva (organizador)
+2. Maria Santos
+3. Ana Oliveira
+
+PRODUTOS SELECIONADOS:
+1. Jogo de Cama Casal
+   Quantidade: 1x
+   Valor unitario: R$ 89,90
+   Subtotal: R$ 89,90
+
+2. Kit Cafe da Manha
+   Quantidade: 2x
+   Valor unitario: R$ 45,50
+   Subtotal: R$ 91,00
+
+3. Toalhas de Banho (Kit)
+   Quantidade: 1x
+   Valor unitario: R$ 67,90
+   Subtotal: R$ 67,90
+
+VALOR TOTAL: R$ 248,80
+
+Observacoes:
+- Total de 3 produtos selecionados
+- 3 participantes no cha
+
+Obrigado!

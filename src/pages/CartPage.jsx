@@ -41,7 +41,10 @@ const CartPage = () => {
         updateQuantity,
         clearCart,
         addParticipant,
-        removeParticipant
+        removeParticipant,
+        handleCheckout,
+        isAuthenticated,
+        user
     } = useCart();
 
     const { logout } = useAuth();
@@ -73,13 +76,13 @@ const CartPage = () => {
                 setParticipantName('');
                 setSnackbar({
                     open: true,
-                    message: `Participante ${participantName.trim()} adicionado`,
+                    message: `Convidado ${participantName.trim()} adicionado`,
                     severity: 'success'
                 });
             } catch (error) {
                 setSnackbar({
                     open: true,
-                    message: error.message || 'Erro ao adicionar participante',
+                    message: error.message || 'Erro ao adicionar convidado',
                     severity: 'error'
                 });
             }
@@ -92,13 +95,13 @@ const CartPage = () => {
             await removeParticipant(participantNameToRemove);
             setSnackbar({
                 open: true,
-                message: `Participante ${participantNameToRemove} removido`,
+                message: `Convidado ${participantNameToRemove} removido`,
                 severity: 'info'
             });
         } catch (error) {
             setSnackbar({
                 open: true,
-                message: error.message || 'Erro ao remover participante',
+                message: error.message || 'Erro ao remover convidado',
                 severity: 'error'
             });
         }
@@ -150,6 +153,13 @@ const CartPage = () => {
         }
     };
 
+    // Redirect to WhatsApp
+    const redirectToWhatsApp = (whatsappUrl) => {
+        if (whatsappUrl) {
+            window.open(whatsappUrl, '_blank');
+        }
+    };
+
     // Função para limpar carrinho
     const handleClearCart = () => {
         clearCart();
@@ -160,34 +170,62 @@ const CartPage = () => {
         });
     };
 
+    const handleCheckoutProcess = async () => {
+        if (cartItems.length === 0) {
+            setSnackbar({
+                open: true,
+                message: 'Carrinho está vazio',
+                severity: 'warning'
+            });
+            return;
+        }
+
+        try {
+            const response = await handleCheckout();
+            if (response.success) {
+                setSnackbar({
+                    open: true,
+                    message: 'Redirecionando para WhatsApp...',
+                    severity: 'success'
+                });
+                
+                // Redirecionar para WhatsApp
+                redirectToWhatsApp(response.whatsapp_url);
+                
+                // Limpar carrinho após 2 segundos
+                setTimeout(() => {
+                    clearCart();
+                    setSnackbar({
+                        open: true,
+                        message: 'Pedido enviado! Carrinho limpo.',
+                        severity: 'success'
+                    });
+                }, 2000);
+            } else if (response.requiresLogin) {
+                setSnackbar({
+                    open: true,
+                    message: 'É necessário fazer login para enviar o pedido',
+                    severity: 'warning'
+                });
+            }
+        } catch (error) {
+            setSnackbar({
+                open: true,
+                message: `Erro ao preparar pedido: ${error.message}`,
+                severity: 'error'
+            });
+        }
+    };
+
+    // Função para redirecionar para login
+    const handleLoginRedirect = () => {
+        navigate('/auth');
+    };
+
     // Handlers de navegação
-    const handleCartClick = () => {
-        console.log('Already on cart page');
-    };
-
-    const handleLogoClick = () => {
-        navigate('/');
-    };
-
-    const handleProductClick = () => {
-        navigate('/products');
-    };
-
-    const handleAlbumClick = () => {
-        navigate('/album');
-    };
-
-    const handleAccountClick = () => {
-        navigate('/account');
-    };
-
-    const handleFavoritesClick = () => {
-        navigate('/favorites');
-    };
-
     const handleLogoutClick = () => {
         logout();
-        navigate('/auth');
+        navigate('/');
     };
 
     const handleContinueShopping = () => {
@@ -201,19 +239,22 @@ const CartPage = () => {
     return (
         <>
             <Header
-                cartItemCount={totalItems} // Usando totalItems do contexto
+                cartItemCount={totalItems}
                 currentPage="cart"
-                onCartClick={handleCartClick}
-                onLogoClick={handleLogoClick}
-                onProductClick={handleProductClick}
-                onAlbumClick={handleAlbumClick}
-                onAccountClick={handleAccountClick}
-                onFavoritesClick={handleFavoritesClick}
+                onAlbumClick={() => navigate('/album')}
+                onCartClick={() => navigate('/cart')}
+                onLogoClick={() => navigate('/')}
+                onProductClick={() => navigate('/products')}
+                onAccountClick={() => navigate('/account')}
+                onAdminClick={() => navigate('/admin')}
                 onLogoutClick={handleLogoutClick}
+                onLoginClick={() => navigate('/auth')}
+                onFavoritesClick={() => navigate('/favorites')}
             />
 
             <Container maxWidth="xl" sx={{ py: 4 }}>
-                <Typography
+                {cartItems.length > 0 ? (
+                    <Typography
                     variant="h4"
                     sx={{
                         fontWeight: 700,
@@ -224,6 +265,10 @@ const CartPage = () => {
                 >
                     Carrinho de Compras
                 </Typography>
+                ) : (
+                    <Typography>
+                    </Typography>
+                )}
 
                 {cartItems.length === 0 ? (
                     <EmptyCart onContinueShopping={handleContinueShopping} />
@@ -234,7 +279,7 @@ const CartPage = () => {
                         alignItems="flex-start"
                     >
                         {/* Coluna dos itens do carrinho */}
-                        <Grid item size={isMobile ? 12 : 8}>
+                        <Grid size={isMobile ? 12 : 8}>
                             <Box
                                 sx={{
                                     display: 'flex',
@@ -257,7 +302,7 @@ const CartPage = () => {
                         </Grid>
 
                         {/* Coluna do resumo (centralizado verticalmente) */}
-                        <Grid item size={isMobile ? 12 : 4}>
+                        <Grid size={isMobile ? 12 : 4}>
                             {/* Seção de Participantes */}
                             <Paper
                                 elevation={2}
@@ -268,6 +313,39 @@ const CartPage = () => {
                                     backgroundColor: theme.palette.background.paper
                                 }}
                             >
+                                {/* Informação do Organizador */}
+                                {isAuthenticated && user && (
+                                    <Box sx={{ mb: 3, p: 2, backgroundColor: theme.palette.primary.light, borderRadius: 1 }}>
+                                        <Typography
+                                            variant="body2"
+                                            sx={{
+                                                color: theme.palette.primary.dark,
+                                                fontSize: '0.85rem',
+                                                fontWeight: 600,
+                                                textAlign: 'center'
+                                            }}
+                                        >
+                                            👤 Organizador: {user.firstName} {user.lastName}
+                                        </Typography>
+                                    </Box>
+                                )}
+
+                                {!isAuthenticated && (
+                                    <Box sx={{ mb: 3, p: 2, backgroundColor: theme.palette.warning.light, borderRadius: 1 }}>
+                                        <Typography
+                                            variant="body2"
+                                            sx={{
+                                                color: theme.palette.warning.dark,
+                                                fontSize: '0.85rem',
+                                                fontWeight: 600,
+                                                textAlign: 'center'
+                                            }}
+                                        >
+                                            ⚠️ Faça login para finalizar seu pedido
+                                        </Typography>
+                                    </Box>
+                                )}
+
                                 <Typography
                                     variant="h6"
                                     gutterBottom
@@ -280,13 +358,24 @@ const CartPage = () => {
                                     }}
                                 >
                                     <PersonIcon />
-                                    Participantes
+                                    Convidados
+                                </Typography>
+                                
+                                <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                    sx={{ mb: 2, fontSize: '0.85rem' }}
+                                >
+                                    {isAuthenticated 
+                                        ? 'Você já está incluído como organizador. Adicione outros convidados:'
+                                        : 'Adicione convidados (você será incluído como organizador após o login):'
+                                    }
                                 </Typography>
                                 
                                 <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                                     <TextField
                                         fullWidth
-                                        label="Nome do participante"
+                                        label="Nome do convidado"
                                         value={participantName}
                                         onChange={(e) => setParticipantName(e.target.value)}
                                         variant="outlined"
@@ -309,9 +398,9 @@ const CartPage = () => {
 
                                 {participants.length > 0 && (
                                         <List dense sx={{ mb: 2 }}>
-                                            {participants.map((participant, index) => (
+                                            {participants.map((participant) => (
                                                 <ListItem
-                                                    key={index}
+                                                    key={participant}
                                                     sx={{
                                                         px: 2,
                                                         py: 0.5,
@@ -342,10 +431,10 @@ const CartPage = () => {
                                 {participants.length === 0 && (
                                     <Box sx={{ textAlign: 'center', py: 2 }}>
                                         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                            Nenhum participante adicionado
+                                            Nenhum convidado adicionado
                                         </Typography>
                                         <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
-                                            Adicione participantes para organizar a lista de presentes
+                                            Adicione convidados ou envie apenas com você como organizador
                                         </Typography>
                                     </Box>
                                 )}
@@ -365,9 +454,12 @@ const CartPage = () => {
                                     items={cartItems}
                                     totalPrice={totalPrice}
                                     onClearCart={handleClearCart}
+                                    onCheckout={handleCheckoutProcess}
                                     onContinueShopping={handleContinueShopping}
+                                    onLogin={handleLoginRedirect}
                                     participants={participants}
                                     minimumValue={calculateMinimumValue()}
+                                    isAuthenticated={isAuthenticated}
                                 />
                             </Box>
                         </Grid>

@@ -1,5 +1,5 @@
 // components/GiftCard.js
-import React, { useState } from 'react';
+import React from 'react';
 import {
     Card,
     CardContent,
@@ -19,18 +19,25 @@ import {
     Block
 } from '@mui/icons-material';
 
+import { useFavorites } from '../hooks/useFavorites';
+
 const GiftCard = ({
                       gift,
-                      onFavorite,
                       onAddToCart,
                       onRemoveFromCart,
                       isInCart = false
                   }) => {
-    const [isFavorited, setIsFavorited] = useState(false);
     const theme = useTheme();
+    const { isFavorite, toggleFavorite } = useFavorites();
 
     // Media query apenas para celular
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+    // Verificar se o gift é válido
+    if (!gift || !gift._id) {
+        console.warn('GiftCard: gift is null or invalid:', gift);
+        return null;
+    }
 
     // Item Disponível
     const isUnavailable = gift.available === false;
@@ -38,10 +45,12 @@ const GiftCard = ({
     // Usar o estado do carrinho ao invés do estado local
     const isSelected = isInCart;
 
+    // Verificar se está nos favoritos
+    const isCurrentlyFavorite = isFavorite(gift._id);
+
     const handleFavorite = (e) => {
         e.stopPropagation();
-        setIsFavorited(!isFavorited);
-        onFavorite?.(gift, !isFavorited);
+        toggleFavorite(gift._id);
     };
 
     const handleSelect = (e) => {
@@ -89,8 +98,8 @@ const GiftCard = ({
                 {/* Imagem com blur se indisponível */}
                 <Box
                     component="img"
-                    src={gift.image}
-                    alt={gift.name}
+                    src={gift.image || null}
+                    alt={gift.name || 'Produto'}
                     sx={{
                         width: '100%',
                         height: '100%',
@@ -140,7 +149,7 @@ const GiftCard = ({
                             transition: 'all 0.2s ease'
                         }}
                     >
-                        {isFavorited ? (
+                        {isCurrentlyFavorite ? (
                             <Favorite sx={{ color: '#e91e63' }} />
                         ) : (
                             <FavoriteBorder sx={{ color: '#9e9e9e' }} />
