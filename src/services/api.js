@@ -572,12 +572,13 @@ export const ordersAPI = {
     },
 
     // Obter pedidos do usuário
-    async getUserOrders(filters = {}) {
+    async getUserOrders(filters = {}, admin=false) {
         const queryParams = new URLSearchParams();
         
         if (filters.status) queryParams.append('status', filters.status);
         if (filters.page) queryParams.append('page', filters.page);
         if (filters.limit) queryParams.append('limit', filters.limit);
+        if(admin) queryParams.append('admin', admin);
 
         const response = await fetch(`${API_BASE_URL}/orders?${queryParams}`, {
             method: 'GET',
@@ -643,7 +644,7 @@ export const ordersAPI = {
     async getAllOrders(filters = {}) {
         // Por enquanto, usamos getUserOrders que retorna os pedidos do usuário logado
         // Idealmente, deveria haver uma rota específica para admin
-        return this.getUserOrders(filters);
+        return this.getUserOrders(filters, true);
     },
 };
 
