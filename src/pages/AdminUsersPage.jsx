@@ -229,7 +229,7 @@ const AdminUsersPage = () => {
 
                         {/* Cards de Estatísticas */}
                         <Grid container spacing={2} sx={{ mb: 4 }}>
-                            <Grid item xs={12} sm={6} lg={3}>
+                            <Grid size={{xs: 12, sm: 6, lg: 3}}>
                                 <Card 
                                     sx={{ 
                                         display: 'flex',
@@ -273,7 +273,7 @@ const AdminUsersPage = () => {
                                 </Card>
                             </Grid>
 
-                            <Grid item xs={12} sm={6} lg={3}>
+                            <Grid size={{xs: 12, sm: 6, lg: 3}}>
                                 <Card 
                                     sx={{ 
                                         display: 'flex',
@@ -317,7 +317,7 @@ const AdminUsersPage = () => {
                                 </Card>
                             </Grid>
 
-                            <Grid item xs={12} sm={6} lg={3}>
+                            <Grid size={{xs: 12, sm: 6, lg: 3}}>
                                 <Card 
                                     sx={{ 
                                         display: 'flex',
@@ -361,7 +361,7 @@ const AdminUsersPage = () => {
                                 </Card>
                             </Grid>
 
-                            <Grid item xs={12} sm={6} lg={3}>
+                            <Grid size={{xs: 12, sm: 6, lg: 3}}>
                                 <Card 
                                     sx={{ 
                                         display: 'flex',
@@ -409,7 +409,7 @@ const AdminUsersPage = () => {
                         {/* Filtros */}
                         <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
                             <Grid container spacing={2} alignItems="center">
-                                <Grid size={{xs: 12, md: 3}}>
+                                <Grid size={{xs: 12, md: 4}}>
                                     <TextField
                                         fullWidth
                                         label="Buscar usuários"
@@ -426,7 +426,7 @@ const AdminUsersPage = () => {
                                         }}
                                     />
                                 </Grid>
-                                <Grid size={{xs: 12, sm: 6, md: 3}}>
+                                <Grid size={{xs: 12, md: 4}}>
                                     <FormControl fullWidth>
                                         <InputLabel>Tipo de Usuário</InputLabel>
                                         <Select
@@ -440,16 +440,18 @@ const AdminUsersPage = () => {
                                         </Select>
                                     </FormControl>
                                 </Grid>
-                                <Grid size={{xs: 12, sm: 6, md: 3}}>
-                                    
-                                </Grid>
-                                <Grid size={{xs: 12, md: 2}}>
+                                <Grid size={{xs: 12, md: 4}}>
                                     <Button
                                         fullWidth
                                         variant="outlined"
                                         onClick={clearFilters}
+                                        sx={{ 
+                                            height: 56,
+                                            borderRadius: 2,
+                                            borderColor: 'grey.300'
+                                        }}
                                     >
-                                        Limpar Filtros
+                                        Limpar
                                     </Button>
                                 </Grid>
                             </Grid>

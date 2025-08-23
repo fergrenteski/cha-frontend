@@ -1,6 +1,54 @@
 // Configuração base da API
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
+// Utilitários para dados locais (usuários não logados)
+const localStorageKeys = {
+    CART: 'localCart',
+    FAVORITES: 'localFavorites'
+};
+
+
+
+// Utilitários para favoritos locais
+const localFavoritesUtils = {
+    get: () => {
+        try {
+            const favorites = localStorage.getItem(localStorageKeys.FAVORITES);
+            return favorites ? JSON.parse(favorites) : [];
+        } catch {
+            return [];
+        }
+    },
+    
+    set: (favorites) => {
+        localStorage.setItem(localStorageKeys.FAVORITES, JSON.stringify(favorites));
+    },
+    
+    add: (productId) => {
+        const favorites = localFavoritesUtils.get();
+        if (!favorites.includes(productId)) {
+            favorites.push(productId);
+            localFavoritesUtils.set(favorites);
+        }
+        return favorites;
+    },
+    
+    remove: (productId) => {
+        const favorites = localFavoritesUtils.get().filter(id => id !== productId);
+        localFavoritesUtils.set(favorites);
+        return favorites;
+    },
+    
+    clear: () => {
+        localStorage.removeItem(localStorageKeys.FAVORITES);
+        return [];
+    },
+    
+    includes: (productId) => {
+        return localFavoritesUtils.get().includes(productId);
+    }
+};
+
 // Utilitário para criar cabeçalhos de requisição
 const createHeaders = (includeAuth = true, isFormData = false) => {
     const headers = {};
@@ -76,25 +124,7 @@ export const authAPI = {
         }
         
         return data;
-    },
-
-    // Criar sessão de convidado
-    createGuestSession: async () => {
-        const response = await fetch(`${API_BASE_URL}/auth/guest`, {
-            method: 'POST',
-            headers: createHeaders(false),
-            body: JSON.stringify({}),
-        });
-        
-        const data = await handleResponse(response);
-        
-        // Salvar token de convidado
-        if (data.token) {
-            localStorage.setItem('guestToken', data.token);
-        }
-        
-        return data;
-    },
+    }
 };
 
 // ===================
@@ -267,18 +297,14 @@ export const cartAPI = {
     // Obter carrinho
     getCart: async () => {
         const authToken = localStorage.getItem('authToken');
-        const guestToken = localStorage.getItem('guestToken');
         
-        let url = `${API_BASE_URL}/cart`;
-        let headers = createHeaders(false);
-        
-        if (authToken) {
-            headers.Authorization = `Bearer ${authToken}`;
-        } else if (guestToken) {
-            url += `?guestToken=${guestToken}`;
+        if (!authToken) {
+            throw new Error('Login necessário para acessar o carrinho');
         }
         
-        const response = await fetch(url, { headers });
+        const response = await fetch(`${API_BASE_URL}/cart`, {
+            headers: createHeaders(true),
+        });
         
         return handleResponse(response);
     },
@@ -286,17 +312,16 @@ export const cartAPI = {
     // Adicionar produto ao carrinho
     addToCart: async (productId, quantity = 1) => {
         const authToken = localStorage.getItem('authToken');
-        const guestToken = localStorage.getItem('guestToken');
-        
-        const body = { productId, quantity };
-        
-        if (!authToken && guestToken) {
-            body.guestToken = guestToken;
+
+        if (!authToken) {
+            throw new Error('Login necessário para adicionar itens ao carrinho');
         }
+
+        const body = { productId, quantity };
         
         const response = await fetch(`${API_BASE_URL}/cart/add`, {
             method: 'POST',
-            headers: createHeaders(!!authToken),
+            headers: createHeaders(true),
             body: JSON.stringify(body),
         });
         
@@ -306,17 +331,16 @@ export const cartAPI = {
     // Remover produto do carrinho
     removeFromCart: async (productId) => {
         const authToken = localStorage.getItem('authToken');
-        const guestToken = localStorage.getItem('guestToken');
+        
+        if (!authToken) {
+            throw new Error('Login necessário para remover itens do carrinho');
+        }
         
         const body = { productId };
         
-        if (!authToken && guestToken) {
-            body.guestToken = guestToken;
-        }
-        
         const response = await fetch(`${API_BASE_URL}/cart/remove`, {
             method: 'POST',
-            headers: createHeaders(!!authToken),
+            headers: createHeaders(true),
             body: JSON.stringify(body),
         });
         
@@ -326,17 +350,16 @@ export const cartAPI = {
     // Atualizar quantidade de produto no carrinho
     updateQuantity: async (productId, quantity) => {
         const authToken = localStorage.getItem('authToken');
-        const guestToken = localStorage.getItem('guestToken');
+        
+        if (!authToken) {
+            throw new Error('Login necessário para atualizar quantidade');
+        }
         
         const body = { productId, quantity };
         
-        if (!authToken && guestToken) {
-            body.guestToken = guestToken;
-        }
-        
         const response = await fetch(`${API_BASE_URL}/cart/update-quantity`, {
             method: 'PUT',
-            headers: createHeaders(!!authToken),
+            headers: createHeaders(true),
             body: JSON.stringify(body),
         });
         
@@ -346,17 +369,16 @@ export const cartAPI = {
     // Limpar carrinho
     clearCart: async () => {
         const authToken = localStorage.getItem('authToken');
-        const guestToken = localStorage.getItem('guestToken');
+        
+        if (!authToken) {
+            throw new Error('Login necessário para limpar carrinho');
+        }
         
         const body = {};
         
-        if (!authToken && guestToken) {
-            body.guestToken = guestToken;
-        }
-        
         const response = await fetch(`${API_BASE_URL}/cart/clear`, {
             method: 'POST',
-            headers: createHeaders(!!authToken),
+            headers: createHeaders(true),
             body: JSON.stringify(body),
         });
         
@@ -366,18 +388,14 @@ export const cartAPI = {
     // Listar participantes do carrinho
     getParticipants: async () => {
         const authToken = localStorage.getItem('authToken');
-        const guestToken = localStorage.getItem('guestToken');
         
-        let url = `${API_BASE_URL}/cart/participants`;
-        let headers = createHeaders(false);
-        
-        if (authToken) {
-            headers.Authorization = `Bearer ${authToken}`;
-        } else if (guestToken) {
-            url += `?guestToken=${guestToken}`;
+        if (!authToken) {
+            throw new Error('Login necessário para acessar participantes');
         }
         
-        const response = await fetch(url, { headers });
+        const response = await fetch(`${API_BASE_URL}/cart/participants`, {
+            headers: createHeaders(true),
+        });
         
         return handleResponse(response);
     },
@@ -385,17 +403,16 @@ export const cartAPI = {
     // Adicionar participante ao carrinho
     addParticipant: async (name) => {
         const authToken = localStorage.getItem('authToken');
-        const guestToken = localStorage.getItem('guestToken');
+        
+        if (!authToken) {
+            throw new Error('Login necessário para adicionar participantes');
+        }
         
         const body = { name };
         
-        if (!authToken && guestToken) {
-            body.guestToken = guestToken;
-        }
-        
         const response = await fetch(`${API_BASE_URL}/cart/participants/add`, {
             method: 'POST',
-            headers: createHeaders(!!authToken),
+            headers: createHeaders(true),
             body: JSON.stringify(body),
         });
         
@@ -405,17 +422,16 @@ export const cartAPI = {
     // Remover participante do carrinho
     removeParticipant: async (name) => {
         const authToken = localStorage.getItem('authToken');
-        const guestToken = localStorage.getItem('guestToken');
+        
+        if (!authToken) {
+            throw new Error('Login necessário para remover participantes');
+        }
         
         const body = { name };
         
-        if (!authToken && guestToken) {
-            body.guestToken = guestToken;
-        }
-        
         const response = await fetch(`${API_BASE_URL}/cart/participants/remove`, {
             method: 'POST',
-            headers: createHeaders(!!authToken),
+            headers: createHeaders(true),
             body: JSON.stringify(body),
         });
         
@@ -424,44 +440,21 @@ export const cartAPI = {
 
     checkout: async () => {
         const authToken = localStorage.getItem('authToken');
-        const guestToken = localStorage.getItem('guestToken');
+        
+        if (!authToken) {
+            throw new Error('Login necessário para finalizar compra');
+        }
         
         const body = {};
         
-        if (!authToken && guestToken) {
-            body.guestToken = guestToken;
-        }
-        
         const response = await fetch(`${API_BASE_URL}/cart/checkout`, {
             method: 'POST',
-            headers: createHeaders(!!authToken),
+            headers: createHeaders(true),
             body: JSON.stringify(body),
         });
         
         return handleResponse(response);
-    },
-
-    // Migrar carrinho de guest para usuário autenticado
-    migrateGuestCart: async () => {
-        const guestToken = localStorage.getItem('guestToken');
-        
-        if (!guestToken) {
-            return; // Não há carrinho de guest para migrar
-        }
-        
-        const response = await fetch(`${API_BASE_URL}/cart/migrate`, {
-            method: 'POST',
-            headers: createHeaders(true), // Requer autenticação
-            body: JSON.stringify({ guestToken }),
-        });
-        
-        const result = await handleResponse(response);
-        
-        // Limpar token de guest após migração bem-sucedida
-        localStorage.removeItem('guestToken');
-        
-        return result;
-    },
+    }
 };
 
 // ===================
@@ -472,18 +465,14 @@ export const favoritesAPI = {
     // Obter favoritos
     getFavorites: async () => {
         const authToken = localStorage.getItem('authToken');
-        const guestToken = localStorage.getItem('guestToken');
         
-        let url = `${API_BASE_URL}/favorites`;
-        let headers = createHeaders(false);
-        
-        if (authToken) {
-            headers.Authorization = `Bearer ${authToken}`;
-        } else if (guestToken) {
-            url += `?guestToken=${guestToken}`;
+        if (!authToken) {
+            throw new Error('Login necessário para acessar favoritos');
         }
         
-        const response = await fetch(url, { headers });
+        const response = await fetch(`${API_BASE_URL}/favorites`, {
+            headers: createHeaders(true),
+        });
         
         return handleResponse(response);
     },
@@ -491,17 +480,16 @@ export const favoritesAPI = {
     // Adicionar produto aos favoritos
     addToFavorites: async (productId) => {
         const authToken = localStorage.getItem('authToken');
-        const guestToken = localStorage.getItem('guestToken');
+        
+        if (!authToken) {
+            throw new Error('Login necessário para adicionar favoritos');
+        }
         
         const body = { productId };
         
-        if (!authToken && guestToken) {
-            body.guestToken = guestToken;
-        }
-        
         const response = await fetch(`${API_BASE_URL}/favorites/add`, {
             method: 'POST',
-            headers: createHeaders(!!authToken),
+            headers: createHeaders(true),
             body: JSON.stringify(body),
         });
         
@@ -511,17 +499,16 @@ export const favoritesAPI = {
     // Remover produto dos favoritos
     removeFromFavorites: async (productId) => {
         const authToken = localStorage.getItem('authToken');
-        const guestToken = localStorage.getItem('guestToken');
+        
+        if (!authToken) {
+            throw new Error('Login necessário para remover favoritos');
+        }
         
         const body = { productId };
         
-        if (!authToken && guestToken) {
-            body.guestToken = guestToken;
-        }
-        
         const response = await fetch(`${API_BASE_URL}/favorites/remove`, {
             method: 'POST',
-            headers: createHeaders(!!authToken),
+            headers: createHeaders(true),
             body: JSON.stringify(body),
         });
         
@@ -531,17 +518,16 @@ export const favoritesAPI = {
     // Limpar todos os favoritos
     clearFavorites: async () => {
         const authToken = localStorage.getItem('authToken');
-        const guestToken = localStorage.getItem('guestToken');
+        
+        if (!authToken) {
+            throw new Error('Login necessário para limpar favoritos');
+        }
         
         const body = {};
         
-        if (!authToken && guestToken) {
-            body.guestToken = guestToken;
-        }
-        
         const response = await fetch(`${API_BASE_URL}/favorites/clear`, {
             method: 'POST',
-            headers: createHeaders(!!authToken),
+            headers: createHeaders(true),
             body: JSON.stringify(body),
         });
         
@@ -551,38 +537,17 @@ export const favoritesAPI = {
     // Verificar se produto está nos favoritos
     isProductInFavorites: async (productId) => {
         const authToken = localStorage.getItem('authToken');
-        const guestToken = localStorage.getItem('guestToken');
         
-        let url = `${API_BASE_URL}/favorites/check/${productId}`;
-        let headers = createHeaders(false);
-        
-        if (authToken) {
-            headers.Authorization = `Bearer ${authToken}`;
-        } else if (guestToken) {
-            url += `?guestToken=${guestToken}`;
+        if (!authToken) {
+            return false; // Se não está logado, não tem favoritos
         }
         
-        const response = await fetch(url, { headers });
-        
-        return handleResponse(response);
-    },
-
-    // Migrar favoritos de guest para usuário autenticado
-    migrateGuestFavorites: async () => {
-        const guestToken = localStorage.getItem('guestToken');
-        
-        if (!guestToken) {
-            return; // Não há favoritos de guest para migrar
-        }
-        
-        const response = await fetch(`${API_BASE_URL}/favorites/migrate`, {
-            method: 'POST',
-            headers: createHeaders(true), // Requer autenticação
-            body: JSON.stringify({ guestToken }),
+        const response = await fetch(`${API_BASE_URL}/favorites/check/${productId}`, {
+            headers: createHeaders(true),
         });
         
         return handleResponse(response);
-    },
+    }
 };
 
 // API de Pedidos

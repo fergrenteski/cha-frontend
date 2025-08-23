@@ -1,6 +1,6 @@
 import React, { createContext, useReducer, useEffect, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { cartAPI, ordersAPI, authAPI } from '../services/api';
+import { cartAPI, ordersAPI } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 
 // Tipos de ações
@@ -78,34 +78,18 @@ export const CartProvider = ({ children }) => {
     const [cartState, dispatch] = useReducer(cartReducer, initialState);
     const { user } = useAuth(); // Obter informações do usuário logado
 
-    // Função para garantir token de convidado
-    const ensureGuestToken = async () => {
-        const authToken = localStorage.getItem('authToken');
-        if (authToken) return; // Usuário autenticado, não precisa de guest token
-        
-        let guestToken = localStorage.getItem('guestToken');
-        if (!guestToken) {
-            try {
-                await authAPI.createGuestSession();
-            } catch (error) {
-                console.error('Erro ao criar sessão de convidado:', error);
-            }
-        }
-    };
-
     // Carregar carrinho na inicialização ou quando autenticação muda
     useEffect(() => {
         const loadCart = async () => {
+            // Se não está logado, limpar carrinho
+            if (!user) {
+                dispatch({ type: CART_ACTIONS.SET_CART, payload: { cart: { products: [] } } });
+                return;
+            }
+
             dispatch({ type: CART_ACTIONS.SET_LOADING, payload: true });
             
             try {
-                await ensureGuestToken();
-                
-                // Aguardar um pouco se acabou de fazer login para permitir migração
-                if (user && localStorage.getItem('guestToken')) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                }
-                
                 const cart = await cartAPI.getCart();
                 dispatch({ type: CART_ACTIONS.SET_CART, payload: { cart } });
             } catch (error) {
@@ -121,15 +105,18 @@ export const CartProvider = ({ children }) => {
 
     // Função para adicionar item ao carrinho
     const addItem = useCallback(async (product, quantity = 1) => {
+        if (!user) {
+            dispatch({ type: CART_ACTIONS.SET_ERROR, payload: 'Login necessário para adicionar itens ao carrinho' });
+            return;
+        }
+
         dispatch({ type: CART_ACTIONS.SET_LOADING, payload: true });
         dispatch({ type: CART_ACTIONS.CLEAR_ERROR });
         
         try {
-            await ensureGuestToken();
             const updatedCart = await cartAPI.addToCart(product._id, quantity);
             
             // Verificar se o carrinho retornado tem produtos populados
-            // Se não tiver, fazer uma busca separada do carrinho
             if (updatedCart?.products?.some(item => typeof item.product === 'string')) {
                 console.warn('API returned cart with unpopulated products, fetching full cart...');
                 const fullCart = await cartAPI.getCart();
@@ -141,18 +128,23 @@ export const CartProvider = ({ children }) => {
             console.error('Erro ao adicionar item:', error);
             dispatch({ type: CART_ACTIONS.SET_ERROR, payload: error.message });
         }
-    }, []);
+    }, [user]);
 
     // Função para remover item do carrinho
     const removeItem = useCallback(async (productId) => {
+        if (!user) {
+            dispatch({ type: CART_ACTIONS.SET_ERROR, payload: 'Login necessário para remover itens do carrinho' });
+            return;
+        }
+
         dispatch({ type: CART_ACTIONS.SET_LOADING, payload: true });
         dispatch({ type: CART_ACTIONS.CLEAR_ERROR });
         
         try {
             const updatedCart = await cartAPI.removeFromCart(productId);
             
-            // Verificar se precisa buscar o carrinho completo
             if (updatedCart?.products?.some(item => typeof item.product === 'string')) {
+                // Verificar se precisa buscar o carrinho completo
                 const fullCart = await cartAPI.getCart();
                 dispatch({ type: CART_ACTIONS.SET_CART, payload: { cart: fullCart } });
             } else {
@@ -162,10 +154,15 @@ export const CartProvider = ({ children }) => {
             console.error('Erro ao remover item:', error);
             dispatch({ type: CART_ACTIONS.SET_ERROR, payload: error.message });
         }
-    }, []);
+    }, [user]);
 
     // Função para atualizar quantidade
     const updateQuantity = useCallback(async (productId, newQuantity) => {
+        if (!user) {
+            dispatch({ type: CART_ACTIONS.SET_ERROR, payload: 'Login necessário para atualizar quantidade' });
+            return;
+        }
+
         if (newQuantity <= 0) {
             // Se a quantidade for 0 ou menor, remover o item
             await removeItem(productId);
@@ -178,8 +175,8 @@ export const CartProvider = ({ children }) => {
         try {
             const updatedCart = await cartAPI.updateQuantity(productId, newQuantity);
             
-            // Verificar se precisa buscar o carrinho completo
             if (updatedCart?.products?.some(item => typeof item.product === 'string')) {
+                // Verificar se precisa buscar o carrinho completo
                 const fullCart = await cartAPI.getCart();
                 dispatch({ type: CART_ACTIONS.SET_CART, payload: { cart: fullCart } });
             } else {
@@ -189,10 +186,15 @@ export const CartProvider = ({ children }) => {
             console.error('Erro ao atualizar quantidade:', error);
             dispatch({ type: CART_ACTIONS.SET_ERROR, payload: error.message });
         }
-    }, [removeItem]);
+    }, [user, removeItem]);
 
     // Função para limpar carrinho
     const clearCart = useCallback(async () => {
+        if (!user) {
+            dispatch({ type: CART_ACTIONS.SET_ERROR, payload: 'Login necessário para limpar carrinho' });
+            return;
+        }
+
         dispatch({ type: CART_ACTIONS.SET_LOADING, payload: true });
         dispatch({ type: CART_ACTIONS.CLEAR_ERROR });
         
@@ -203,7 +205,7 @@ export const CartProvider = ({ children }) => {
             console.error('Erro ao limpar carrinho:', error);
             dispatch({ type: CART_ACTIONS.SET_ERROR, payload: error.message });
         }
-    }, []);
+    }, [user]);
 
     // Função para verificar se item está no carrinho
     const isItemInCart = useCallback((productId) => {
@@ -344,7 +346,8 @@ export const CartProvider = ({ children }) => {
             // Criar pedido no backend primeiro para obter o número do pedido
             let orderData;
             try {
-                orderData = await ordersAPI.createOrder();
+                const response = await ordersAPI.createOrder();
+                orderData = response.order;
                 console.log('Pedido criado no backend:', orderData);
             } catch (backendError) {
                 console.error('Erro ao criar pedido no backend:', backendError);

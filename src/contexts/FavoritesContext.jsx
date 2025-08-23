@@ -1,6 +1,6 @@
 import React, { createContext, useReducer, useEffect, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { favoritesAPI, authAPI } from '../services/api';
+import { favoritesAPI } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 
 export const FavoritesContext = createContext();
@@ -23,7 +23,7 @@ const favoritesReducer = (state, action) => {
         case FAVORITES_ACTIONS.SET_FAVORITES:
             return { 
                 ...state, 
-                items: action.payload.products || [],
+                items: action.payload.products || action.payload || [],
                 loading: false,
                 error: null,
                 initialized: true
@@ -72,36 +72,25 @@ export const FavoritesProvider = ({ children }) => {
         dispatch({ type: FAVORITES_ACTIONS.SET_INITIALIZED, payload: true });
     }, []);
 
-    // Função para garantir token de convidado
-    const ensureGuestToken = async () => {
-        try {
-            const authToken = localStorage.getItem('authToken');
-            if (authToken) return; // Usuário autenticado, não precisa de guest token
-            
-            let guestToken = localStorage.getItem('guestToken');
-            if (!guestToken) {
-                await authAPI.createGuestSession();
-            }
-        } catch (error) {
-            console.error('Erro ao criar sessão de convidado:', error);
-            // Não propagar o erro para não quebrar o provider
-        }
-    };
-
     // Carregar favoritos na inicialização ou quando autenticação muda
     useEffect(() => {
         const loadFavorites = async () => {
+            // Se não está logado, limpar favoritos
+            if (!user) {
+                dispatch({ type: FAVORITES_ACTIONS.SET_FAVORITES, payload: [] });
+                return;
+            }
+
             dispatch({ type: FAVORITES_ACTIONS.SET_LOADING, payload: true });
             
             try {
-                await ensureGuestToken();
                 const favorites = await favoritesAPI.getFavorites();
                 dispatch({ type: FAVORITES_ACTIONS.SET_FAVORITES, payload: favorites });
             } catch (error) {
                 console.error('Erro ao carregar favoritos:', error);
                 dispatch({ type: FAVORITES_ACTIONS.SET_ERROR, payload: error.message });
                 // Se falhar, inicializar com favoritos vazios
-                dispatch({ type: FAVORITES_ACTIONS.SET_FAVORITES, payload: { products: [] } });
+                dispatch({ type: FAVORITES_ACTIONS.SET_FAVORITES, payload: [] });
             }
         };
 
@@ -110,6 +99,11 @@ export const FavoritesProvider = ({ children }) => {
 
     // Função para adicionar/remover favorito
     const toggleFavorite = useCallback(async (productId) => {
+        if (!user) {
+            dispatch({ type: FAVORITES_ACTIONS.SET_ERROR, payload: 'Login necessário para gerenciar favoritos' });
+            return;
+        }
+
         dispatch({ type: FAVORITES_ACTIONS.CLEAR_ERROR });
         
         try {
@@ -134,7 +128,7 @@ export const FavoritesProvider = ({ children }) => {
             console.error('Erro ao toggle favorito:', error);
             dispatch({ type: FAVORITES_ACTIONS.SET_ERROR, payload: error.message });
         }
-    }, [favoritesState.items]);
+    }, [favoritesState.items, user]);
 
     // Função para verificar se um produto está nos favoritos
     const isFavorite = useCallback((productId) => {
@@ -143,20 +137,30 @@ export const FavoritesProvider = ({ children }) => {
 
     // Função para limpar todos os favoritos
     const clearFavorites = useCallback(async () => {
+        if (!user) {
+            dispatch({ type: FAVORITES_ACTIONS.SET_ERROR, payload: 'Login necessário para limpar favoritos' });
+            return;
+        }
+
         dispatch({ type: FAVORITES_ACTIONS.SET_LOADING, payload: true });
         dispatch({ type: FAVORITES_ACTIONS.CLEAR_ERROR });
         
         try {
             await favoritesAPI.clearFavorites();
-            dispatch({ type: FAVORITES_ACTIONS.SET_FAVORITES, payload: { products: [] } });
+            dispatch({ type: FAVORITES_ACTIONS.SET_FAVORITES, payload: [] });
         } catch (error) {
             console.error('Erro ao limpar favoritos:', error);
             dispatch({ type: FAVORITES_ACTIONS.SET_ERROR, payload: error.message });
         }
-    }, []);
+    }, [user]);
 
     // Função para recarregar favoritos
     const refreshFavorites = useCallback(async () => {
+        if (!user) {
+            dispatch({ type: FAVORITES_ACTIONS.SET_FAVORITES, payload: [] });
+            return;
+        }
+
         dispatch({ type: FAVORITES_ACTIONS.SET_LOADING, payload: true });
         
         try {
@@ -166,7 +170,7 @@ export const FavoritesProvider = ({ children }) => {
             console.error('Erro ao recarregar favoritos:', error);
             dispatch({ type: FAVORITES_ACTIONS.SET_ERROR, payload: error.message });
         }
-    }, []);
+    }, [user]);
 
     // Função para limpar erro
     const clearError = useCallback(() => {

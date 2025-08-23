@@ -70,7 +70,7 @@ return (
         <Button
             variant="contained"
             size="large"
-            onClick={() => navigate('/produtcs')}
+            onClick={() => navigate('/products')}
             startIcon={<ShoppingCartIcon />}
             sx={{
                     py: 1.5,

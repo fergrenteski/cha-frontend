@@ -16,21 +16,30 @@ import {
     Remove as RemoveIcon,
     Delete as DeleteIcon
 } from '@mui/icons-material';
+import { useAuth } from '../hooks/useAuth';
 
 const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
     const product = item.product || {};
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const { user } = useAuth(); // Verificar se usuário está logado
 
     const handleQuantityChange = (newQuantity) => {
+        if (!user) return; // Não permitir mudanças se não estiver logado
         if (newQuantity >= 1) {
             onUpdateQuantity(newQuantity);
         }
     };
 
     const handleInputChange = (event) => {
+        if (!user) return; // Não permitir mudanças se não estiver logado
         const value = parseInt(event.target.value) || 1;
         handleQuantityChange(value);
+    };
+
+    const handleRemove = () => {
+        if (!user) return; // Não permitir remoção se não estiver logado
+        onRemove();
     };
 
     return (
@@ -82,7 +91,8 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                                 <IconButton
                                     onClick={() => handleQuantityChange(item.quantity - 1)}
                                     size="small"
-                                    disabled={item.quantity <= 1}
+                                    disabled={!user || item.quantity <= 1}
+                                    title={!user ? "Login necessário" : ""}
                                 >
                                     <RemoveIcon />
                                 </IconButton>
@@ -91,6 +101,7 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                                     value={item.quantity}
                                     onChange={handleInputChange}
                                     size="small"
+                                    disabled={!user}
                                     inputProps={{
                                         min: 1,
                                         style: { textAlign: 'center', width: '20px' }
@@ -102,11 +113,14 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                                             },
                                         },
                                     }}
+                                    title={!user ? "Login necessário" : ""}
                                 />
 
                                 <IconButton
                                     onClick={() => handleQuantityChange(item.quantity + 1)}
                                     size="small"
+                                    disabled={!user}
+                                    title={!user ? "Login necessário" : ""}
                                 >
                                     <AddIcon />
                                 </IconButton>
@@ -124,8 +138,10 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                             {isMobile && (
                                 <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                                     <IconButton
-                                        onClick={onRemove}
+                                        onClick={handleRemove}
                                         color="error"
+                                        disabled={!user}
+                                        title={!user ? "Login necessário" : ""}
                                         sx={{
                                             '&:hover': {
                                                 backgroundColor: 'rgba(244, 67, 54, 0.08)'
@@ -142,8 +158,10 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                     {/* Botão remover (desktop) */}
                     {!isMobile && (
                         <IconButton
-                            onClick={onRemove}
+                            onClick={handleRemove}
                             color="error"
+                            disabled={!user}
+                            title={!user ? "Login necessário" : ""}
                             sx={{
                                 ml: 1,
                                 '&:hover': {

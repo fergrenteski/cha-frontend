@@ -20,6 +20,7 @@ import {
 } from '@mui/icons-material';
 
 import { useFavorites } from '../hooks/useFavorites';
+import { useAuth } from '../hooks/useAuth';
 
 const GiftCard = ({
                       gift,
@@ -29,6 +30,7 @@ const GiftCard = ({
                   }) => {
     const theme = useTheme();
     const { isFavorite, toggleFavorite } = useFavorites();
+    const { user } = useAuth(); // Verificar se usuário está logado
 
     // Media query apenas para celular
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -50,11 +52,13 @@ const GiftCard = ({
 
     const handleFavorite = (e) => {
         e.stopPropagation();
+        if (!user) return; // Não permitir ação se não estiver logado
         toggleFavorite(gift._id);
     };
 
     const handleSelect = (e) => {
         e.stopPropagation();
+        if (!user) return; // Não permitir ação se não estiver logado
         if(!isSelected) {
             onAddToCart(gift);
         } else {
@@ -136,6 +140,8 @@ const GiftCard = ({
                 {!isUnavailable && (
                     <IconButton
                         onClick={handleFavorite}
+                        disabled={!user}
+                        title={!user ? "Login necessário para favoritar" : ""}
                         sx={{
                             position: 'absolute',
                             top: 8,
@@ -231,9 +237,10 @@ const GiftCard = ({
                 </Box>
                 <Button
                     variant="contained"
-                    onClick={isUnavailable ? null : handleSelect}
+                    onClick={isUnavailable || !user ? null : handleSelect}
                     startIcon={isSelected && !isUnavailable ? <Check /> : null}
-                    disabled={isUnavailable}
+                    disabled={isUnavailable || !user}
+                    title={!user ? "Login necessário para selecionar" : ""}
                     sx={{
                         flex: 1,
                         py: 1,
@@ -241,14 +248,14 @@ const GiftCard = ({
                         fontWeight: 600,
                         textTransform: 'none',
                         fontSize: '0.85rem',
-                        backgroundColor: isUnavailable
+                        backgroundColor: isUnavailable || !user
                             ? '#9e9e9e'
                             : isSelected
                                 ? '#4caf50'
                                 : '#212121',
                         color: '#ffffff',
                         '&:hover': {
-                            backgroundColor: isUnavailable
+                            backgroundColor: isUnavailable || !user
                                 ? '#9e9e9e'
                                 : isSelected
                                     ? '#45a049'
@@ -256,11 +263,13 @@ const GiftCard = ({
                         }
                     }}
                 >
-                    {isUnavailable
-                        ? 'Indisponível'
-                        : isSelected
-                            ? 'Selecionado'
-                            : 'Selecionar'}
+                    {!user
+                        ? 'Login necessário'
+                        : isUnavailable
+                            ? 'Indisponível'
+                            : isSelected
+                                ? 'Selecionado'
+                                : 'Selecionar'}
                 </Button>
             </CardContent>
         </Card>

@@ -99,7 +99,6 @@ export const AuthProvider = ({ children }) => {
     const logout = () => {
         localStorage.removeItem('authToken');
         localStorage.removeItem('userData');
-        localStorage.removeItem('guestToken');
         setUser(null);
     };
 
