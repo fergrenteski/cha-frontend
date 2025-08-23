@@ -1,6 +1,10 @@
 // Configuração base da API
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
+// Importar utilitários de performance
+import { cacheManager } from '../utils/cache.js';
+import { requestDeduplicator } from '../utils/performance.js';
+
 // Utilitários para dados locais (usuários não logados)
 const localStorageKeys = {
     CART: 'localCart',
@@ -170,43 +174,92 @@ export const profileAPI = {
 export const productsAPI = {
     // Listar produtos com filtros opcionais
     getProducts: async (filters = {}) => {
-        const queryParams = new URLSearchParams();
+        const cacheKey = `products_${JSON.stringify(filters)}`;
         
-        Object.entries(filters).forEach(([key, value]) => {
-            if (value !== undefined && value !== null && value !== '') {
-                queryParams.append(key, value);
+        // Tentar cache primeiro (apenas para requests sem autenticação)
+        if (!filters.requireAuth) {
+            const cached = cacheManager.getMemory(cacheKey);
+            if (cached) {
+                return cached;
             }
+        }
+
+        return requestDeduplicator.dedupe(cacheKey, async () => {
+            const queryParams = new URLSearchParams();
+            
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && value !== '') {
+                    queryParams.append(key, value);
+                }
+            });
+            
+            const queryString = queryParams.toString();
+            const url = queryString ? `${API_BASE_URL}/products?${queryString}` : `${API_BASE_URL}/products`;
+            
+            const response = await fetch(url, {
+                headers: createHeaders(false),
+            });
+            
+            const data = await handleResponse(response);
+            
+            // Cache por 2 minutos para produtos
+            if (!filters.requireAuth) {
+                cacheManager.setMemory(cacheKey, data, 2 * 60 * 1000);
+            }
+            
+            return data;
         });
-        
-        const queryString = queryParams.toString();
-        const url = queryString ? `${API_BASE_URL}/products?${queryString}` : `${API_BASE_URL}/products`;
-        
-        const response = await fetch(url, {
-            headers: createHeaders(false),
-        });
-        
-        return handleResponse(response);
     },
 
     // Obter categorias
     getCategories: async () => {
-        const response = await fetch(`${API_BASE_URL}/products/categories`, {
-            headers: createHeaders(false),
-        });
+        const cacheKey = 'categories';
         
-        return handleResponse(response);
+        // Cache mais longo para categorias (10 minutos)
+        const cached = cacheManager.getLocal(cacheKey);
+        if (cached) {
+            return cached;
+        }
+
+        return requestDeduplicator.dedupe(cacheKey, async () => {
+            const response = await fetch(`${API_BASE_URL}/products/categories`, {
+                headers: createHeaders(false),
+            });
+            
+            const data = await handleResponse(response);
+            
+            // Cache por 10 minutos para categorias
+            cacheManager.setLocal(cacheKey, data, 10 * 60 * 1000);
+            
+            return data;
+        });
     },
 
     // Obter produto por ID
     getProductById: async (id) => {
-        const response = await fetch(`${API_BASE_URL}/products/${id}`, {
-            headers: createHeaders(false),
-        });
+        const cacheKey = `product_${id}`;
         
-        return handleResponse(response);
+        // Cache por 5 minutos para produto individual
+        const cached = cacheManager.getMemory(cacheKey);
+        if (cached) {
+            return cached;
+        }
+
+        return requestDeduplicator.dedupe(cacheKey, async () => {
+            const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+                headers: createHeaders(false),
+            });
+            
+            const data = await handleResponse(response);
+            
+            // Cache por 5 minutos
+            cacheManager.setMemory(cacheKey, data, 5 * 60 * 1000);
+            
+            return data;
+        });
     },
 
-        // Criar produto (requer autenticação)
+    // Criar produto (requer autenticação)
     createProduct: async (productData, imageFile = null) => {
         let body;
         let headers;
@@ -239,7 +292,18 @@ export const productsAPI = {
             body,
         });
         
-        return handleResponse(response);
+        const result = await handleResponse(response);
+        
+        // Invalidar caches relacionados
+        cacheManager.invalidate('categories');
+        // Invalidar cache de produtos
+        for (const [key] of cacheManager.memoryCache.entries()) {
+            if (key.startsWith('products_')) {
+                cacheManager.invalidate(key);
+            }
+        }
+        
+        return result;
     },
 
     // Atualizar produto (requer autenticação)
@@ -275,7 +339,19 @@ export const productsAPI = {
             body,
         });
         
-        return handleResponse(response);
+        const result = await handleResponse(response);
+        
+        // Invalidar caches relacionados
+        cacheManager.invalidate(`product_${id}`);
+        cacheManager.invalidate('categories');
+        // Invalidar cache de produtos
+        for (const [key] of cacheManager.memoryCache.entries()) {
+            if (key.startsWith('products_')) {
+                cacheManager.invalidate(key);
+            }
+        }
+        
+        return result;
     },
 
     // Excluir produto (requer autenticação)
@@ -285,7 +361,19 @@ export const productsAPI = {
             headers: createHeaders(),
         });
         
-        return handleResponse(response);
+        const result = await handleResponse(response);
+        
+        // Invalidar caches relacionados
+        cacheManager.invalidate(`product_${id}`);
+        cacheManager.invalidate('categories');
+        // Invalidar cache de produtos
+        for (const [key] of cacheManager.memoryCache.entries()) {
+            if (key.startsWith('products_')) {
+                cacheManager.invalidate(key);
+            }
+        }
+        
+        return result;
     },
 };
 

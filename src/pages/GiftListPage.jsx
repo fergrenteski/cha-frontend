@@ -142,10 +142,11 @@ const GiftListPage = () => {
                     ))}
                 </Grid>
 
-                {products.length === 0 && !productsLoading && (
+                {/* Só mostra mensagem se não está carregando, não tem erro e realmente não tem produtos */}
+                {!productsLoading && !productsError && products.length === 0 && (
                     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '40vh' }}>
                         <Typography variant="h6" color="text.secondary" textAlign="center">
-                            Nenhum produto encontrado
+                            Nenhum presente encontrado
                         </Typography>
                     </Box>
                 )}

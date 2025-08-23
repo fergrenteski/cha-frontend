@@ -1,29 +1,38 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { productsAPI } from '../services/api';
+import { debounce } from '../utils/performance';
 
 export const useProducts = (initialFilters = {}) => {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true); // Iniciar como true
     const [error, setError] = useState(null);
     const [filters, setFilters] = useState(initialFilters);
 
+    // Memoizar função de busca de produtos com debounce
+    const debouncedFetchProducts = useMemo(
+        () => debounce(async (searchFilters = {}) => {
+            setLoading(true);
+            setError(null);
+            
+            try {
+                const data = await productsAPI.getProducts(searchFilters);
+                setProducts(data);
+            } catch (err) {
+                console.error('Erro ao buscar produtos:', err);
+                setError(err.message);
+                setProducts([]);
+            } finally {
+                setLoading(false);
+            }
+        }, 300), // 300ms de delay
+        []
+    );
+
     // Função para buscar produtos
     const fetchProducts = useCallback(async (searchFilters = {}) => {
-        setLoading(true);
-        setError(null);
-        
-        try {
-            const data = await productsAPI.getProducts(searchFilters);
-            setProducts(data);
-        } catch (err) {
-            console.error('Erro ao buscar produtos:', err);
-            setError(err.message);
-            setProducts([]);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+        debouncedFetchProducts(searchFilters);
+    }, [debouncedFetchProducts]);
 
     // Função para buscar categorias
     const fetchCategories = useCallback(async () => {
@@ -35,7 +44,7 @@ export const useProducts = (initialFilters = {}) => {
         }
     }, []);
 
-    // Função para buscar produto por ID
+    // Função para buscar produto por ID com cache
     const getProductById = useCallback(async (id) => {
         setLoading(true);
         setError(null);
@@ -52,7 +61,7 @@ export const useProducts = (initialFilters = {}) => {
         }
     }, []);
 
-    // Função para aplicar filtros
+    // Função para aplicar filtros com memoização
     const applyFilters = useCallback((newFilters) => {
         const updatedFilters = { ...filters, ...newFilters };
         setFilters(updatedFilters);
@@ -65,7 +74,7 @@ export const useProducts = (initialFilters = {}) => {
         fetchProducts({});
     }, [fetchProducts]);
 
-    // Função para pesquisar produtos
+    // Função para pesquisar produtos com debounce
     const searchProducts = useCallback((searchTerm) => {
         const searchFilters = { ...filters, search: searchTerm };
         setFilters(searchFilters);
@@ -78,7 +87,8 @@ export const useProducts = (initialFilters = {}) => {
         fetchCategories();
     }, [fetchProducts, fetchCategories]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    return {
+    // Memoizar objeto de retorno para evitar re-renders desnecessários
+    const returnValue = useMemo(() => ({
         // Estado
         products,
         categories,
@@ -97,5 +107,19 @@ export const useProducts = (initialFilters = {}) => {
         // Utilitários
         refresh: () => fetchProducts(filters),
         clearError: () => setError(null)
-    };
+    }), [
+        products, 
+        categories, 
+        loading, 
+        error, 
+        filters,
+        fetchProducts,
+        fetchCategories,
+        getProductById,
+        applyFilters,
+        clearFilters,
+        searchProducts
+    ]);
+
+    return returnValue;
 };

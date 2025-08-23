@@ -14,10 +14,6 @@ import {
     Box,
     Tooltip,
     Button,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
     Grid,
     Card,
     CardContent,
@@ -33,18 +29,16 @@ import {
     useMediaQuery,
     Fade,
     TextField,
-    InputAdornment,
-    Icon
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions
 } from '@mui/material';
 import {
     Delete,
-    Refresh,
     Person,
     AdminPanelSettings,
-    CheckCircle,
-    Search,
-    ToggleOff,
-    ToggleOn
+    CheckCircle
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
@@ -62,8 +56,9 @@ const AdminUsersPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterRole, setFilterRole] = useState('');
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+    const [confirmDialog, setConfirmDialog] = useState({ open: false, title: '', message: '', onConfirm: null, color: 'error' });
 
-    const { logout } = useAuth();
+    const { logout, user: currentUser } = useAuth();
     const { totalItems } = useCart();
     const navigate = useNavigate();
 
@@ -123,8 +118,24 @@ const AdminUsersPage = () => {
         setFilteredUsers(filtered);
     }, [users, searchTerm, filterRole]);
 
+    // Mostrar dialog de confirmação
+    const showConfirmDialog = (title, message, onConfirm, color) => {
+        setConfirmDialog({
+            open: true,
+            title,
+            message,
+            onConfirm,
+            color
+        });
+    };
+
+    // Fechar dialog de confirmação
+    const closeConfirmDialog = () => {
+        setConfirmDialog({ open: false, title: '', message: '', onConfirm: null, color: 'error' });
+    };
+
     const handleToggleAdmin = async (userId, userName, currentIsAdmin) => {
-        if (window.confirm(`Tem certeza que deseja ${currentIsAdmin ? 'remover' : 'adicionar'} privilégios de administrador para ${userName}?`)) {
+        const confirmToggle = async () => {
             try {
                 const response = await api.users.toggleUserAdmin(userId);
                 
@@ -143,12 +154,21 @@ const AdminUsersPage = () => {
                     message: 'Erro ao alterar privilégios: ' + error.message,
                     severity: 'error'
                 });
+            } finally {
+                closeConfirmDialog();
             }
-        }
+        };
+
+        showConfirmDialog(
+            'Alterar Privilégios',
+            `Tem certeza que deseja ${currentIsAdmin ? 'remover' : 'adicionar'} privilégios de administrador para ${userName}?`,
+            confirmToggle,
+            'info'
+        );
     };
 
     const handleDeleteUser = async (userId, userName) => {
-        if (window.confirm(`Tem certeza que deseja excluir o usuário ${userName}? Esta ação não pode ser desfeita.`)) {
+        const confirmDelete = async () => {
             try {
                 const response = await api.users.deleteUser(userId);
                 
@@ -165,19 +185,17 @@ const AdminUsersPage = () => {
                     message: 'Erro ao excluir usuário: ' + error.message,
                     severity: 'error'
                 });
+            } finally {
+                closeConfirmDialog();
             }
-        }
-    };
+        };
 
-    const formatDate = (dateString) => {
-        if (!dateString) return 'N/A';
-        return new Date(dateString).toLocaleDateString('pt-BR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        showConfirmDialog(
+            'Confirmar Exclusão',
+            `Tem certeza que deseja excluir o usuário ${userName}? Esta ação não pode ser desfeita.`,
+            confirmDelete,
+            'error'
+        );
     };
 
     const clearFilters = () => {
@@ -408,25 +426,19 @@ const AdminUsersPage = () => {
 
                         {/* Filtros */}
                         <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+                             <Typography variant="h6" sx={{ mb: 3, color: 'primary.main', fontWeight: 600 }}>
+                                Filtros
+                            </Typography>
                             <Grid container spacing={2} alignItems="center">
-                                <Grid size={{xs: 12, md: 4}}>
+                                <Grid size={{xs: 12,sm: 4, md: 6}}>
                                     <TextField
                                         fullWidth
                                         label="Buscar usuários"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        slotProps={{
-                                            input: {
-                                                startAdornment: (
-                                                    <InputAdornment position="start">
-                                                        <Search />
-                                                    </InputAdornment>
-                                                ),
-                                            }
-                                        }}
                                     />
                                 </Grid>
-                                <Grid size={{xs: 12, md: 4}}>
+                                <Grid size={{xs: 12,sm: 4, md: 3}}>
                                     <FormControl fullWidth>
                                         <InputLabel>Tipo de Usuário</InputLabel>
                                         <Select
@@ -440,7 +452,7 @@ const AdminUsersPage = () => {
                                         </Select>
                                     </FormControl>
                                 </Grid>
-                                <Grid size={{xs: 12, md: 4}}>
+                                <Grid size={{xs: 12, sm: 4, md: 3}}>
                                     <Button
                                         fullWidth
                                         variant="outlined"
@@ -453,6 +465,13 @@ const AdminUsersPage = () => {
                                     >
                                         Limpar
                                     </Button>
+                                </Grid>
+                                <Grid size={{xs: 12, sm: 12}}>
+                                    <Box sx={{ textAlign: 'center' }}>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {filteredUsers.length} de {users.length} usuários
+                                        </Typography>
+                                    </Box>
                                 </Grid>
                             </Grid>
                         </Paper>
@@ -500,24 +519,35 @@ const AdminUsersPage = () => {
                                                         />
                                                     </TableCell>
                                                     <TableCell align="center">
-                                                        <Tooltip title="Alterar Privilégios de Admin">
-                                                            <IconButton
-                                                                onClick={() => handleToggleAdmin(user._id)}
+                                                        {user._id === currentUser?._id ? (
+                                                            <Chip
+                                                                label="Você"
+                                                                color="primary"
                                                                 size="small"
-                                                                color="info"
-                                                            >
-                                                                <AdminPanelSettings />
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                        <Tooltip title="Excluir">
-                                                            <IconButton
-                                                                onClick={() => handleDeleteUser(user._id)}
-                                                                size="small"
-                                                                color="error"
-                                                            >
-                                                                <Delete />
-                                                            </IconButton>
-                                                        </Tooltip>
+                                                                variant="outlined"
+                                                            />
+                                                        ) : (
+                                                            <>
+                                                                <Tooltip title="Alterar Privilégios de Admin">
+                                                                    <IconButton
+                                                                        onClick={() => handleToggleAdmin(user._id, `${user.firstName} ${user.lastName}`, user.isAdmin)}
+                                                                        size="small"
+                                                                        color="info"
+                                                                    >
+                                                                        <AdminPanelSettings />
+                                                                    </IconButton>
+                                                                </Tooltip>
+                                                                <Tooltip title="Excluir">
+                                                                    <IconButton
+                                                                        onClick={() => handleDeleteUser(user._id, `${user.firstName} ${user.lastName}`)}
+                                                                        size="small"
+                                                                        color="error"
+                                                                    >
+                                                                        <Delete />
+                                                                    </IconButton>
+                                                                </Tooltip>
+                                                            </>
+                                                        )}
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
@@ -557,6 +587,98 @@ const AdminUsersPage = () => {
                     </Box>
                 </Fade>
             </Container>
+
+            {/* Dialog de Confirmação */}
+            <Dialog
+                open={confirmDialog.open}
+                onClose={closeConfirmDialog}
+                maxWidth="sm"
+                fullWidth
+                slotProps={{
+                    paper: {
+                        sx: { 
+                            borderRadius: 3,
+                            boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                        }
+                    }
+                }}
+            >
+                <DialogTitle sx={{ 
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    py: 3,
+                    fontSize: '1.25rem',
+                    fontWeight: 600,
+                    color: `${confirmDialog.color}.main`
+                }}>
+                    <Box
+                        sx={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: '50%',
+                            backgroundColor: `${confirmDialog.color}.100`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        ⚠️
+                    </Box>
+                    {confirmDialog.title}
+                </DialogTitle>
+                
+                <DialogContent sx={{ pt: 2, pb: 3 }}>
+                    <Typography variant="body1" sx={{ lineHeight: 1.6, color: 'text.secondary' }}>
+                        {confirmDialog.message}
+                    </Typography>
+                </DialogContent>
+                
+                <DialogActions sx={{ 
+                    p: 3, 
+                    gap: 2,
+                    borderTop: '1px solid',
+                    borderColor: 'grey.200'
+                }}>
+                    <Button 
+                        onClick={closeConfirmDialog}
+                        variant="outlined"
+                        size="large"
+                        sx={{ 
+                            borderRadius: 2,
+                            px: 3,
+                            py: 1.5,
+                            fontWeight: 600
+                        }}
+                    >
+                        Cancelar
+                    </Button>
+                    
+                    <Button
+                        onClick={confirmDialog.onConfirm}
+                        variant="contained"
+                        color={confirmDialog.color}
+                        size="large"
+                        sx={{ 
+                            borderRadius: 2,
+                            px: 3,
+                            py: 1.5,
+                            fontWeight: 600,
+                            boxShadow: confirmDialog.color === 'info' 
+                                ? '0 4px 15px rgba(33, 150, 243, 0.4)' 
+                                : '0 4px 15px rgba(244, 67, 54, 0.4)',
+                            '&:hover': {
+                                boxShadow: confirmDialog.color === 'info' 
+                                    ? '0 6px 20px rgba(33, 150, 243, 0.6)' 
+                                    : '0 6px 20px rgba(244, 67, 54, 0.6)',
+                                transform: 'translateY(-1px)'
+                            }
+                        }}
+                    >
+                        Confirmar
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             <Snackbar
                 open={snackbar.open}

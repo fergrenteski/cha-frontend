@@ -9,6 +9,7 @@ import {
     Divider,
     Avatar,
     List,
+    Paper,
     ListItem,
     ListItemAvatar,
     ListItemText,
@@ -20,7 +21,8 @@ import {
     DialogActions,
     Tooltip,
     CircularProgress,
-    Alert
+    Alert,
+    useTheme
 } from '@mui/material';
 import {
     ShoppingBag as OrderIcon,
@@ -53,6 +55,8 @@ const UserOrders = ({ limit = 5 }) => {
             setLoading(false);
         }
     }, [limit]);
+
+    const theme = useTheme();
 
     useEffect(() => {
         fetchOrders();
@@ -151,20 +155,44 @@ const UserOrders = ({ limit = 5 }) => {
 
     if (orders.length === 0) {
         return (
-            <Box sx={{ textAlign: 'center', py: 4 }}>
-                <OrderIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-                <Typography variant="h6" color="text.secondary">
-                    Nenhum pedido encontrado
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                    Seus pedidos aparecerão aqui após a primeira compra
-                </Typography>
-            </Box>
+            <Paper
+                elevation={0}
+                sx={{
+                    p: { xs: 2, sm: 3 },
+                    border: `1px solid ${theme.palette.divider}`,
+                    borderRadius: 3,
+                    textAlign: 'center',
+                    height: 'fit-content',
+                    position: 'sticky',
+                    mt: 3
+                }}
+            >
+                <Box sx={{ textAlign: 'center', py: 4 }}>
+                    <OrderIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                    <Typography variant="h6" color="text.secondary">
+                        Nenhum pedido encontrado
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        Seus pedidos aparecerão aqui após a primeira compra
+                    </Typography>
+                </Box>
+            </Paper>
         );
     }
 
     return (
-        <>
+        <Paper
+            elevation={0}
+            sx={{
+                p: { xs: 2, sm: 3 },
+                border: `1px solid ${theme.palette.divider}`,
+                borderRadius: 3,
+                textAlign: 'center',
+                height: 'fit-content',
+                position: 'sticky',
+                mt: 3
+            }}
+        >
             <List sx={{ width: '100%' }}>
                 {orders.map((order, index) => (
                     <React.Fragment key={order._id}>
@@ -333,7 +361,7 @@ const UserOrders = ({ limit = 5 }) => {
                     </Button>
                 </DialogActions>
             </Dialog>
-        </>
+        </Paper>
     );
 };
 

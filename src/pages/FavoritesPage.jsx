@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Container,
     Typography,
@@ -7,7 +7,11 @@ import {
     Button,
     Fade,
     useTheme,
-    useMediaQuery
+    useMediaQuery,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -21,24 +25,24 @@ const FavoritesPage = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const navigate = useNavigate();
+    const [confirmDialog, setConfirmDialog] = useState({ open: false, title: '', message: '', onConfirm: null, color: 'error' });
     
-    // Usar hooks de forma defensiva
-    let favorites = [];
-    let loading = false;
-    let clearFavorites = () => {};
-    
-    try {
-        const favoritesData = useFavorites();
-        favorites = favoritesData.items || [];
-        loading = favoritesData.loading || false;
-        clearFavorites = favoritesData.clearFavorites || (() => {});
-        
-    } catch (error) {
-        console.error('Erro ao carregar favorites context:', error);
-    }
-    
+    // Hooks sempre devem ser chamados na mesma ordem
+    const favoritesData = useFavorites();
     const { addItem, removeItem, isItemInCart, totalItems } = useCart();
     const { logout } = useAuth();
+    
+    // Extrair valores dos favoritos de forma segura
+    const favorites = favoritesData?.items || [];
+    const loading = favoritesData?.loading || false;
+
+    // Recarregar favoritos quando a página é carregada para garantir dados atualizados
+    useEffect(() => {
+        const refreshFavorites = favoritesData?.refreshFavorites;
+        if (refreshFavorites && typeof refreshFavorites === 'function') {
+            refreshFavorites();
+        }
+    }, [favoritesData?.refreshFavorites]);
 
     const handleAddToCart = async (product) => {
         try {
@@ -56,19 +60,44 @@ const FavoritesPage = () => {
         }
     };
 
+    // Mostrar dialog de confirmação
+    const showConfirmDialog = (title, message, onConfirm, color = 'error') => {
+        setConfirmDialog({
+            open: true,
+            title,
+            message,
+            onConfirm,
+            color
+        });
+    };
+
+    // Fechar dialog de confirmação
+    const closeConfirmDialog = () => {
+        setConfirmDialog({ open: false, title: '', message: '', onConfirm: null, color: 'error' });
+    };
+
     const handleClearFavorites = async () => {
-        if (window.confirm('Tem certeza que deseja remover todos os favoritos?')) {
+        const confirmClear = async () => {
             try {
-                if (clearFavorites && typeof clearFavorites === 'function') {
-                    const result = clearFavorites();
+                const clearFn = favoritesData?.clearFavorites;
+                if (clearFn && typeof clearFn === 'function') {
+                    const result = clearFn();
                     if (result && typeof result.then === 'function') {
                         await result;
                     }
                 }
             } catch (error) {
                 console.error('Erro ao limpar favoritos:', error);
+            } finally {
+                closeConfirmDialog();
             }
-        }
+        };
+
+        showConfirmDialog(
+            'Limpar Favoritos',
+            'Tem certeza que deseja remover todos os favoritos? Esta ação não pode ser desfeita.',
+            confirmClear
+        );
     };
 
     // Handlers de navegação
@@ -193,6 +222,98 @@ const FavoritesPage = () => {
                     </Box>
                 </Fade>
             </Container>
+
+            {/* Dialog de Confirmação */}
+            <Dialog
+                open={confirmDialog.open}
+                onClose={closeConfirmDialog}
+                maxWidth="sm"
+                fullWidth
+                slotProps={{
+                    paper: {
+                        sx: { 
+                            borderRadius: 3,
+                            boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                        }
+                    }
+                }}
+            >
+                <DialogTitle sx={{ 
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    py: 3,
+                    fontSize: '1.25rem',
+                    fontWeight: 600,
+                    color: `${confirmDialog.color}.main`
+                }}>
+                    <Box
+                        sx={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: '50%',
+                            backgroundColor: `${confirmDialog.color}.100`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        ⚠️
+                    </Box>
+                    {confirmDialog.title}
+                </DialogTitle>
+                
+                <DialogContent sx={{ pt: 2, pb: 3 }}>
+                    <Typography variant="body1" sx={{ lineHeight: 1.6, color: 'text.secondary' }}>
+                        {confirmDialog.message}
+                    </Typography>
+                </DialogContent>
+                
+                <DialogActions sx={{ 
+                    p: 3, 
+                    gap: 2,
+                    borderTop: '1px solid',
+                    borderColor: 'grey.200'
+                }}>
+                    <Button 
+                        onClick={closeConfirmDialog}
+                        variant="outlined"
+                        size="large"
+                        sx={{ 
+                            borderRadius: 2,
+                            px: 3,
+                            py: 1.5,
+                            fontWeight: 600
+                        }}
+                    >
+                        Cancelar
+                    </Button>
+                    
+                    <Button
+                        onClick={confirmDialog.onConfirm}
+                        variant="contained"
+                        color={confirmDialog.color}
+                        size="large"
+                        sx={{ 
+                            borderRadius: 2,
+                            px: 3,
+                            py: 1.5,
+                            fontWeight: 600,
+                            boxShadow: confirmDialog.color === 'info' 
+                                ? '0 4px 15px rgba(33, 150, 243, 0.4)' 
+                                : '0 4px 15px rgba(244, 67, 54, 0.4)',
+                            '&:hover': {
+                                boxShadow: confirmDialog.color === 'info' 
+                                    ? '0 6px 20px rgba(33, 150, 243, 0.6)' 
+                                    : '0 6px 20px rgba(244, 67, 54, 0.6)',
+                                transform: 'translateY(-1px)'
+                            }
+                        }}
+                    >
+                        Limpar Favoritos
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </>
     );
 };

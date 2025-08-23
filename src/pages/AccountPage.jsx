@@ -215,7 +215,7 @@ const AccountPage = () => {
                             </Typography>
                         </Box>
 
-                        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
+                        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }} height="100%">
                             {/* Perfil do usuário */}
                             <Grid size={{ xs: 12, md: 4}}>
                                 <Paper
@@ -225,7 +225,7 @@ const AccountPage = () => {
                                         border: `1px solid ${theme.palette.divider}`,
                                         borderRadius: 3,
                                         textAlign: 'center',
-                                        height: 'fit-content',
+                                        height: '100%',
                                         position: 'sticky',
                                         top: { xs: 'auto', lg: 24 }
                                     }}
@@ -249,7 +249,7 @@ const AccountPage = () => {
                                         gutterBottom
                                         sx={{ 
                                             fontWeight: 500,
-                                            lineHeight: 1.2
+                                            lineHeight: 1.2,
                                         }}
                                     >
                                         {user?.firstName} {user?.lastName}
@@ -266,70 +266,12 @@ const AccountPage = () => {
                                     >
                                         Membro desde {formatDate(user?.createdAt || new Date())}
                                     </Typography>
-
-                                    <Divider sx={{ my: 2 }} />
-
-                                    <List dense sx={{ px: 0 }}>
-                                        <ListItem sx={{ px: 0, py: 1 }}>
-                                            <ListItemIcon sx={{ minWidth: 36 }}>
-                                                <Email color="action" fontSize="small" />
-                                            </ListItemIcon>
-                                            <ListItemText
-                                                primary={
-                                                    <Typography
-                                                        sx={{
-                                                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                                                            wordBreak: 'break-word'
-                                                        }}
-                                                    >
-                                                        {user?.email}
-                                                    </Typography>
-                                                }
-                                                secondary={
-                                                    <Typography
-                                                        sx={{
-                                                            fontSize: { xs: '0.7rem', sm: '0.75rem' }
-                                                        }}
-                                                        color="text.secondary"
-                                                    >
-                                                        Email
-                                                    </Typography>
-                                                }
-                                            />
-                                        </ListItem>
-                                        <ListItem sx={{ px: 0, py: 1 }}>
-                                            <ListItemIcon sx={{ minWidth: 36 }}>
-                                                <Phone color="action" fontSize="small" />
-                                            </ListItemIcon>
-                                            <ListItemText
-                                                primary={
-                                                    <Typography
-                                                        sx={{
-                                                            fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                                                        }}
-                                                    >
-                                                        {user?.phone || 'Não informado'}
-                                                    </Typography>
-                                                }
-                                                secondary={
-                                                    <Typography
-                                                        sx={{
-                                                            fontSize: { xs: '0.7rem', sm: '0.75rem' }
-                                                        }}
-                                                        color="text.secondary"
-                                                    >
-                                                        Telefone
-                                                    </Typography>
-                                                }
-                                            />
-                                        </ListItem>
-                                    </List>
                                 </Paper>
                             </Grid>
 
                             {/* Informações pessoais e configurações */}
                             <Grid size={{ xs: 12, md: 8 }}>
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, sm: 3 } }}>
+                                <Box sx={{ display: 'flex', height: '100%', flexDirection: 'column', gap: { xs: 2, sm: 3 } }}>
                                     {/* Informações pessoais */}
                                     <Paper
                                         elevation={0}

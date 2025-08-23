@@ -35,7 +35,9 @@ import {
     useTheme,
     useMediaQuery,
     Fade,
-    Divider
+    Divider,
+    TextField,
+    InputAdornment
 } from '@mui/material';
 import {
     Visibility,
@@ -47,6 +49,7 @@ import {
     Cancel,
     Check,
     PhotoCamera as PhotoIcon,
+    Search as SearchIcon,
 } from '@mui/icons-material';
 import api from '../services/api';
 import Header from '../components/Header';
@@ -62,12 +65,17 @@ const OrderStatus = {
 
 const AdminOrdersPage = () => {
     const [orders, setOrders] = useState([]);
+    const [filteredOrders, setFilteredOrders] = useState([]);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
     const [stats, setStats] = useState({});
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success'});
+
+    // Estados dos filtros
+    const [customerFilter, setCustomerFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
 
     const { logout } = useAuth();
     const { totalItems } = useCart();
@@ -109,6 +117,48 @@ const AdminOrdersPage = () => {
     useEffect(() => {
         fetchOrders();
     }, [fetchOrders]);
+
+    // Effect para filtrar pedidos
+    useEffect(() => {
+        let filtered = [...orders];
+
+        // Filtrar por cliente
+        if (customerFilter.trim()) {
+            filtered = filtered.filter(order => {
+                const firstName = order.user?.firstName?.toLowerCase() || '';
+                const lastName = order.user?.lastName?.toLowerCase() || '';
+                const fullName = `${firstName} ${lastName}`.trim();
+                const email = order.user?.email?.toLowerCase() || '';
+                const searchTerm = customerFilter.toLowerCase();
+                
+                return firstName.includes(searchTerm) ||
+                       lastName.includes(searchTerm) ||
+                       fullName.includes(searchTerm) ||
+                       email.includes(searchTerm);
+            });
+        }
+
+        // Filtrar por status
+        if (statusFilter) {
+            filtered = filtered.filter(order => order.status === statusFilter);
+        }
+
+        setFilteredOrders(filtered);
+    }, [orders, customerFilter, statusFilter]);
+
+    // Handlers para filtros
+    const handleCustomerFilterChange = (value) => {
+        setCustomerFilter(value);
+    };
+
+    const handleStatusFilterChange = (value) => {
+        setStatusFilter(value);
+    };
+
+    const clearFilters = () => {
+        setCustomerFilter('');
+        setStatusFilter('');
+    };
 
     const handleViewDetails = async (orderId) => {
         try {
@@ -446,9 +496,66 @@ const AdminOrdersPage = () => {
                         </Grid>
                     </Grid>
 
+                    {/* Filtros */}
+                    <Paper sx={{ p: 3, mb: 3, borderRadius: 2, boxShadow: 1 }}>
+                        <Typography variant="h6" sx={{ mb: 3, color: 'primary.main', fontWeight: 600 }}>
+                            Filtros
+                        </Typography>
+                        <Grid container spacing={3} alignItems="center">
+                            <Grid size={{xs: 12, sm: 6, md: 6}}>
+                                <TextField
+                                    fullWidth
+                                    label="Buscar por cliente (nome ou email)..."
+                                    value={customerFilter}
+                                    onChange={(e) => handleCustomerFilterChange(e.target.value)}
+                                />
+                            </Grid>
+                            
+                            <Grid size={{xs: 12, sm: 6, md: 3}}>
+                                <FormControl fullWidth>
+                                    <InputLabel>Status</InputLabel>
+                                    <Select
+                                        value={statusFilter}
+                                        label="Status"
+                                        onChange={(e) => handleStatusFilterChange(e.target.value)}
+                                        sx={{ borderRadius: 2 }}
+                                    >
+                                        <MenuItem value="">Todos</MenuItem>
+                                        <MenuItem value="pending">Pendente</MenuItem>
+                                        <MenuItem value="completed">Confirmado</MenuItem>
+                                        <MenuItem value="cancelled">Cancelado</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            
+                            <Grid size={{xs: 12, sm: 12, md: 3}}>
+                                <Button
+                                    fullWidth
+                                    variant="outlined"
+                                    onClick={clearFilters}
+                                    sx={{ 
+                                        height: 56,
+                                        borderRadius: 2,
+                                        borderColor: 'grey.300'
+                                    }}
+                                >
+                                    Limpar Filtros
+                                </Button>
+                            </Grid>
+                            
+                            <Grid size={{xs: 12, sm: 12}}>
+                                <Box sx={{ textAlign: 'center' }}>
+                                    <Typography variant="body2" color="text.secondary">
+                                        {filteredOrders.length} de {orders.length} pedidos
+                                    </Typography>
+                                </Box>
+                            </Grid>
+                        </Grid>
+                    </Paper>
+
                     {/* Tabela de Pedidos */}
                     <Paper elevation={3}>
-                        {orders.length > 0 ? (
+                        {filteredOrders.length > 0 ? (
                             <TableContainer>
                                 <Table>
                                     <TableHead>
@@ -462,7 +569,7 @@ const AdminOrdersPage = () => {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {orders.map((order) => (
+                                        {filteredOrders.map((order) => (
                                             <TableRow key={order._id} hover>
                                                 <TableCell>
                                                     <Typography variant="body2" fontFamily="monospace">
@@ -537,10 +644,13 @@ const AdminOrdersPage = () => {
                                     }} 
                                 />
                                 <Typography variant="h6" sx={{ mb: 1, color: 'text.secondary' }}>
-                                    Nenhum pedido encontrado
+                                    {orders.length === 0 ? 'Nenhum pedido encontrado' : 'Nenhum pedido corresponde aos filtros'}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 400 }}>
-                                    Ainda não há pedidos registrados no sistema. Quando os clientes começarem a fazer pedidos, eles aparecerão aqui.
+                                    {orders.length === 0 
+                                        ? 'Ainda não há pedidos registrados no sistema. Quando os clientes começarem a fazer pedidos, eles aparecerão aqui.'
+                                        : 'Tente ajustar os filtros para encontrar os pedidos que você está procurando.'
+                                    }
                                 </Typography>
                             </Box>
                         )}

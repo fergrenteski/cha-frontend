@@ -47,11 +47,13 @@ import {
     Save as SaveIcon,
     Cancel as CancelIcon,
     Refresh as RefreshIcon,
-    CloudUpload as CloudUploadIcon
+    CloudUpload as CloudUploadIcon,
+    Inventory as InventoryIcon 
 } from '@mui/icons-material';
 import { useProducts } from '../hooks/useProducts';
 import Header from '../components/Header';
 import { useCart } from '../hooks/useCart';
+import { useFavorites } from '../hooks/useFavorites';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { productsAPI } from '../services/api';
@@ -61,13 +63,13 @@ const ProductsAdminPage = () => {
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const navigate = useNavigate();
     const { logout } = useAuth();
-    const { totalItems } = useCart();
+    const { totalItems, refreshCart } = useCart();
+    const { refreshFavorites } = useFavorites();
     
     // States do hook de produtos
     const { 
         products, 
         categories, 
-        loading: productsLoading, 
         error: productsError,
         refresh: refreshProducts
     } = useProducts();
@@ -84,6 +86,7 @@ const ProductsAdminPage = () => {
     const [loading, setLoading] = useState(false);
     const [selectedImageFile, setSelectedImageFile] = useState(null);
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+    const [confirmDialog, setConfirmDialog] = useState({ open: false, title: '', message: '', onConfirm: null });
     
     // States da paginação
     const [page, setPage] = useState(0);
@@ -239,7 +242,7 @@ const ProductsAdminPage = () => {
         }
     };
 
-    // Salvar produto
+    // Salvar presente
     const handleSave = async () => {
         try {
             setLoading(true);
@@ -257,43 +260,69 @@ const ProductsAdminPage = () => {
 
             if (dialogMode === 'create') {
                 await productsAPI.createProduct(productData, selectedImageFile);
-                showSnackbar('Produto criado com sucesso!', 'success');
+                showSnackbar('Presente criado com sucesso!', 'success');
             } else if (dialogMode === 'edit') {
                 await productsAPI.updateProduct(selectedProduct._id, productData, selectedImageFile);
-                showSnackbar('Produto atualizado com sucesso!', 'success');
+                showSnackbar('Presente atualizado com sucesso!', 'success');
             }
 
             closeDialog();
             refreshProducts();
         } catch (error) {
-            console.error('Erro ao salvar produto:', error);
-            showSnackbar(error.message || 'Erro ao salvar produto', 'error');
+            console.error('Erro ao salvar presente:', error);
+            showSnackbar(error.message || 'Erro ao salvar presente', 'error');
         } finally {
             setLoading(false);
         }
     };
 
-    // Excluir produto
+    // Excluir presente
     const handleDelete = async (productId) => {
-        if (!window.confirm('Tem certeza que deseja excluir este produto?')) {
-            return;
-        }
+        const confirmDelete = async () => {
+            try {
+                setLoading(true);
+                await productsAPI.deleteProduct(productId);
+                showSnackbar('Presente excluído com sucesso!', 'success');
+                
+                // Recarregar todas as informações já que o produto foi removido do carrinho e favoritos de todos
+                await Promise.all([
+                    refreshProducts(),
+                    refreshCart(),
+                    refreshFavorites()
+                ]);
+            } catch (error) {
+                showSnackbar(error.message || 'Erro ao excluir presente', 'error');
+            } finally {
+                setLoading(false);
+                closeConfirmDialog();
+            }
+        };
 
-        try {
-            setLoading(true);
-            await productsAPI.deleteProduct(productId);
-            showSnackbar('Produto excluído com sucesso!', 'success');
-            refreshProducts();
-        } catch (error) {
-            showSnackbar(error.message || 'Erro ao excluir produto', 'error');
-        } finally {
-            setLoading(false);
-        }
+        showConfirmDialog(
+            'Confirmar Exclusão',
+            'Tem certeza que deseja excluir este presente? Esta ação não pode ser desfeita e o presente será removido do carrinho e favoritos de todos os usuários.',
+            confirmDelete
+        );
     };
 
     // Mostrar snackbar
     const showSnackbar = (message, severity = 'success') => {
         setSnackbar({ open: true, message, severity });
+    };
+
+    // Mostrar dialog de confirmação
+    const showConfirmDialog = (title, message, onConfirm) => {
+        setConfirmDialog({
+            open: true,
+            title,
+            message,
+            onConfirm
+        });
+    };
+
+    // Fechar dialog de confirmação
+    const closeConfirmDialog = () => {
+        setConfirmDialog({ open: false, title: '', message: '', onConfirm: null });
     };
 
     // Lidar com seleção de arquivo de imagem
@@ -364,10 +393,10 @@ const ProductsAdminPage = () => {
                         <Box sx={{ mt: 4, mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
                             <Box>
                                 <Typography variant="h4" component="h1" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                                    Administração de Produtos
+                                    Administração de Presentes
                                 </Typography>
                                 <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-                                    Gerencie produtos, categorias e estoque
+                                    Gerencie presentes, categorias e estoque
                                 </Typography>
                             </Box>
                             
@@ -382,32 +411,23 @@ const ProductsAdminPage = () => {
                                         '&:hover': { boxShadow: 4 }
                                     }}
                                 >
-                                    Novo Produto
+                                    Novo Presente
                                 </Button>
                             </Box>
                         </Box>
 
                 {/* Filtros */}
                 <Paper sx={{ p: 3, mb: 3, borderRadius: 2, boxShadow: 1 }}>
+                     <Typography variant="h6" sx={{ mb: 3, color: 'primary.main', fontWeight: 600 }}>
+                        Filtros
+                    </Typography>
                     <Grid container spacing={3} alignItems="center">
                         <Grid size={{xs: 12, sm: 6, md: 3}}>
                             <TextField
                                 fullWidth
-                                placeholder="Buscar produtos..."
+                                label="Buscar presentes"
                                 value={searchTerm}
                                 onChange={(e) => handleSearch(e.target.value)}
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position="start">
-                                            <SearchIcon color="action" />
-                                        </InputAdornment>
-                                    ),
-                                }}
-                                sx={{
-                                    '& .MuiOutlinedInput-root': {
-                                        borderRadius: 2
-                                    }
-                                }}
                             />
                         </Grid>
                         
@@ -460,6 +480,13 @@ const ProductsAdminPage = () => {
                                 Limpar
                             </Button>
                         </Grid>
+                        <Grid size={{xs: 12, sm: 12}}>
+                            <Box sx={{ textAlign: 'center' }}>
+                                <Typography variant="body2" color="text.secondary">
+                                    {filteredProducts.length} de {products.length} presentes
+                                </Typography>
+                            </Box>
+                        </Grid>
                     </Grid>
                 </Paper>
 
@@ -472,130 +499,159 @@ const ProductsAdminPage = () => {
 
                 {/* Tabela de produtos */}
                 <Paper sx={{ borderRadius: 2, overflow: 'hidden', boxShadow: 2 }}>
-                    <TableContainer>
-                        <Table>
-                            <TableHead>
-                                <TableRow sx={{ bgcolor: 'grey.50' }}>
-                                    <TableCell sx={{ fontWeight: 600 }}>Produto</TableCell>
-                                    <TableCell sx={{ fontWeight: 600 }}>Categoria</TableCell>
-                                    <TableCell sx={{ fontWeight: 600 }} align="right">Preço</TableCell>
-                                    <TableCell sx={{ fontWeight: 600 }} align="center">Estoque</TableCell>
-                                    <TableCell sx={{ fontWeight: 600 }} align="center">Status</TableCell>
-                                    <TableCell sx={{ fontWeight: 600 }} align="center">Ações</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {paginatedProducts.map((product) => (
-                                    <TableRow 
-                                        key={product._id}
-                                        sx={{ 
-                                            '&:hover': { bgcolor: 'grey.50' },
-                                            '&:last-child td, &:last-child th': { border: 0 }
-                                        }}
-                                    >
-                                        <TableCell>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                <Avatar
-                                                    src={product.image}
-                                                    alt={product.name}
-                                                    sx={{ 
-                                                        width: 48, 
-                                                        height: 48,
-                                                        borderRadius: 2
-                                                    }}
-                                                >
-                                                    <PhotoIcon />
-                                                </Avatar>
-                                                <Box>
-                                                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                                        {product.name}
-                                                    </Typography>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        {product.capacity}
-                                                    </Typography>
-                                                </Box>
-                                            </Box>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Chip 
-                                                label={product.category} 
-                                                size="small"
-                                                sx={{ 
-                                                    bgcolor: 'primary.50',
-                                                    color: 'primary.main',
-                                                    fontWeight: 500
-                                                }}
-                                            />
-                                        </TableCell>
-                                        <TableCell align="right">
-                                            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                                R$ {product.price?.toFixed(2)}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell align="center">
-                                            {(() => {
-                                                let color;
-                                                if (product.stock > 10) color = 'success.main';
-                                                else if (product.stock > 0) color = 'warning.main';
-                                                else color = 'error.main';
-                                                
-                                                return (
-                                                    <Typography 
-                                                        variant="body2" 
+                    {paginatedProducts.length > 0 ? (
+                        <TableContainer>
+                            <Table>
+                                <TableHead>
+                                    <TableRow sx={{ bgcolor: 'grey.50' }}>
+                                        <TableCell sx={{ fontWeight: 600 }}>Nome</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }}>Categoria</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }} align="right">Preço</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }} align="center">Estoque</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }} align="center">Status</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }} align="center">Ações</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {paginatedProducts.map((product) => (
+                                        <TableRow 
+                                            key={product._id}
+                                            sx={{ 
+                                                '&:hover': { bgcolor: 'grey.50' },
+                                                '&:last-child td, &:last-child th': { border: 0 }
+                                            }}
+                                        >
+                                            <TableCell>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                    <Avatar
+                                                        src={product.image}
+                                                        alt={product.name}
                                                         sx={{ 
-                                                            fontWeight: 600,
-                                                            color
+                                                            width: 48, 
+                                                            height: 48,
+                                                            borderRadius: 2
                                                         }}
                                                     >
-                                                        {product.stock}
-                                                    </Typography>
-                                                );
-                                            })()}
-                                        </TableCell>
-                                        <TableCell align="center">
-                                            <Chip
-                                                label={product.available ? 'Disponível' : 'Indisponível'}
-                                                size="small"
-                                                color={product.available ? 'success' : 'error'}
-                                                variant="outlined"
-                                            />
-                                        </TableCell>
-                                        <TableCell align="center">
-                                            <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
-                                                <Tooltip title="Visualizar">
-                                                    <IconButton 
-                                                        size="small"
-                                                        onClick={() => openDialog('view', product)}
-                                                        sx={{ color: 'info.main' }}
-                                                    >
-                                                        <ViewIcon fontSize="small" />
-                                                    </IconButton>
-                                                </Tooltip>
-                                                <Tooltip title="Editar">
-                                                    <IconButton 
-                                                        size="small"
-                                                        onClick={() => openDialog('edit', product)}
-                                                        sx={{ color: 'warning.main' }}
-                                                    >
-                                                        <EditIcon fontSize="small" />
-                                                    </IconButton>
-                                                </Tooltip>
-                                                <Tooltip title="Excluir">
-                                                    <IconButton 
-                                                        size="small"
-                                                        onClick={() => handleDelete(product._id)}
-                                                        sx={{ color: 'error.main' }}
-                                                    >
-                                                        <DeleteIcon fontSize="small" />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            </Box>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
+                                                        <PhotoIcon />
+                                                    </Avatar>
+                                                    <Box>
+                                                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                                            {product.name}
+                                                        </Typography>
+                                                        <Typography variant="body2" color="text.secondary">
+                                                            {product.capacity}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Chip 
+                                                    label={product.category} 
+                                                    size="small"
+                                                    sx={{ 
+                                                        bgcolor: 'primary.50',
+                                                        color: 'primary.main',
+                                                        fontWeight: 500
+                                                    }}
+                                                />
+                                            </TableCell>
+                                            <TableCell align="right">
+                                                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                                    R$ {product.price?.toFixed(2)}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                {(() => {
+                                                    let color;
+                                                    if (product.stock > 10) color = 'success.main';
+                                                    else if (product.stock > 0) color = 'warning.main';
+                                                    else color = 'error.main';
+                                                    
+                                                    return (
+                                                        <Typography 
+                                                            variant="body2" 
+                                                            sx={{ 
+                                                                fontWeight: 600,
+                                                                color
+                                                            }}
+                                                        >
+                                                            {product.stock}
+                                                        </Typography>
+                                                    );
+                                                })()}
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                <Chip
+                                                    label={product.available ? 'Disponível' : 'Indisponível'}
+                                                    size="small"
+                                                    color={product.available ? 'success' : 'error'}
+                                                    variant="outlined"
+                                                />
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                                                    <Tooltip title="Visualizar">
+                                                        <IconButton 
+                                                            size="small"
+                                                            onClick={() => openDialog('view', product)}
+                                                            sx={{ color: 'info.main' }}
+                                                        >
+                                                            <ViewIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                    <Tooltip title="Editar">
+                                                        <IconButton 
+                                                            size="small"
+                                                            onClick={() => openDialog('edit', product)}
+                                                            sx={{ color: 'warning.main' }}
+                                                        >
+                                                            <EditIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                    <Tooltip title="Excluir">
+                                                        <IconButton 
+                                                            size="small"
+                                                            onClick={() => handleDelete(product._id)}
+                                                            sx={{ color: 'error.main' }}
+                                                        >
+                                                            <DeleteIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </Box>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                        ) : (
+                        <Box 
+                            sx={{ 
+                                display: 'flex', 
+                                flexDirection: 'column', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                py: 8,
+                                px: 3,
+                                textAlign: 'center'
+                            }}
+                        >
+                            <InventoryIcon 
+                                sx={{ 
+                                    fontSize: 64, 
+                                    color: 'text.secondary', 
+                                    mb: 2,
+                                    opacity: 0.5 
+                                }} 
+                            />
+                            <Typography variant="h6" sx={{ mb: 1, color: 'text.secondary' }}>
+                                Nenhum presente encontrado
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 400 }}>
+                                Não há presentes que correspondam aos filtros aplicados.
+                            </Typography>
+                        </Box>
+                    )}
                     
                     {/* Paginação */}
                     <TablePagination
@@ -641,11 +697,13 @@ const ProductsAdminPage = () => {
                 maxWidth="lg"
                 fullWidth
                 fullScreen={isMobile}
-                PaperProps={{
-                    sx: { 
-                        borderRadius: isMobile ? 0 : 3,
-                        boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-                        overflow: 'hidden'
+                slotProps={{
+                    paper: {
+                        sx: { 
+                            borderRadius: isMobile ? 0 : 3,
+                            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                            overflow: 'hidden'
+                        }
                     }
                 }}
             >
@@ -659,13 +717,13 @@ const ProductsAdminPage = () => {
                     fontSize: '1.25rem',
                     fontWeight: 600
                 }}>
-                    {dialogMode === 'create' && <><AddIcon sx={{ fontSize: 28 }} /> Novo Produto</>}
-                    {dialogMode === 'edit' && <><EditIcon sx={{ fontSize: 28 }} /> Editar Produto</>}
-                    {dialogMode === 'view' && <><ViewIcon sx={{ fontSize: 28 }} /> Visualizar Produto</>}
+                    {dialogMode === 'create' && <><AddIcon sx={{ fontSize: 28 }} /> Novo Presente</>}
+                    {dialogMode === 'edit' && <><EditIcon sx={{ fontSize: 28 }} /> Editar Presente</>}
+                    {dialogMode === 'view' && <><ViewIcon sx={{ fontSize: 28 }} /> Visualizar Presente</>}
                 </DialogTitle>
                 
                 <DialogContent sx={{ pt: 4, pb: 2, px: 4 }}>
-                    {/* Preview do Produto - Estilo GiftCard */}
+                    {/* Preview do Presente - Estilo GiftCard */}
                     {(formData.image || formData.name || formData.price) && (
                         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
                             <Card
@@ -770,7 +828,7 @@ const ProductsAdminPage = () => {
                                                 textOverflow: 'ellipsis',
                                             }}
                                         >
-                                            {formData.name ? formData.name.toUpperCase() : 'NOME DO PRODUTO'}
+                                            {formData.name ? formData.name.toUpperCase() : 'NOME DO PRESENTE'}
                                         </Typography>
                                     </Box>
 
@@ -792,7 +850,7 @@ const ProductsAdminPage = () => {
                                             textOverflow: 'ellipsis'
                                         }}
                                     >
-                                        {formData.description || 'Descrição do produto aparecerá aqui...'}
+                                        {formData.description || 'Descrição do presente aparecerá aqui...'}
                                     </Typography>
 
                                     {/* Price and Capacity */}
@@ -813,7 +871,7 @@ const ProductsAdminPage = () => {
                                             R$ {formData.price ? parseFloat(formData.price).toFixed(2).replace('.', ',') : '0,00'}
                                         </Typography>
                                         <Chip
-                                            label={formData.capacity || 'Produto'}
+                                            label={formData.capacity || 'Presente'}
                                             size="small"
                                             sx={{
                                                 backgroundColor: theme.palette.grey[100],
@@ -860,7 +918,7 @@ const ProductsAdminPage = () => {
                             <Grid size={{xs: 12, md: 6}}>
                                 <TextField
                                     fullWidth
-                                    label="Nome do Produto"
+                                    label="Nome do Presente"
                                     value={formData.name}
                                     onChange={(e) => handleFormChange('name', e.target.value)}
                                     disabled={dialogMode === 'view'}
@@ -906,7 +964,7 @@ const ProductsAdminPage = () => {
                                     value={formData.description}
                                     onChange={(e) => handleFormChange('description', e.target.value)}
                                     disabled={dialogMode === 'view'}
-                                    placeholder="Descreva o produto, suas características e benefícios..."
+                                    placeholder="Descreva o presente, suas características e benefícios..."
                                     sx={{ 
                                         '& .MuiOutlinedInput-root': { 
                                             borderRadius: 2,
@@ -932,8 +990,10 @@ const ProductsAdminPage = () => {
                                     value={formData.price}
                                     onChange={(e) => handleFormChange('price', e.target.value)}
                                     disabled={dialogMode === 'view'}
-                                    InputProps={{
-                                        startAdornment: <InputAdornment position="start">R$</InputAdornment>,
+                                    slotProps={{
+                                        input: {
+                                            startAdornment: <InputAdornment position="start">R$</InputAdornment>,
+                                        }
                                     }}
                                     sx={{ 
                                         '& .MuiOutlinedInput-root': { 
@@ -993,7 +1053,7 @@ const ProductsAdminPage = () => {
                                     value={formData.image && !formData.image.startsWith('data:') ? formData.image : ''}
                                     onChange={(e) => handleFormChange('image', e.target.value)}
                                     disabled={dialogMode === 'view'}
-                                    placeholder="/images/produto.webp"
+                                    placeholder="/images/presente.webp"
                                     sx={{ 
                                         '& .MuiOutlinedInput-root': { 
                                             borderRadius: 2,
@@ -1071,7 +1131,7 @@ const ProductsAdminPage = () => {
                                                     {formData.available ? '✅ Disponível' : '❌ Indisponível'}
                                                 </Typography>
                                                 <Typography variant="caption" color="text.secondary">
-                                                    Produto visível na loja
+                                                    presente visível na loja
                                                 </Typography>
                                             </Box>
                                         }
@@ -1151,10 +1211,98 @@ const ProductsAdminPage = () => {
                                         </Box>
                                     );
                                 }
-                                return dialogMode === 'create' ? 'Criar Produto' : 'Salvar Alterações';
+                                return dialogMode === 'create' ? 'Criar presente' : 'Salvar Alterações';
                             })()}
                         </Button>
                     )}
+                </DialogActions>
+            </Dialog>
+
+            {/* Dialog de Confirmação */}
+            <Dialog
+                open={confirmDialog.open}
+                onClose={closeConfirmDialog}
+                maxWidth="sm"
+                fullWidth
+                slotProps={{
+                    paper: {
+                        sx: { 
+                            borderRadius: 3,
+                            boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                        }
+                    }
+                }}
+            >
+                <DialogTitle sx={{ 
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    py: 3,
+                    fontSize: '1.25rem',
+                    fontWeight: 600,
+                    color: 'error.main'
+                }}>
+                    <Box
+                        sx={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: '50%',
+                            backgroundColor: 'error.100',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                    >
+                        ⚠️
+                    </Box>
+                    {confirmDialog.title}
+                </DialogTitle>
+                
+                <DialogContent sx={{ pt: 2, pb: 3 }}>
+                    <Typography variant="body1" sx={{ lineHeight: 1.6, color: 'text.secondary' }}>
+                        {confirmDialog.message}
+                    </Typography>
+                </DialogContent>
+                
+                <DialogActions sx={{ 
+                    p: 3, 
+                    gap: 2,
+                    borderTop: '1px solid',
+                    borderColor: 'grey.200'
+                }}>
+                    <Button 
+                        onClick={closeConfirmDialog}
+                        variant="outlined"
+                        size="large"
+                        sx={{ 
+                            borderRadius: 2,
+                            px: 3,
+                            py: 1.5,
+                            fontWeight: 600
+                        }}
+                    >
+                        Cancelar
+                    </Button>
+                    
+                    <Button
+                        onClick={confirmDialog.onConfirm}
+                        variant="contained"
+                        color="error"
+                        size="large"
+                        sx={{ 
+                            borderRadius: 2,
+                            px: 3,
+                            py: 1.5,
+                            fontWeight: 600,
+                            boxShadow: '0 4px 15px rgba(244, 67, 54, 0.4)',
+                            '&:hover': {
+                                boxShadow: '0 6px 20px rgba(244, 67, 54, 0.6)',
+                                transform: 'translateY(-1px)'
+                            }
+                        }}
+                    >
+                        Excluir
+                    </Button>
                 </DialogActions>
             </Dialog>
 

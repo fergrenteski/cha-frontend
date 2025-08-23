@@ -1,13 +1,43 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chá de Casa Nova</title>
+    
+    <!-- Performance e SEO -->
+    <meta name="description" content="Lista de presentes para chá de casa nova. Escolha e reserve seus presentes de forma fácil e organizada." />
+    <meta name="keywords" content="chá de casa nova, lista de presentes, presentes, casa nova" />
+    <meta name="author" content="Lista de Presentes" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#1976d2" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Chá Presentes" />
+    
+    <!-- Preconnect para recursos externos -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- DNS Prefetch para CDNs comuns -->
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net" />
+    
+    <!-- Critical CSS inline seria adicionado aqui em produção -->
+    
+    <title>Chá de Casa Nova - Lista de Presentes</title>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- Fallback para JS desabilitado -->
+    <noscript>
+      <div style="text-align: center; padding: 50px;">
+        <h1>JavaScript é necessário</h1>
+        <p>Por favor, habilite o JavaScript no seu navegador para usar este site.</p>
+      </div>
+    </noscript>
   </body>
 </html>
