@@ -1,5 +1,5 @@
 // components/GiftCard.js
-import React from 'react';
+import React, { useState } from 'react';
 import {
     Card,
     CardContent,
@@ -9,7 +9,8 @@ import {
     Box,
     Chip,
     useTheme,
-    useMediaQuery
+    useMediaQuery,
+    CircularProgress
 } from '@mui/material';
 
 import {
@@ -31,6 +32,10 @@ const GiftCard = ({
     const theme = useTheme();
     const { isFavorite, toggleFavorite } = useFavorites();
     const { user } = useAuth(); // Verificar se usuário está logado
+    
+    // Estados de loading
+    const [loadingFavorite, setLoadingFavorite] = useState(false);
+    const [loadingCart, setLoadingCart] = useState(false);
 
     // Media query apenas para celular
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -50,19 +55,35 @@ const GiftCard = ({
     // Verificar se está nos favoritos
     const isCurrentlyFavorite = isFavorite(gift._id);
 
-    const handleFavorite = (e) => {
+    const handleFavorite = async (e) => {
         e.stopPropagation();
-        if (!user) return; // Não permitir ação se não estiver logado
-        toggleFavorite(gift._id);
+        if (!user || loadingFavorite) return; // Não permitir ação se não estiver logado ou já carregando
+        
+        setLoadingFavorite(true);
+        try {
+            await toggleFavorite(gift._id);
+        } catch (error) {
+            console.error('Erro ao favoritar:', error);
+        } finally {
+            setLoadingFavorite(false);
+        }
     };
 
-    const handleSelect = (e) => {
+    const handleSelect = async (e) => {
         e.stopPropagation();
-        if (!user) return; // Não permitir ação se não estiver logado
-        if(!isSelected) {
-            onAddToCart(gift);
-        } else {
-            onRemoveFromCart(gift._id);
+        if (!user || loadingCart) return; // Não permitir ação se não estiver logado ou já carregando
+        
+        setLoadingCart(true);
+        try {
+            if(!isSelected) {
+                await onAddToCart(gift);
+            } else {
+                await onRemoveFromCart(gift._id);
+            }
+        } catch (error) {
+            console.error('Erro ao selecionar:', error);
+        } finally {
+            setLoadingCart(false);
         }
     };
 
@@ -140,7 +161,7 @@ const GiftCard = ({
                 {!isUnavailable && (
                     <IconButton
                         onClick={handleFavorite}
-                        disabled={!user}
+                        disabled={!user || loadingFavorite}
                         title={!user ? "Login necessário para favoritar" : ""}
                         sx={{
                             position: 'absolute',
@@ -155,7 +176,9 @@ const GiftCard = ({
                             transition: 'all 0.2s ease'
                         }}
                     >
-                        {isCurrentlyFavorite ? (
+                        {loadingFavorite ? (
+                            <CircularProgress size={20} sx={{ color: '#9e9e9e' }} />
+                        ) : isCurrentlyFavorite ? (
                             <Favorite sx={{ color: '#e91e63' }} />
                         ) : (
                             <FavoriteBorder sx={{ color: '#9e9e9e' }} />
@@ -238,8 +261,8 @@ const GiftCard = ({
                 <Button
                     variant="contained"
                     onClick={isUnavailable || !user ? null : handleSelect}
-                    startIcon={isSelected && !isUnavailable ? <Check /> : null}
-                    disabled={isUnavailable || !user}
+                    startIcon={loadingCart ? <CircularProgress size={16} sx={{ color: 'white' }} /> : (isSelected && !isUnavailable ? <Check /> : null)}
+                    disabled={isUnavailable || !user || loadingCart}
                     title={!user ? "Login necessário para selecionar" : ""}
                     sx={{
                         flex: 1,
@@ -267,9 +290,11 @@ const GiftCard = ({
                         ? 'Login necessário'
                         : isUnavailable
                             ? 'Indisponível'
-                            : isSelected
-                                ? 'Selecionado'
-                                : 'Selecionar'}
+                            : loadingCart
+                                ? 'Carregando...'
+                                : isSelected
+                                    ? 'Selecionado'
+                                    : 'Selecionar'}
                 </Button>
             </CardContent>
         </Card>

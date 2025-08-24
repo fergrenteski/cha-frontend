@@ -34,27 +34,45 @@ const GiftListPage = () => {
     });
 
     // Função para adicionar item ao carrinho
-    const handleAddToCart = (product) => {
-        // Adiciona o item ao carrinho (ou aumenta a quantidade se já existir)
-        addItem(product, 1);
+    const handleAddToCart = async (product) => {
+        try {
+            // Adiciona o item ao carrinho (ou aumenta a quantidade se já existir)
+            await addItem(product, 1);
 
-        setSnackbar({
-            open: true,
-            message: `${product.name} adicionado ao carrinho!`,
-            severity: 'success'
-        });
+            setSnackbar({
+                open: true,
+                message: `${product.name} adicionado ao carrinho!`,
+                severity: 'success'
+            });
+        } catch (error) {
+            console.error('Erro ao adicionar ao carrinho:', error);
+            setSnackbar({
+                open: true,
+                message: `Erro ao adicionar ${product.name} ao carrinho!`,
+                severity: 'error'
+            });
+        }
     };
 
     // Função para remover item do carrinho
-    const handleRemoveFromCart = (productId) => {
-        const product = products.find(p => p._id === productId);
-        removeItem(productId);
+    const handleRemoveFromCart = async (productId) => {
+        try {
+            const product = products.find(p => p._id === productId);
+            await removeItem(productId);
 
-        setSnackbar({
-            open: true,
-            message: `${product?.name || 'Item'} removido do carrinho!`,
-            severity: 'warning'
-        });
+            setSnackbar({
+                open: true,
+                message: `${product?.name || 'Item'} removido do carrinho!`,
+                severity: 'warning'
+            });
+        } catch (error) {
+            console.error('Erro ao remover do carrinho:', error);
+            setSnackbar({
+                open: true,
+                message: `Erro ao remover item do carrinho!`,
+                severity: 'error'
+            });
+        }
     };
 
     // Handlers de navegação
@@ -169,7 +187,7 @@ const GiftListPage = () => {
                         itemsPerPage={filters.limit || 20}
                     />
                 )}
-                
+
             </Container>
 
             <Snackbar

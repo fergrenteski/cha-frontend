@@ -1,5 +1,5 @@
 // components/CartItem.js
-import React from 'react';
+import React, { useState } from 'react';
 import {
     Card,
     CardContent,
@@ -10,6 +10,7 @@ import {
     TextField,
     useMediaQuery,
     useTheme,
+    CircularProgress,
 } from '@mui/material';
 import {
     Add as AddIcon,
@@ -23,23 +24,41 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const { user } = useAuth(); // Verificar se usuário está logado
+    
+    // Estados de loading
+    const [loadingQuantity, setLoadingQuantity] = useState(false);
+    const [loadingRemove, setLoadingRemove] = useState(false);
 
-    const handleQuantityChange = (newQuantity) => {
-        if (!user) return; // Não permitir mudanças se não estiver logado
+    const handleQuantityChange = async (newQuantity) => {
+        if (!user || loadingQuantity) return; // Não permitir mudanças se não estiver logado ou já carregando
         if (newQuantity >= 1) {
-            onUpdateQuantity(newQuantity);
+            setLoadingQuantity(true);
+            try {
+                await onUpdateQuantity(newQuantity);
+            } catch (error) {
+                console.error('Erro ao atualizar quantidade:', error);
+            } finally {
+                setLoadingQuantity(false);
+            }
         }
     };
 
-    const handleInputChange = (event) => {
-        if (!user) return; // Não permitir mudanças se não estiver logado
+    const handleInputChange = async (event) => {
+        if (!user || loadingQuantity) return; // Não permitir mudanças se não estiver logado ou já carregando
         const value = parseInt(event.target.value) || 1;
-        handleQuantityChange(value);
+        await handleQuantityChange(value);
     };
 
-    const handleRemove = () => {
-        if (!user) return; // Não permitir remoção se não estiver logado
-        onRemove();
+    const handleRemove = async () => {
+        if (!user || loadingRemove) return; // Não permitir remoção se não estiver logado ou já carregando
+        setLoadingRemove(true);
+        try {
+            await onRemove();
+        } catch (error) {
+            console.error('Erro ao remover item:', error);
+        } finally {
+            setLoadingRemove(false);
+        }
     };
 
     return (
@@ -91,17 +110,21 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                                 <IconButton
                                     onClick={() => handleQuantityChange(item.quantity - 1)}
                                     size="small"
-                                    disabled={!user || item.quantity <= 1}
+                                    disabled={!user || item.quantity <= 1 || loadingQuantity}
                                     title={!user ? "Login necessário" : ""}
                                 >
-                                    <RemoveIcon />
+                                    {loadingQuantity ? (
+                                        <CircularProgress size={16} />
+                                    ) : (
+                                        <RemoveIcon />
+                                    )}
                                 </IconButton>
 
                                 <TextField
                                     value={item.quantity}
                                     onChange={handleInputChange}
                                     size="small"
-                                    disabled={!user}
+                                    disabled={!user || loadingQuantity}
                                     inputProps={{
                                         min: 1,
                                         style: { textAlign: 'center', width: '20px' }
@@ -119,10 +142,14 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                                 <IconButton
                                     onClick={() => handleQuantityChange(item.quantity + 1)}
                                     size="small"
-                                    disabled={!user}
+                                    disabled={!user || loadingQuantity}
                                     title={!user ? "Login necessário" : ""}
                                 >
-                                    <AddIcon />
+                                    {loadingQuantity ? (
+                                        <CircularProgress size={16} />
+                                    ) : (
+                                        <AddIcon />
+                                    )}
                                 </IconButton>
                             </Box>
                             {/* Subtotal */}
@@ -140,7 +167,7 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                                     <IconButton
                                         onClick={handleRemove}
                                         color="error"
-                                        disabled={!user}
+                                        disabled={!user || loadingRemove}
                                         title={!user ? "Login necessário" : ""}
                                         sx={{
                                             '&:hover': {
@@ -148,7 +175,11 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                                             }
                                         }}
                                     >
-                                        <DeleteIcon />
+                                        {loadingRemove ? (
+                                            <CircularProgress size={20} sx={{ color: 'error.main' }} />
+                                        ) : (
+                                            <DeleteIcon />
+                                        )}
                                     </IconButton>
                                 </Box>
                             )}
@@ -160,7 +191,7 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                         <IconButton
                             onClick={handleRemove}
                             color="error"
-                            disabled={!user}
+                            disabled={!user || loadingRemove}
                             title={!user ? "Login necessário" : ""}
                             sx={{
                                 ml: 1,
@@ -169,7 +200,11 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                                 }
                             }}
                         >
-                            <DeleteIcon />
+                            {loadingRemove ? (
+                                <CircularProgress size={20} sx={{ color: 'error.main' }} />
+                            ) : (
+                                <DeleteIcon />
+                            )}
                         </IconButton>
                     )}
                 </Box>

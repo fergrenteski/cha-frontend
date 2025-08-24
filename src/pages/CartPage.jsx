@@ -108,13 +108,22 @@ const CartPage = () => {
     };
 
     // Função para remover item com feedback visual
-    const handleRemoveItem = (itemId, itemName) => {
-        removeItem(itemId);
-        setSnackbar({
-            open: true,
-            message: `${itemName} removido do carrinho`,
-            severity: 'info'
-        });
+    const handleRemoveItem = async (itemId, itemName) => {
+        try {
+            await removeItem(itemId);
+            setSnackbar({
+                open: true,
+                message: `${itemName} removido do carrinho`,
+                severity: 'info'
+            });
+        } catch (error) {
+            console.error('Erro ao remover item:', error);
+            setSnackbar({
+                open: true,
+                message: `Erro ao remover ${itemName} do carrinho`,
+                severity: 'error'
+            });
+        }
     };
 
     // Função para atualizar quantidade
@@ -325,7 +334,7 @@ const CartPage = () => {
                                                 textAlign: 'center'
                                             }}
                                         >
-                                            👤 Organizador: {user.firstName} {user.lastName}
+                                            👤 Convidado: {user.firstName} {user.lastName}
                                         </Typography>
                                     </Box>
                                 )}
@@ -358,7 +367,7 @@ const CartPage = () => {
                                     }}
                                 >
                                     <PersonIcon />
-                                    Convidados
+                                    Convidados Adicionais
                                 </Typography>
                                 
                                 <Typography
@@ -367,7 +376,7 @@ const CartPage = () => {
                                     sx={{ mb: 2, fontSize: '0.85rem' }}
                                 >
                                     {isAuthenticated 
-                                        ? 'Você já está incluído como organizador. Adicione outros convidados:'
+                                        ? 'Você já está incluído como Convidado. Adicione outros convidados:'
                                         : 'Adicione convidados (você será incluído como organizador após o login):'
                                     }
                                 </Typography>
