@@ -13,24 +13,19 @@ import {
     DialogContent,
     DialogActions
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
 import GiftCard from '../components/GiftCard';
 import { useFavorites } from '../hooks/useFavorites';
 import { useCart } from '../hooks/useCart';
-import { useAuth } from '../hooks/useAuth';
 import EmptyFavorites from '../components/EmptyFavorites';
 
 const FavoritesPage = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-    const navigate = useNavigate();
     const [confirmDialog, setConfirmDialog] = useState({ open: false, title: '', message: '', onConfirm: null, color: 'error' });
     
     // Hooks sempre devem ser chamados na mesma ordem
     const favoritesData = useFavorites();
-    const { addItem, removeItem, isItemInCart, totalItems } = useCart();
-    const { logout } = useAuth();
+    const { addItem, removeItem, isItemInCart } = useCart();
     
     // Extrair valores dos favoritos de forma segura
     const favorites = favoritesData?.items || [];
@@ -100,53 +95,18 @@ const FavoritesPage = () => {
         );
     };
 
-    // Handlers de navegação
-    const handleLogoutClick = () => {
-        logout();
-        navigate('/auth');
-    };
-
     if (loading) {
         return (
-            <>
-                <Header
-                    cartItemCount={totalItems}
-                    currentPage="favorites"
-                    onAlbumClick={() => navigate('/album')}
-                    onCartClick={() => navigate('/cart')}
-                    onLogoClick={() => navigate('/')}
-                    onProductClick={() => navigate('/products')}
-                    onAccountClick={() => navigate('/account')}
-                    onAdminClick={() => navigate('/admin')}
-                    onLogoutClick={handleLogoutClick}
-                    onLoginClick={() => navigate('/auth')}
-                    onFavoritesClick={() => navigate('/favorites')}
-                />
-                <Container maxWidth="xl" sx={{ py: 4 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-                        <Typography variant="h6">Carregando favoritos...</Typography>
-                    </Box>
-                </Container>
-            </>
+            <Container maxWidth="xl" sx={{ py: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                    <Typography variant="h6">Carregando favoritos...</Typography>
+                </Box>
+            </Container>
         );
     }
 
     return (
         <>
-            <Header
-                cartItemCount={totalItems}
-                currentPage="favorites"
-                onAlbumClick={() => navigate('/album')}
-                onCartClick={() => navigate('/cart')}
-                onLogoClick={() => navigate('/')}
-                onProductClick={() => navigate('/products')}
-                onAccountClick={() => navigate('/account')}
-                onAdminClick={() => navigate('/admin')}
-                onLogoutClick={handleLogoutClick}
-                onLoginClick={() => navigate('/auth')}
-                onFavoritesClick={() => navigate('/favorites')}
-            />
-
             <Container maxWidth="xl" sx={{ py: 4 }}>
                 <Fade in timeout={800}>
                     <Box>

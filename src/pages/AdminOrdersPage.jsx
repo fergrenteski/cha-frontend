@@ -37,7 +37,6 @@ import {
     Fade,
     Divider,
     TextField,
-    InputAdornment
 } from '@mui/material';
 import {
     Visibility,
@@ -52,10 +51,6 @@ import {
     Search as SearchIcon,
 } from '@mui/icons-material';
 import api from '../services/api';
-import Header from '../components/Header';
-import { useNavigate } from 'react-router-dom';
-import { useCart } from '../hooks/useCart';
-import { useAuth } from '../hooks/useAuth';
 
 const OrderStatus = {
     pending: { label: 'Pendente', color: 'warning' },
@@ -76,10 +71,6 @@ const AdminOrdersPage = () => {
     // Estados dos filtros
     const [customerFilter, setCustomerFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
-
-    const { logout } = useAuth();
-    const { totalItems } = useCart();
-    const navigate = useNavigate();
 
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down('md'));
@@ -106,13 +97,6 @@ const AdminOrdersPage = () => {
             setLoading(false);
         }
     }, []);
-
-    // Handlers de navegação
-    const handleLogoutClick = () => {
-        logout();
-        navigate('/');
-    };
-
 
     useEffect(() => {
         fetchOrders();
@@ -250,19 +234,6 @@ const AdminOrdersPage = () => {
 
     return (
         <>
-            <Header
-                cartItemCount={totalItems}
-                currentPage="admin"
-                onAlbumClick={() => navigate('/album')}
-                onCartClick={() => navigate('/cart')}
-                onLogoClick={() => navigate('/')}
-                onProductClick={() => navigate('/products')}
-                onAccountClick={() => navigate('/account')}
-                onAdminClick={() => navigate('/admin')}
-                onLogoutClick={handleLogoutClick}
-                onLoginClick={() => navigate('/auth')}
-                onFavoritesClick={() => navigate('/favorites')}
-            />
             <Container maxWidth="xl" sx={{ py: 4 }}>
                 <Fade in timeout={800}>
                     <Box>

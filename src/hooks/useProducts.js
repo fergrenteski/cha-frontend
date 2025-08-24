@@ -5,7 +5,8 @@ import { debounce } from '../utils/performance';
 export const useProducts = (initialFilters = {}) => {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState(true); // Iniciar como true
+    const [loading, setLoading] = useState(true); // Carregamento inicial
+    const [filterLoading, setFilterLoading] = useState(false); // Carregamento de filtros
     const [error, setError] = useState(null);
     const [filters, setFilters] = useState(initialFilters);
     const [pagination, setPagination] = useState({
@@ -15,8 +16,8 @@ export const useProducts = (initialFilters = {}) => {
         hasMore: false
     });
 
-    // Memoizar função de busca de produtos com debounce
-    const debouncedFetchProducts = useMemo(
+    // Função para busca inicial (mostra loading completo)
+    const fetchProductsInitial = useMemo(
         () => debounce(async (searchFilters = {}) => {
             setLoading(true);
             setError(null);
@@ -51,14 +52,59 @@ export const useProducts = (initialFilters = {}) => {
             } finally {
                 setLoading(false);
             }
-        }, 300), // 300ms de delay
+        }, 300),
         []
     );
 
-    // Função para buscar produtos
+    // Função para filtros (mostra loading menor/overlay)
+    const debouncedFetchProducts = useMemo(
+        () => debounce(async (searchFilters = {}) => {
+            setFilterLoading(true);
+            setError(null);
+            
+            try {
+                const data = await productsAPI.getProducts(searchFilters);
+                
+                // Verificar se a resposta tem estrutura de paginação
+                if (data.products && data.pagination) {
+                    setProducts(data.products);
+                    setPagination(data.pagination);
+                } else {
+                    // Retorno antigo (sem paginação)
+                    setProducts(data);
+                    setPagination({
+                        currentPage: 1,
+                        totalPages: 1,
+                        totalProducts: data.length,
+                        hasMore: false
+                    });
+                }
+            } catch (err) {
+                console.error('Erro ao buscar produtos:', err);
+                setError(err.message);
+                setProducts([]);
+                setPagination({
+                    currentPage: 1,
+                    totalPages: 1,
+                    totalProducts: 0,
+                    hasMore: false
+                });
+            } finally {
+                setFilterLoading(false);
+            }
+        }, 300),
+        []
+    );
+
+    // Função para buscar produtos (usa filtros, não loading completo)
     const fetchProducts = useCallback(async (searchFilters = {}) => {
         debouncedFetchProducts(searchFilters);
     }, [debouncedFetchProducts]);
+
+    // Função para buscar produtos inicial (usa loading completo)
+    const fetchProductsWithLoading = useCallback(async (searchFilters = {}) => {
+        fetchProductsInitial(searchFilters);
+    }, [fetchProductsInitial]);
 
     // Função para buscar categorias
     const fetchCategories = useCallback(async () => {
@@ -148,9 +194,9 @@ export const useProducts = (initialFilters = {}) => {
 
     // Carregar produtos e categorias na inicialização
     useEffect(() => {
-        fetchProducts(initialFilters);
+        fetchProductsWithLoading(initialFilters);
         fetchCategories();
-    }, [fetchProducts, fetchCategories]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [fetchProductsWithLoading, fetchCategories]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Memoizar objeto de retorno para evitar re-renders desnecessários
     const returnValue = useMemo(() => ({
@@ -158,6 +204,7 @@ export const useProducts = (initialFilters = {}) => {
         products,
         categories,
         loading,
+        filterLoading,
         error,
         filters,
         pagination,
@@ -184,7 +231,8 @@ export const useProducts = (initialFilters = {}) => {
     }), [
         products, 
         categories, 
-        loading, 
+        loading,
+        filterLoading,
         error, 
         filters,
         pagination,

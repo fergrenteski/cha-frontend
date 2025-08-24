@@ -24,26 +24,21 @@ import {
     Clear as ClearIcon,
     FilterList as FilterIcon
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
 import GiftCard from '../components/GiftCard';
-import Header from "../components/Header.jsx";
 import ProductPagination from '../components/ProductPagination.jsx';
 import { useCart } from '../hooks/useCart';
-import { useAuth } from '../hooks/useAuth';
 import { useProducts } from '../hooks/useProducts';
 
 const GiftListPage = () => {
-    const navigate = useNavigate();
-    const { logout } = useAuth();
-
     // Usar o contexto do carrinho
-    const { addItem, removeItem, totalItems, isItemInCart } = useCart();
+    const { addItem, removeItem, isItemInCart } = useCart();
 
     // Usar o hook de produtos com paginação
     const {
         products,
         categories,
         loading: productsLoading,
+        filterLoading,
         error: productsError,
         filters,
         pagination,
@@ -149,12 +144,6 @@ const GiftListPage = () => {
         }
     };
 
-    // Handlers de navegação
-    const handleLogoutClick = () => {
-        logout();
-        navigate('/auth');
-    };
-
     const handleCloseSnackbar = () => {
         setSnackbar(prev => ({ ...prev, open: false }));
     };
@@ -162,73 +151,29 @@ const GiftListPage = () => {
     // Renderizar loading
     if (productsLoading) {
         return (
-            <>
-                <Header
-                    cartItemCount={totalItems}
-                    currentPage="products"
-                    onAlbumClick={() => navigate('/album')}
-                    onCartClick={() => navigate('/cart')}
-                    onLogoClick={() => navigate('/')}
-                    onProductClick={() => navigate('/products')}
-                    onAccountClick={() => navigate('/account')}
-                    onAdminClick={() => navigate('/admin')}
-                    onLogoutClick={handleLogoutClick}
-                    onLoginClick={() => navigate('/auth')}
-                    onFavoritesClick={() => navigate('/favorites')}
-                />
-                <Container maxWidth="xl" sx={{ py: 4 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-                        <CircularProgress size={60} />
-                    </Box>
-                </Container>
-            </>
+            <Container maxWidth="xl" sx={{ py: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                    <CircularProgress size={60} />
+                </Box>
+            </Container>
         );
     }
 
     // Renderizar erro
     if (productsError) {
         return (
-            <>
-                <Header
-                    cartItemCount={totalItems}
-                    currentPage="products"
-                    onAlbumClick={() => navigate('/album')}
-                    onCartClick={() => navigate('/cart')}
-                    onLogoClick={() => navigate('/')}
-                    onProductClick={() => navigate('/products')}
-                    onAccountClick={() => navigate('/account')}
-                    onAdminClick={() => navigate('/admin')}
-                    onLogoutClick={handleLogoutClick}
-                    onLoginClick={() => navigate('/auth')}
-                    onFavoritesClick={() => navigate('/favorites')}
-                />
-                <Container maxWidth="xl" sx={{ py: 4 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-                        <Typography variant="h6" color="error" textAlign="center">
-                            Erro ao carregar produtos: {productsError}
-                        </Typography>
-                    </Box>
-                </Container>
-            </>
+            <Container maxWidth="xl" sx={{ py: 4 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                    <Typography variant="h6" color="error" textAlign="center">
+                        Erro ao carregar produtos: {productsError}
+                    </Typography>
+                </Box>
+            </Container>
         );
     }
 
     return (
         <>
-            <Header
-                cartItemCount={totalItems}
-                currentPage="products"
-                onAlbumClick={() => navigate('/album')}
-                onCartClick={() => navigate('/cart')}
-                onLogoClick={() => navigate('/')}
-                onProductClick={() => navigate('/products')}
-                onAccountClick={() => navigate('/account')}
-                onAdminClick={() => navigate('/admin')}
-                onLogoutClick={handleLogoutClick}
-                onLoginClick={() => navigate('/auth')}
-                onFavoritesClick={() => navigate('/favorites')}
-            />
-
             <Box sx={{ 
                 mb: { xs: 2, md: 3 }, 
                 textAlign: 'center',
@@ -392,7 +337,29 @@ const GiftListPage = () => {
                     </Box>
                 </Paper>
 
-                <Grid container spacing={2} justifyContent="center">
+                <Grid container spacing={2} justifyContent="center" sx={{ position: 'relative' }}>
+                    {/* Overlay de loading para filtros */}
+                    {filterLoading && (
+                        <Box
+                            sx={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                zIndex: 10,
+                                borderRadius: 2,
+                                backdropFilter: 'blur(2px)'
+                            }}
+                        >
+                            <CircularProgress size={40} thickness={4} />
+                        </Box>
+                    )}
+                    
                     {products.map((product) => (
                         <Grid key={product._id} size={{xs: 12, sm: 6, md: 4, lg: 3}} sx={{ display: 'flex', justifyContent: 'center' }}>
                             <GiftCard

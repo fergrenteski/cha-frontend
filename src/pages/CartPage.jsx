@@ -1,5 +1,5 @@
 // pages/CartPage.js
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
     Container,
     Typography,
@@ -23,19 +23,16 @@ import {
     Person as PersonIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
 import CartItem from '../components/CartItem';
 import CartSummary from '../components/CartSummary';
 import EmptyCart from '../components/EmptyCart';
 import { useCart } from '../hooks/useCart';
-import { useAuth } from '../hooks/useAuth';
 
 const CartPage = () => {
     // Usar o contexto do carrinho
     const {
         items: cartItems,
         participants,
-        totalItems,
         totalPrice,
         removeItem,
         updateQuantity,
@@ -46,8 +43,6 @@ const CartPage = () => {
         isAuthenticated,
         user
     } = useCart();
-
-    const { logout } = useAuth();
 
     // Estado para gerenciar participantes
     const [participantName, setParticipantName] = useState('');
@@ -231,12 +226,6 @@ const CartPage = () => {
         navigate('/auth');
     };
 
-    // Handlers de navegação
-    const handleLogoutClick = () => {
-        logout();
-        navigate('/');
-    };
-
     const handleContinueShopping = () => {
         navigate('/products');
     };
@@ -247,20 +236,6 @@ const CartPage = () => {
 
     return (
         <>
-            <Header
-                cartItemCount={totalItems}
-                currentPage="cart"
-                onAlbumClick={() => navigate('/album')}
-                onCartClick={() => navigate('/cart')}
-                onLogoClick={() => navigate('/')}
-                onProductClick={() => navigate('/products')}
-                onAccountClick={() => navigate('/account')}
-                onAdminClick={() => navigate('/admin')}
-                onLogoutClick={handleLogoutClick}
-                onLoginClick={() => navigate('/auth')}
-                onFavoritesClick={() => navigate('/favorites')}
-            />
-
             <Container maxWidth="xl" sx={{ py: 4 }}>
                 {cartItems.length > 0 ? (
                     <Typography

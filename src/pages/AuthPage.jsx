@@ -27,8 +27,6 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate, useLocation } from 'react-router-dom';
-import Header from '../components/Header';
-import { useCart } from '../hooks/useCart';
 
 const AuthPage = () => {
     const theme = useTheme();
@@ -36,18 +34,12 @@ const AuthPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { login, register } = useAuth();
-    const { totalItems } = useCart();
 
     const [isLogin, setIsLogin] = useState(true);
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-
-    // Handlers de navegação
-    const handleLogoutClick = () => {
-        navigate('/auth');
-    };
 
     const [formData, setFormData] = useState({
         firstName: '',
@@ -179,22 +171,9 @@ const AuthPage = () => {
 
     return (
         <>
-            <Header
-                cartItemCount={totalItems}
-                currentPage="auth"
-                onAlbumClick={() => navigate('/album')}
-                onCartClick={() => navigate('/cart')}
-                onLogoClick={() => navigate('/')}
-                onProductClick={() => navigate('/products')}
-                onAccountClick={() => navigate('/account')}
-                onAdminClick={() => navigate('/admin')}
-                onLogoutClick={handleLogoutClick}
-                onLoginClick={() => navigate('/auth')}
-                onFavoritesClick={() => navigate('/favorites')}
-            />
             <Box
                 sx={{
-                    minHeight: 'calc(100vh - 80px)', // Ajusta para compensar a altura do header
+                    minHeight: '100vh', // Ajusta para tela cheia sem header
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

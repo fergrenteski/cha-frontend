@@ -40,10 +40,7 @@ import {
     AdminPanelSettings,
     CheckCircle
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import { useCart } from '../hooks/useCart';
 import { useAuth } from '../hooks/useAuth';
-import Header from '../components/Header';
 import api from '../services/api';
 
 // Mock API - você pode substituir por chamadas reais para sua API
@@ -61,9 +58,7 @@ const AdminUsersPage = () => {
     // Estados de loading para botões da modal
     const [loadingConfirm, setLoadingConfirm] = useState(false);
 
-    const { logout, user: currentUser } = useAuth();
-    const { totalItems } = useCart();
-    const navigate = useNavigate();
+    const { user: currentUser } = useAuth();
 
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down('md'));
@@ -87,12 +82,6 @@ const AdminUsersPage = () => {
             setLoading(false);
         }
     }, []);
-
-    // Handlers de navegação
-    const handleLogoutClick = () => {
-        logout();
-        navigate('/');
-    };
 
     useEffect(() => {
         fetchUsers();
@@ -230,19 +219,6 @@ const AdminUsersPage = () => {
 
     return (
         <>
-            <Header
-                cartItemCount={totalItems}
-                currentPage="admin"
-                onAlbumClick={() => navigate('/album')}
-                onCartClick={() => navigate('/cart')}
-                onLogoClick={() => navigate('/')}
-                onProductClick={() => navigate('/products')}
-                onAccountClick={() => navigate('/account')}
-                onAdminClick={() => navigate('/admin')}
-                onLogoutClick={handleLogoutClick}
-                onLoginClick={() => navigate('/auth')}
-                onFavoritesClick={() => navigate('/favorites')}
-            />
             <Container maxWidth="xl" sx={{ py: 4 }}>
                 <Fade in timeout={800}>
                     <Box>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
     Container,
     Paper,
@@ -7,18 +7,7 @@ import {
     TextField,
     Avatar,
     Grid,
-    Divider,
-    Card,
-    CardContent,
-    List,
-    ListItem,
-    ListItemIcon,
-    ListItemText,
-    Switch,
-    FormControlLabel,
-    Chip,
     IconButton,
-    Fade,
     Alert,
     Snackbar,
     CircularProgress,
@@ -32,14 +21,8 @@ import {
     Edit,
     Save,
     Cancel,
-    ShoppingBag,
-    Notifications,
-    Logout
 } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
-import Header from '../components/Header';
-import { useNavigate } from 'react-router-dom';
-import { useCart } from '../hooks/useCart';
 import { profileAPI } from '../services/api';
 import UserOrders from '../components/UserOrders';
 
@@ -47,9 +30,7 @@ const AccountPage = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
-    const navigate = useNavigate();
-    const { user, logout, updateUser } = useAuth();
-    const { totalItems } = useCart();
+    const { user, updateUser } = useAuth();
 
     const [editMode, setEditMode] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -61,31 +42,6 @@ const AccountPage = () => {
         email: user?.email || '',
         phone: user?.phone || ''
     });
-
-    // Dados simulados de pedidos
-    const orderHistory = [
-        {
-            id: 'PED001',
-            date: '2024-07-15',
-            total: 299.90,
-            status: 'Entregue',
-            items: 3
-        },
-        {
-            id: 'PED002',
-            date: '2024-07-10',
-            total: 159.50,
-            status: 'Em trânsito',
-            items: 2
-        },
-        {
-            id: 'PED003',
-            date: '2024-07-05',
-            total: 89.90,
-            status: 'Processando',
-            items: 1
-        }
-    ];
 
     const handleInputChange = (e) => {
         setFormData({
@@ -152,34 +108,12 @@ const AccountPage = () => {
         setEditMode(false);
     };
 
-    const handleLogout = async () => {
-        try {
-            await logout();
-            navigate('/');
-        } catch (error) {
-            console.error('Erro ao fazer logout:', error);
-        }
-    };
-
     const formatDate = (dateString) => {
         return new Date(dateString).toLocaleDateString('pt-BR');
     };
 
     return (
         <>
-            <Header
-                cartItemCount={totalItems}
-                currentPage="account"
-                onAlbumClick={() => navigate('/album')}
-                onCartClick={() => navigate('/cart')}
-                onLogoClick={() => navigate('/')}
-                onProductClick={() => navigate('/products')}
-                onAccountClick={() => navigate('/account')}
-                onAdminClick={() => navigate('/admin')}
-                onLogoutClick={handleLogout}
-                onLoginClick={() => navigate('/auth')}
-                onFavoritesClick={() => navigate('/favorites')}
-            />
             
             <Container maxWidth="xl" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
                     <Box>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import {
     Typography,
     Box,
@@ -16,21 +16,12 @@ import {
 import {
     Shuffle as ShuffleIcon,
     Close as CloseIcon,
-    PhotoLibrary as PhotoLibraryIcon
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
 import { albumPhotos, shuffleArray } from '../data/albumData';
-import { useCart } from '../hooks/useCart';
-import { useAuth } from '../hooks/useAuth';
 
 const AlbumPage = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-    const navigate = useNavigate();
-    
-    const { totalItems } = useCart();
-    const { logout } = useAuth();
 
     const [photos, setPhotos] = useState(albumPhotos);
     const [selectedPhoto, setSelectedPhoto] = useState(null);
@@ -52,12 +43,6 @@ const AlbumPage = () => {
         setSelectedPhoto(null);
     };
 
-    // Handlers de navegação
-    const handleLogoutClick = () => {
-        logout();
-        navigate('/auth');
-    };
-
 
     // Sistema simplificado - todas as fotos quadradas responsivas
     const getPhotoGridStyle = () => {
@@ -72,19 +57,6 @@ const AlbumPage = () => {
 
     return (
         <>
-            <Header
-                cartItemCount={totalItems}
-                currentPage="album"
-                onAlbumClick={() => navigate('/album')}
-                onCartClick={() => navigate('/cart')}
-                onLogoClick={() => navigate('/')}
-                onProductClick={() => navigate('/products')}
-                onAccountClick={() => navigate('/account')}
-                onAdminClick={() => navigate('/admin')}
-                onLogoutClick={handleLogoutClick}
-                onLoginClick={() => navigate('/auth')}
-                onFavoritesClick={() => navigate('/favorites')}
-            />
             <Box sx={{ 
                 width: '100%', 
                 minHeight: '100vh',

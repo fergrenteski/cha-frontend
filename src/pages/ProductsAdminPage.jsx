@@ -42,29 +42,22 @@ import {
     Add as AddIcon,
     Edit as EditIcon,
     Delete as DeleteIcon,
-    Search as SearchIcon,
     Visibility as ViewIcon,
     PhotoCamera as PhotoIcon,
     Save as SaveIcon,
     Cancel as CancelIcon,
-    Refresh as RefreshIcon,
     CloudUpload as CloudUploadIcon,
     Inventory as InventoryIcon 
 } from '@mui/icons-material';
 import { useProducts } from '../hooks/useProducts';
-import Header from '../components/Header';
 import { useCart } from '../hooks/useCart';
 import { useFavorites } from '../hooks/useFavorites';
-import { useAuth } from '../hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
 import { productsAPI } from '../services/api';
 
 const ProductsAdminPage = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-    const navigate = useNavigate();
-    const { logout } = useAuth();
-    const { totalItems, refreshCart } = useCart();
+    const { refreshCart } = useCart();
     const { refreshFavorites } = useFavorites();
     
     // States do hook de produtos
@@ -139,11 +132,6 @@ const ProductsAdminPage = () => {
     useEffect(() => {
         setLocalCategories(categories);
     }, [categories]);
-
-    const handleLogoutClick = () => {
-        logout();
-        navigate('/');
-    };
 
     // Handler de busca
     const handleSearch = (value) => {
@@ -378,20 +366,6 @@ const ProductsAdminPage = () => {
 
     return (
         <>
-            <Header
-                cartItemCount={totalItems}
-                currentPage="admin"
-                onAlbumClick={() => navigate('/album')}
-                onCartClick={() => navigate('/cart')}
-                onLogoClick={() => navigate('/')}
-                onProductClick={() => navigate('/products')}
-                onAccountClick={() => navigate('/account')}
-                onAdminClick={() => navigate('/admin')}
-                onLogoutClick={handleLogoutClick}
-                onLoginClick={() => navigate('/auth')}
-                onFavoritesClick={() => navigate('/favorites')}
-            />
-
             <Container maxWidth="xl" sx={{ py: 4 }}>
                 <Fade in timeout={800}>
                     <Box>

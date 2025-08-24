@@ -1,4 +1,3 @@
-import React from 'react';
 import {
     Box,
     Typography,
@@ -11,7 +10,6 @@ import {
     ShoppingCart as ShoppingCartIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { red } from '@mui/material/colors';
 
 const EmptyFavorites = () => {
     const theme = useTheme();
