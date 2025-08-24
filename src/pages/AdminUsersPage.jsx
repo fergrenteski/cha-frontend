@@ -70,8 +70,8 @@ const AdminUsersPage = () => {
             setLoading(true);
             const usersData = await api.users.getAllUsers();
             
-            setUsers(usersData || []);
-            setFilteredUsers(usersData || []);
+            setUsers(usersData.users || []);
+            setFilteredUsers(usersData.users || []);
         } catch (error) {
             console.error('Erro ao carregar usuários:', error);
             
