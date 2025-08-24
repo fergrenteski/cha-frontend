@@ -9,6 +9,8 @@ import {
     Box, 
     Typography, 
     Paper,
+    useTheme,
+    useMediaQuery,
     TextField,
     FormControl,
     InputLabel,
@@ -63,6 +65,9 @@ const GiftListPage = () => {
         message: '',
         severity: 'success'
     });
+
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
     // Funções de controle dos filtros
     const handleSearch = () => {
@@ -224,6 +229,38 @@ const GiftListPage = () => {
                 onFavoritesClick={() => navigate('/favorites')}
             />
 
+            <Box sx={{ 
+                mb: { xs: 2, md: 3 }, 
+                textAlign: 'center',
+                px: { xs: 1, sm: 2 }
+            }}>
+                <Typography
+                    variant={isMobile ? "h4" : "h3"}
+                    component="h1"
+                    sx={{
+                        fontWeight: 300,
+                        color: theme.palette.text.primary,
+                        mb: 1,
+                        mt: 2,
+                        fontSize: { xs: '1.75rem', sm: '2.125rem', md: '3rem' }
+                    }}
+                >
+                    Lista de Presentes
+                </Typography>
+                <Typography
+                    variant="body1"
+                    color="text.secondary"
+                    sx={{ 
+                        maxWidth: 600, 
+                        mx: 'auto',
+                        fontSize: { xs: '0.875rem', sm: '1rem' },
+                        px: { xs: 2, sm: 0 },
+                        mb: 3
+                    }}
+                >
+                    Selecione os presentes que deseja incluir no seu carrinho e poder presentear os noivis. Lembrando que a presença de vocês já é o melhor presente que eles poderiam receber! Obs.: O mínimo por pessoa é de 100 reais.
+                </Typography>
+            </Box>
             <Container maxWidth="xl" sx={{ py: 4 }}>
                 {/* Filtros */}
                 <Paper elevation={2} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
@@ -338,8 +375,6 @@ const GiftListPage = () => {
                     <Box sx={{ 
                         mt: 2, 
                         pt: 2, 
-                        borderTop: 1, 
-                        borderColor: 'divider',
                         textAlign: 'center' 
                     }}>
                         <Typography variant="body2" color="text.secondary">
