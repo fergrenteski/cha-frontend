@@ -1,6 +1,27 @@
 // pages/GiftListPage.js
 import React, { useState } from 'react';
-import { Grid, Container, Snackbar, Alert, CircularProgress, Box, Typography } from '@mui/material';
+import { 
+    Grid, 
+    Container, 
+    Snackbar, 
+    Alert, 
+    CircularProgress, 
+    Box, 
+    Typography, 
+    Paper,
+    TextField,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    Button,
+    Chip
+} from '@mui/material';
+import { 
+    Search as SearchIcon,
+    Clear as ClearIcon,
+    FilterList as FilterIcon
+} from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import GiftCard from '../components/GiftCard';
 import Header from "../components/Header.jsx";
@@ -17,21 +38,69 @@ const GiftListPage = () => {
     const { addItem, removeItem, totalItems, isItemInCart } = useCart();
 
     // Usar o hook de produtos com paginação
-    const { 
-        products, 
-        loading: productsLoading, 
+    const {
+        products,
+        categories,
+        loading: productsLoading,
         error: productsError,
+        filters,
         pagination,
+        searchProducts,
+        filterByCategory,
+        sortProducts,
+        clearFilters: clearProductFilters,
         goToPage,
-        setItemsPerPage,
-        filters
-    } = useProducts({ page: 1, limit: 20 });
+        setItemsPerPage
+    } = useProducts();
+
+    // Estados dos filtros locais
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [sortOrder, setSortOrder] = useState(''); // 'asc', 'desc', ''
 
     const [snackbar, setSnackbar] = useState({
         open: false,
         message: '',
         severity: 'success'
     });
+
+    // Funções de controle dos filtros
+    const handleSearch = () => {
+        searchProducts(searchTerm);
+    };
+
+    const handleCategoryFilter = (category) => {
+        setSelectedCategory(category);
+        filterByCategory(category);
+    };
+
+    const handleSortChange = (order) => {
+        setSortOrder(order);
+        if (order === 'asc') {
+            sortProducts('price', 'asc');
+        } else if (order === 'desc') {
+            sortProducts('price', 'desc');
+        } else {
+            sortProducts('createdAt', 'desc'); // Ordenação padrão
+        }
+    };
+
+    const handleClearFilters = () => {
+        // Limpar estados locais
+        setSearchTerm('');
+        setSelectedCategory('');
+        setSortOrder('');
+        // Limpar filtros do backend e recarregar produtos
+        clearProductFilters();
+    };
+
+    const getActiveFiltersCount = () => {
+        let count = 0;
+        if (searchTerm) count++;
+        if (selectedCategory) count++;
+        if (sortOrder) count++;
+        return count;
+    };
 
     // Função para adicionar item ao carrinho
     const handleAddToCart = async (product) => {
@@ -156,6 +225,138 @@ const GiftListPage = () => {
             />
 
             <Container maxWidth="xl" sx={{ py: 4 }}>
+                {/* Filtros */}
+                <Paper elevation={2} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 1 }}>
+                        <FilterIcon color="primary" />
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                            Filtros
+                        </Typography>
+                        {getActiveFiltersCount() > 0 && (
+                            <Chip 
+                                label={`${getActiveFiltersCount()} ativo${getActiveFiltersCount() > 1 ? 's' : ''}`}
+                                size="small" 
+                                color="primary"
+                                variant="filled"
+                            />
+                        )}
+                    </Box>
+
+                    <Grid container spacing={2} alignItems="center">
+                        {/* Campo de busca */}
+                        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                            <TextField
+                                fullWidth
+                                label="Buscar produtos"
+                                placeholder="Digite o nome do produto..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                                slotProps={{
+                                    input: {
+                                        endAdornment: searchTerm && (
+                                            <Button
+                                                size="small"
+                                                onClick={handleSearch}
+                                                startIcon={<SearchIcon />}
+                                                sx={{ minWidth: 'auto', px: 1 }}
+                                            >
+                                                Buscar
+                                            </Button>
+                                        )
+                                    }
+                                }}
+                                sx={{ 
+                                    '& .MuiOutlinedInput-root': {
+                                        borderRadius: 2
+                                    }
+                                }}
+                            />
+                        </Grid>
+
+                        {/* Filtro por categoria */}
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                            <FormControl fullWidth>
+                                <InputLabel>Categoria</InputLabel>
+                                <Select
+                                    value={selectedCategory}
+                                    label="Categoria"
+                                    onChange={(e) => handleCategoryFilter(e.target.value)}
+                                    sx={{ borderRadius: 2 }}
+                                >
+                                    <MenuItem value="">Todas as categorias</MenuItem>
+                                    {categories.map((category) => (
+                                        <MenuItem key={category} value={category}>
+                                            {category}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </Grid>
+
+                        {/* Ordenação por preço */}
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                            <FormControl fullWidth>
+                                <InputLabel>Ordenar por preço</InputLabel>
+                                <Select
+                                    value={sortOrder}
+                                    label="Ordenar por preço"
+                                    onChange={(e) => handleSortChange(e.target.value)}
+                                    sx={{ borderRadius: 2 }}
+                                >
+                                    <MenuItem value="">Sem ordenação</MenuItem>
+                                    <MenuItem value="asc">Menor preço</MenuItem>
+                                    <MenuItem value="desc">Maior preço</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Grid>
+
+                        {/* Botão limpar filtros */}
+                        <Grid size={{ xs: 12, sm: 6, md: 2 }}>
+                            <Button
+                                fullWidth
+                                variant="outlined"
+                                onClick={handleClearFilters}
+                                startIcon={<ClearIcon />}
+                                disabled={getActiveFiltersCount() === 0}
+                                sx={{ 
+                                    height: 56,
+                                    borderRadius: 2,
+                                    borderColor: 'grey.300',
+                                    '&:hover': {
+                                        borderColor: 'primary.main',
+                                        backgroundColor: 'primary.50'
+                                    }
+                                }}
+                            >
+                                Limpar
+                            </Button>
+                        </Grid>
+                    </Grid>
+
+                    {/* Resumo dos resultados */}
+                    <Box sx={{ 
+                        mt: 2, 
+                        pt: 2, 
+                        borderTop: 1, 
+                        borderColor: 'divider',
+                        textAlign: 'center' 
+                    }}>
+                        <Typography variant="body2" color="text.secondary">
+                            {products.length > 0 
+                                ? (() => {
+                                    const isPlural = products.length > 1;
+                                    return `${products.length} produto${isPlural ? 's' : ''} encontrado${isPlural ? 's' : ''}`;
+                                })()
+                                : 'Nenhum produto encontrado'
+                            }
+                            {Boolean(pagination.totalProducts) && (
+                                ` de ${pagination.totalProducts} total`
+                            )}
+                        </Typography>
+                    </Box>
+                </Paper>
+
                 <Grid container spacing={2} justifyContent="center">
                     {products.map((product) => (
                         <Grid key={product._id} size={{xs: 12, sm: 6, md: 4, lg: 3}} sx={{ display: 'flex', justifyContent: 'center' }}>

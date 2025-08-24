@@ -107,6 +107,20 @@ export const useProducts = (initialFilters = {}) => {
         fetchProducts(searchFilters);
     }, [filters, fetchProducts]);
 
+    // Função para filtrar por categoria
+    const filterByCategory = useCallback((category) => {
+        const categoryFilters = { ...filters, category, page: 1 }; // Reset page on filter
+        setFilters(categoryFilters);
+        fetchProducts(categoryFilters);
+    }, [filters, fetchProducts]);
+
+    // Função para ordenar produtos
+    const sortProducts = useCallback((sortBy, order) => {
+        const sortFilters = { ...filters, sortBy, order, page: 1 }; // Reset page on sort
+        setFilters(sortFilters);
+        fetchProducts(sortFilters);
+    }, [filters, fetchProducts]);
+
     // Funções de paginação
     const goToPage = useCallback((page) => {
         const pageFilters = { ...filters, page };
@@ -155,6 +169,8 @@ export const useProducts = (initialFilters = {}) => {
         applyFilters,
         clearFilters,
         searchProducts,
+        filterByCategory,
+        sortProducts,
         
         // Funções de paginação
         goToPage,
@@ -178,6 +194,8 @@ export const useProducts = (initialFilters = {}) => {
         applyFilters,
         clearFilters,
         searchProducts,
+        filterByCategory,
+        sortProducts,
         goToPage,
         nextPage,
         prevPage,

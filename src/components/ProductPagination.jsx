@@ -32,7 +32,7 @@ const ProductPagination = ({
     return (
         <Box sx={{ 
             display: 'flex', 
-            flexDirection: { xs: 'column', md: 'row' },
+            flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: 2,
@@ -41,31 +41,14 @@ const ProductPagination = ({
         }}>
             {/* Resumo dos itens */}
             {showSummary && (
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" sx={{ order: { xs: 3, md: 1 } }}>
                     Mostrando {startItem}-{endItem} de {totalProducts} produtos
                 </Typography>
             )}
 
             {/* Controles de paginação */}
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
-                {/* Seletor de itens por página */}
-                {showItemsPerPage && (
-                    <FormControl size="small" sx={{ minWidth: 120 }}>
-                        <InputLabel>Por página</InputLabel>
-                        <Select
-                            value={itemsPerPage}
-                            label="Por página"
-                            onChange={(e) => onItemsPerPageChange(parseInt(e.target.value, 10))}
-                        >
-                            <MenuItem value={10}>10</MenuItem>
-                            <MenuItem value={20}>20</MenuItem>
-                            <MenuItem value={50}>50</MenuItem>
-                            <MenuItem value={100}>100</MenuItem>
-                        </Select>
-                    </FormControl>
-                )}
-
-                {/* Paginação - só mostrar se há mais de 1 página */}
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" sx={{ order: { xs: 1, md: 2 } }}>
+                {/* Paginação - centralizada */}
                 {totalPages > 1 && (
                     <Pagination
                         count={totalPages}
@@ -82,7 +65,33 @@ const ProductPagination = ({
                         }}
                     />
                 )}
+
+                {/* Seletor de itens por página */}
+                {showItemsPerPage && (
+                    <FormControl size="small" sx={{ minWidth: 120 }}>
+                        <InputLabel>Por página</InputLabel>
+                        <Select
+                            value={itemsPerPage}
+                            label="Por página"
+                            onChange={(e) => onItemsPerPageChange(parseInt(e.target.value, 10))}
+                        >
+                            <MenuItem value={10}>10</MenuItem>
+                            <MenuItem value={20}>20</MenuItem>
+                            <MenuItem value={50}>50</MenuItem>
+                            <MenuItem value={100}>100</MenuItem>
+                        </Select>
+                    </FormControl>
+                )}
             </Stack>
+
+            {/* Espaço invisível para balancear o layout em desktop */}
+            {showSummary && (
+                <Box sx={{ 
+                    width: { xs: 0, md: '200px' }, 
+                    order: { xs: 2, md: 3 },
+                    display: { xs: 'none', md: 'block' }
+                }} />
+            )}
         </Box>
     );
 };
