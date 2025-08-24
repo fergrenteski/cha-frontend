@@ -35,7 +35,8 @@ import {
     Select,
     MenuItem,
     FormControl,
-    Card
+    Card,
+    CircularProgress
 } from '@mui/material';
 import {
     Add as AddIcon,
@@ -83,10 +84,13 @@ const ProductsAdminPage = () => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogMode, setDialogMode] = useState('create'); // 'create', 'edit', 'view'
     const [selectedProduct, setSelectedProduct] = useState(null);
-    const [loading, setLoading] = useState(false);
     const [selectedImageFile, setSelectedImageFile] = useState(null);
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
     const [confirmDialog, setConfirmDialog] = useState({ open: false, title: '', message: '', onConfirm: null });
+    
+    // Estados de loading para botões da modal
+    const [loadingConfirm, setLoadingConfirm] = useState(false);
+    const [loadingSave, setLoadingSave] = useState(false);
     
     // States da paginação
     const [page, setPage] = useState(0);
@@ -196,6 +200,7 @@ const ProductsAdminPage = () => {
 
     // Fechar dialog
     const closeDialog = () => {
+        setLoadingSave(false);
         setDialogOpen(false);
         setSelectedProduct(null);
         setSelectedImageFile(null);
@@ -245,7 +250,7 @@ const ProductsAdminPage = () => {
     // Salvar presente
     const handleSave = async () => {
         try {
-            setLoading(true);
+            setLoadingSave(true);
             
             const productData = {
                 name: formData.name,
@@ -272,7 +277,7 @@ const ProductsAdminPage = () => {
             console.error('Erro ao salvar presente:', error);
             showSnackbar(error.message || 'Erro ao salvar presente', 'error');
         } finally {
-            setLoading(false);
+            setLoadingSave(false);
         }
     };
 
@@ -280,7 +285,7 @@ const ProductsAdminPage = () => {
     const handleDelete = async (productId) => {
         const confirmDelete = async () => {
             try {
-                setLoading(true);
+                setLoadingConfirm(true);
                 await productsAPI.deleteProduct(productId);
                 showSnackbar('Presente excluído com sucesso!', 'success');
                 
@@ -293,7 +298,7 @@ const ProductsAdminPage = () => {
             } catch (error) {
                 showSnackbar(error.message || 'Erro ao excluir presente', 'error');
             } finally {
-                setLoading(false);
+                setLoadingConfirm(false);
                 closeConfirmDialog();
             }
         };
@@ -322,6 +327,7 @@ const ProductsAdminPage = () => {
 
     // Fechar dialog de confirmação
     const closeConfirmDialog = () => {
+        setLoadingConfirm(false);
         setConfirmDialog({ open: false, title: '', message: '', onConfirm: null });
     };
 
@@ -1169,8 +1175,8 @@ const ProductsAdminPage = () => {
                         <Button
                             onClick={handleSave}
                             variant="contained"
-                            disabled={loading}
-                            startIcon={loading ? null : <SaveIcon />}
+                            disabled={loadingSave}
+                            startIcon={loadingSave ? null : <SaveIcon />}
                             size="large"
                             sx={{ 
                                 borderRadius: 2,
@@ -1189,7 +1195,7 @@ const ProductsAdminPage = () => {
                             }}
                         >
                             {(() => {
-                                if (loading) {
+                                if (loadingSave) {
                                     return (
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                             <Box
@@ -1289,6 +1295,8 @@ const ProductsAdminPage = () => {
                         variant="contained"
                         color="error"
                         size="large"
+                        disabled={loadingConfirm}
+                        startIcon={loadingConfirm ? <CircularProgress size={16} sx={{ color: 'white' }} /> : null}
                         sx={{ 
                             borderRadius: 2,
                             px: 3,
@@ -1301,7 +1309,7 @@ const ProductsAdminPage = () => {
                             }
                         }}
                     >
-                        Excluir
+                        {loadingConfirm ? 'Excluindo...' : 'Excluir'}
                     </Button>
                 </DialogActions>
             </Dialog>

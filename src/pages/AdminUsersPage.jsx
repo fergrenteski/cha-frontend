@@ -57,6 +57,9 @@ const AdminUsersPage = () => {
     const [filterRole, setFilterRole] = useState('');
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
     const [confirmDialog, setConfirmDialog] = useState({ open: false, title: '', message: '', onConfirm: null, color: 'error' });
+    
+    // Estados de loading para botões da modal
+    const [loadingConfirm, setLoadingConfirm] = useState(false);
 
     const { logout, user: currentUser } = useAuth();
     const { totalItems } = useCart();
@@ -131,11 +134,13 @@ const AdminUsersPage = () => {
 
     // Fechar dialog de confirmação
     const closeConfirmDialog = () => {
+        setLoadingConfirm(false);
         setConfirmDialog({ open: false, title: '', message: '', onConfirm: null, color: 'error' });
     };
 
     const handleToggleAdmin = async (userId, userName, currentIsAdmin) => {
         const confirmToggle = async () => {
+            setLoadingConfirm(true);
             try {
                 const response = await api.users.toggleUserAdmin(userId);
                 
@@ -155,6 +160,7 @@ const AdminUsersPage = () => {
                     severity: 'error'
                 });
             } finally {
+                setLoadingConfirm(false);
                 closeConfirmDialog();
             }
         };
@@ -169,6 +175,7 @@ const AdminUsersPage = () => {
 
     const handleDeleteUser = async (userId, userName) => {
         const confirmDelete = async () => {
+            setLoadingConfirm(true);
             try {
                 const response = await api.users.deleteUser(userId);
                 
@@ -186,6 +193,7 @@ const AdminUsersPage = () => {
                     severity: 'error'
                 });
             } finally {
+                setLoadingConfirm(false);
                 closeConfirmDialog();
             }
         };
@@ -659,6 +667,8 @@ const AdminUsersPage = () => {
                         variant="contained"
                         color={confirmDialog.color}
                         size="large"
+                        disabled={loadingConfirm}
+                        startIcon={loadingConfirm ? <CircularProgress size={16} sx={{ color: 'white' }} /> : null}
                         sx={{ 
                             borderRadius: 2,
                             px: 3,
@@ -675,7 +685,7 @@ const AdminUsersPage = () => {
                             }
                         }}
                     >
-                        Confirmar
+                        {loadingConfirm ? 'Carregando...' : 'Confirmar'}
                     </Button>
                 </DialogActions>
             </Dialog>
