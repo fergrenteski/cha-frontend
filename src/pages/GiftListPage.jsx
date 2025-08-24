@@ -203,7 +203,7 @@ const GiftListPage = () => {
                         mb: 3
                     }}
                 >
-                    Selecione os presentes que deseja incluir no seu carrinho e poder presentear os noivis. Lembrando que a presença de vocês já é o melhor presente que eles poderiam receber! Obs.: O mínimo por pessoa é de 100 reais.
+                    Selecione os presentes que deseja incluir no seu carrinho e poder presentear os noivos com sua jornada. Lembrando que a presença de vocês já é o melhor presente que eles poderiam receber! Obs.: O mínimo por pessoa é de 100 reais.
                 </Typography>
             </Box>
             <Container maxWidth="xl" sx={{ py: 4 }}>

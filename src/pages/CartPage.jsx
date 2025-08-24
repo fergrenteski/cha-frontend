@@ -15,7 +15,8 @@ import {
     ListItem,
     ListItemText,
     IconButton,
-    Paper
+    Paper,
+    CircularProgress
 } from '@mui/material';
 import {
     Add as AddIcon,
@@ -46,6 +47,8 @@ const CartPage = () => {
 
     // Estado para gerenciar participantes
     const [participantName, setParticipantName] = useState('');
+    const [loadingAddParticipant, setLoadingAddParticipant] = useState(false);
+    const [loadingRemoveParticipant, setLoadingRemoveParticipant] = useState('');
 
     const [snackbar, setSnackbar] = useState({
         open: false,
@@ -66,6 +69,7 @@ const CartPage = () => {
     // Função para adicionar participante
     const handleAddParticipant = async () => {
         if (participantName.trim()) {
+            setLoadingAddParticipant(true);
             try {
                 await addParticipant(participantName.trim());
                 setParticipantName('');
@@ -80,12 +84,15 @@ const CartPage = () => {
                     message: error.message || 'Erro ao adicionar convidado',
                     severity: 'error'
                 });
+            } finally {
+                setLoadingAddParticipant(false);
             }
         }
     };
 
     // Função para remover participante
     const handleRemoveParticipant = async (participantNameToRemove) => {
+        setLoadingRemoveParticipant(participantNameToRemove);
         try {
             await removeParticipant(participantNameToRemove);
             setSnackbar({
@@ -99,6 +106,8 @@ const CartPage = () => {
                 message: error.message || 'Erro ao remover convidado',
                 severity: 'error'
             });
+        } finally {
+            setLoadingRemoveParticipant('');
         }
     };
 
@@ -373,10 +382,14 @@ const CartPage = () => {
                                     <Button
                                         variant="contained"
                                         onClick={handleAddParticipant}
-                                        disabled={!participantName.trim()}
+                                        disabled={!participantName.trim() || loadingAddParticipant}
                                         sx={{ minWidth: 'auto', px: 2 }}
                                     >
-                                        <AddIcon />
+                                        {loadingAddParticipant ? (
+                                            <CircularProgress size={20} color="inherit" />
+                                        ) : (
+                                            <AddIcon />
+                                        )}
                                     </Button>
                                 </Box>
 
@@ -403,9 +416,14 @@ const CartPage = () => {
                                                         onClick={() => handleRemoveParticipant(participant)}
                                                         size="small"
                                                         color="error"
+                                                        disabled={loadingRemoveParticipant === participant}
                                                         sx={{ ml: 1 }}
                                                     >
-                                                        <DeleteIcon fontSize="small" />
+                                                        {loadingRemoveParticipant === participant ? (
+                                                            <CircularProgress size={16} color="inherit" />
+                                                        ) : (
+                                                            <DeleteIcon fontSize="small" />
+                                                        )}
                                                     </IconButton>
                                                 </ListItem>
                                             ))}
