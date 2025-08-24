@@ -4,6 +4,7 @@ import { Grid, Container, Snackbar, Alert, CircularProgress, Box, Typography } f
 import { useNavigate } from 'react-router-dom';
 import GiftCard from '../components/GiftCard';
 import Header from "../components/Header.jsx";
+import ProductPagination from '../components/ProductPagination.jsx';
 import { useCart } from '../hooks/useCart';
 import { useAuth } from '../hooks/useAuth';
 import { useProducts } from '../hooks/useProducts';
@@ -15,8 +16,15 @@ const GiftListPage = () => {
     // Usar o contexto do carrinho
     const { addItem, removeItem, totalItems, isItemInCart } = useCart();
 
-    // Usar o hook de produtos
-    const { products, loading: productsLoading, error: productsError } = useProducts();
+    // Usar o hook de produtos com paginação
+    const { 
+        products, 
+        loading: productsLoading, 
+        error: productsError,
+        pagination,
+        goToPage,
+        setItemsPerPage
+    } = useProducts({ page: 1, limit: 20 });
 
     const [snackbar, setSnackbar] = useState({
         open: false,
@@ -149,6 +157,16 @@ const GiftListPage = () => {
                             Nenhum presente encontrado
                         </Typography>
                     </Box>
+                )}
+
+                {/* Paginação */}
+                {!productsLoading && !productsError && products.length > 0 && (
+                    <ProductPagination
+                        pagination={pagination}
+                        onPageChange={goToPage}
+                        onItemsPerPageChange={setItemsPerPage}
+                        itemsPerPage={20}
+                    />
                 )}
             </Container>
 
