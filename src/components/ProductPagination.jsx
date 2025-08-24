@@ -21,8 +21,9 @@ const ProductPagination = ({
 }) => {
     const { currentPage, totalPages, totalProducts } = pagination;
 
-    if (totalPages <= 1) {
-        return null; // Não mostrar paginação se só há 1 página
+    // Só esconder se não há produtos
+    if (totalProducts === 0) {
+        return null;
     }
 
     const startItem = Math.min((currentPage - 1) * itemsPerPage + 1, totalProducts);
@@ -54,7 +55,7 @@ const ProductPagination = ({
                         <Select
                             value={itemsPerPage}
                             label="Por página"
-                            onChange={(e) => onItemsPerPageChange(e.target.value)}
+                            onChange={(e) => onItemsPerPageChange(parseInt(e.target.value, 10))}
                         >
                             <MenuItem value={10}>10</MenuItem>
                             <MenuItem value={20}>20</MenuItem>
@@ -64,21 +65,23 @@ const ProductPagination = ({
                     </FormControl>
                 )}
 
-                {/* Paginação */}
-                <Pagination
-                    count={totalPages}
-                    page={currentPage}
-                    onChange={(event, page) => onPageChange(page)}
-                    color="primary"
-                    size="medium"
-                    showFirstButton
-                    showLastButton
-                    sx={{
-                        '& .MuiPagination-ul': {
-                            flexWrap: 'nowrap'
-                        }
-                    }}
-                />
+                {/* Paginação - só mostrar se há mais de 1 página */}
+                {totalPages > 1 && (
+                    <Pagination
+                        count={totalPages}
+                        page={currentPage}
+                        onChange={(event, page) => onPageChange(page)}
+                        color="primary"
+                        size="medium"
+                        showFirstButton
+                        showLastButton
+                        sx={{
+                            '& .MuiPagination-ul': {
+                                flexWrap: 'nowrap'
+                            }
+                        }}
+                    />
+                )}
             </Stack>
         </Box>
     );
