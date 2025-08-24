@@ -169,21 +169,7 @@ const GiftListPage = () => {
                         itemsPerPage={filters.limit || 20}
                     />
                 )}
-
-                {/* Debug temporário - remover depois */}
-                {!productsLoading && !productsError && (
-                    <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
-                        <Typography variant="caption" display="block">
-                            Debug: produtos.length = {products.length}
-                        </Typography>
-                        <Typography variant="caption" display="block">
-                            Debug: filters.limit = {filters.limit || 'undefined'}
-                        </Typography>
-                        <Typography variant="caption" display="block">
-                            Debug: pagination = {JSON.stringify(pagination, null, 2)}
-                        </Typography>
-                    </Box>
-                )}
+                
             </Container>
 
             <Snackbar
