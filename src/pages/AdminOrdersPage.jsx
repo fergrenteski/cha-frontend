@@ -49,6 +49,8 @@ import {
     Check,
     PhotoCamera as PhotoIcon,
     Search as SearchIcon,
+    CreditCard,
+    AccountBalance as PixIcon,
 } from '@mui/icons-material';
 import api from '../services/api';
 
@@ -743,6 +745,83 @@ const AdminOrdersPage = () => {
                                                     />
                                                 </ListItem>
                                             </List>
+                                        </Paper>
+                                    </Grid>
+
+                                    {/* Informações de Pagamento */}
+                                    <Grid size={12}>
+                                        <Paper elevation={1} sx={{ p: 2 }}>
+                                            <Typography variant="h6" gutterBottom color="primary">
+                                                Informações de Pagamento
+                                            </Typography>
+                                            <Grid container spacing={2}>
+                                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                                    <Box sx={{ textAlign: 'center', p: 2 }}>
+                                                        <Typography variant="body2" color="text.secondary">
+                                                            Método de Pagamento
+                                                        </Typography>
+                                                        <Chip
+                                                            label={selectedOrder.payment?.method === 'pix' ? 'PIX' : 'Cartão de Crédito'}
+                                                            color={selectedOrder.payment?.method === 'pix' ? 'success' : 'primary'}
+                                                            icon={selectedOrder.payment?.method === 'pix' ? <PixIcon /> : <CreditCard />}
+                                                            sx={{ mt: 1 }}
+                                                        />
+                                                    </Box>
+                                                </Grid>
+                                                
+                                                {selectedOrder.payment?.method === 'credit_card' && (
+                                                    <>
+                                                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                                            <Box sx={{ textAlign: 'center', p: 2 }}>
+                                                                <Typography variant="body2" color="text.secondary">
+                                                                    Parcelas
+                                                                </Typography>
+                                                                <Typography variant="h6" sx={{ mt: 1 }}>
+                                                                    {selectedOrder.payment.installments}x
+                                                                </Typography>
+                                                            </Box>
+                                                        </Grid>
+                                                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                                            <Box sx={{ textAlign: 'center', p: 2 }}>
+                                                                <Typography variant="body2" color="text.secondary">
+                                                                    Taxa ({selectedOrder.payment.rate}%)
+                                                                </Typography>
+                                                                <Typography variant="h6" color="warning.main" sx={{ mt: 1 }}>
+                                                                    {formatCurrency(selectedOrder.payment.fee)}
+                                                                </Typography>
+                                                            </Box>
+                                                        </Grid>
+                                                    </>
+                                                )}
+                                                
+                                                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                                                    <Box sx={{ textAlign: 'center', p: 2 }}>
+                                                        <Typography variant="body2" color="text.secondary">
+                                                            Subtotal Produtos
+                                                        </Typography>
+                                                        <Typography variant="h6" sx={{ mt: 1 }}>
+                                                            {formatCurrency(selectedOrder.payment?.subtotal || selectedOrder.totalAmount)}
+                                                        </Typography>
+                                                    </Box>
+                                                </Grid>
+                                                
+                                                <Grid size={12}>
+                                                    <Divider sx={{ my: 2 }} />
+                                                    <Box sx={{ textAlign: 'center', p: 2, backgroundColor: 'primary.light', borderRadius: 1 }}>
+                                                        <Typography variant="body2" color="primary.dark">
+                                                            Valor Total Final
+                                                        </Typography>
+                                                        <Typography variant="h5" color="primary.dark" sx={{ mt: 1, fontWeight: 'bold' }}>
+                                                            {formatCurrency(selectedOrder.payment?.total || selectedOrder.totalAmount)}
+                                                        </Typography>
+                                                        {selectedOrder.payment?.method === 'credit_card' && selectedOrder.payment?.installments > 1 && (
+                                                            <Typography variant="body2" color="primary.dark" sx={{ mt: 0.5 }}>
+                                                                {selectedOrder.payment.installments}x de {formatCurrency(selectedOrder.payment.total / selectedOrder.payment.installments)}
+                                                            </Typography>
+                                                        )}
+                                                    </Box>
+                                                </Grid>
+                                            </Grid>
                                         </Paper>
                                     </Grid>
 

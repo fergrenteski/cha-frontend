@@ -30,7 +30,9 @@ import {
     Cancel as CancelIcon,
     LocalShipping as ShippingIcon,
     CheckCircle as CompleteIcon,
-    Schedule as PendingIcon
+    Schedule as PendingIcon,
+    CreditCard,
+    AccountBalance as PixIcon,
 } from '@mui/icons-material';
 import api from '../services/api';
 
@@ -335,9 +337,63 @@ const UserOrders = ({ limit = 5 }) => {
                                 </>
                             )}
 
+                            {/* Informações de Pagamento */}
+                            {selectedOrder.payment && (
+                                <>
+                                    <Divider sx={{ my: 2 }} />
+                                    <Typography variant="h6" sx={{ mb: 2 }}>
+                                        Forma de Pagamento
+                                    </Typography>
+                                    <Card variant="outlined" sx={{ p: 2, mb: 2 }}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                                            <Typography variant="body2" color="text.secondary">
+                                                Método:
+                                            </Typography>
+                                            <Chip
+                                                label={selectedOrder.payment.method === 'pix' ? 'PIX' : 'Cartão de Crédito'}
+                                                color={selectedOrder.payment.method === 'pix' ? 'success' : 'primary'}
+                                                icon={selectedOrder.payment.method === 'pix' ? <PixIcon /> : <CreditCard />}
+                                                size="small"
+                                            />
+                                        </Box>
+                                        
+                                        {selectedOrder.payment.method === 'credit_card' && (
+                                            <>
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        Parcelas:
+                                                    </Typography>
+                                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                                        {selectedOrder.payment.installments}x de {formatPrice(selectedOrder.payment.total / selectedOrder.payment.installments)}
+                                                    </Typography>
+                                                </Box>
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        Taxa ({selectedOrder.payment.rate}%):
+                                                    </Typography>
+                                                    <Typography variant="body2" color="warning.main" sx={{ fontWeight: 600 }}>
+                                                        + {formatPrice(selectedOrder.payment.fee)}
+                                                    </Typography>
+                                                </Box>
+                                            </>
+                                        )}
+                                        
+                                        <Divider sx={{ my: 1 }} />
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <Typography variant="body2" color="text.secondary">
+                                                Subtotal dos produtos:
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                                {formatPrice(selectedOrder.payment.subtotal)}
+                                            </Typography>
+                                        </Box>
+                                    </Card>
+                                </>
+                            )}
+
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Typography variant="h6">
-                                    Total: {formatPrice(selectedOrder.totalAmount)}
+                                    Total: {formatPrice(selectedOrder.payment?.total || selectedOrder.totalAmount)}
                                 </Typography>
                             </Box>
 

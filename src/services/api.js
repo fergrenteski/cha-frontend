@@ -641,7 +641,7 @@ export const favoritesAPI = {
 // API de Pedidos
 export const ordersAPI = {
     // Criar novo pedido
-    async createOrder(notes = '') {
+    async createOrder(orderData = {}) {
         // Gerar número do pedido único
         const timestamp = Date.now();
         const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
@@ -652,7 +652,15 @@ export const ordersAPI = {
             headers: createHeaders(true),
             body: JSON.stringify({ 
                 orderNumber,
-                notes 
+                notes: orderData.notes || '',
+                payment: orderData.payment || {
+                    method: 'pix',
+                    installments: 1,
+                    rate: 0,
+                    fee: 0,
+                    subtotal: 0,
+                    total: 0
+                }
             }),
         });
         

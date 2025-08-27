@@ -7,6 +7,12 @@ import { useAuth } from '../hooks/useAuth';
 const CART_ACTIONS = {
     SET_LOADING: 'SET_LOADING',
     SET_CART: 'SET_CART',
+    UPDATE_ITEM: 'UPDATE_ITEM',
+    REMOVE_ITEM: 'REMOVE_ITEM',
+    ADD_ITEM: 'ADD_ITEM',
+    ADD_PARTICIPANT: 'ADD_PARTICIPANT',
+    REMOVE_PARTICIPANT: 'REMOVE_PARTICIPANT',
+    CLEAR_CART: 'CLEAR_CART',
     SET_ERROR: 'SET_ERROR',
     CLEAR_ERROR: 'CLEAR_ERROR'
 };
@@ -274,7 +280,7 @@ export const CartProvider = ({ children }) => {
     }, []);
 
     // Função para finalizar compra (checkout via WhatsApp)
-    const handleCheckout = useCallback(async () => {
+    const handleCheckout = useCallback(async (paymentDetails = null) => {
         dispatch({ type: CART_ACTIONS.SET_LOADING, payload: true });
         dispatch({ type: CART_ACTIONS.CLEAR_ERROR });
         
@@ -290,7 +296,7 @@ export const CartProvider = ({ children }) => {
             }
 
             // Função para criar mensagem formatada do WhatsApp
-            const createWhatsAppMessage = (items, participants, totalPrice, orderNumber) => {
+            const createWhatsAppMessage = (items, participants, totalPrice, orderNumber, paymentInfo = null) => {
                 const currentDate = new Date().toLocaleDateString('pt-BR');
                 const currentTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
                 
@@ -331,7 +337,25 @@ export const CartProvider = ({ children }) => {
                 });
                 
                 // Total
-                message += `*VALOR TOTAL: R$ ${totalPrice.toFixed(2).replace('.', ',')}*\n\n`;
+                message += `*SUBTOTAL DOS PRODUTOS: R$ ${totalPrice.toFixed(2).replace('.', ',')}*\n\n`;
+                
+                // Informações de pagamento
+                if (paymentInfo) {
+                    message += `*FORMA DE PAGAMENTO:*\n`;
+                    if (paymentInfo.method === 'pix') {
+                        message += `- PIX (sem taxas)\n`;
+                        message += `*VALOR TOTAL: R$ ${(paymentInfo.total || 0).toFixed(2).replace('.', ',')}*\n\n`;
+                    } else if (paymentInfo.method === 'credit_card') {
+                        message += `- Cartão de Crédito\n`;
+                        message += `- ${paymentInfo.installments || 1}x de R$ ${(paymentInfo.installmentValue || 0).toFixed(2).replace('.', ',')}\n`;
+                        if ((paymentInfo.fee || 0) > 0) {
+                            message += `- Taxa do cartão (${paymentInfo.rate || 0}%): R$ ${(paymentInfo.fee || 0).toFixed(2).replace('.', ',')}\n`;
+                        }
+                        message += `*VALOR TOTAL: R$ ${(paymentInfo.total || 0).toFixed(2).replace('.', ',')}*\n\n`;
+                    }
+                } else {
+                    message += `*VALOR TOTAL: R$ ${(totalPrice || 0).toFixed(2).replace('.', ',')}*\n\n`;
+                }
                 
                 // Informações adicionais
                 message += `*Observacoes:*\n`;
@@ -346,7 +370,26 @@ export const CartProvider = ({ children }) => {
             // Criar pedido no backend primeiro para obter o número do pedido
             let orderData;
             try {
-                const response = await ordersAPI.createOrder();
+                // Dados do pedido incluindo informações de pagamento
+                const orderPayload = {
+                    payment: paymentDetails ? {
+                        method: paymentDetails.method,
+                        installments: paymentDetails.installments,
+                        rate: paymentDetails.rate,
+                        fee: paymentDetails.fee,
+                        subtotal: cartState.totalPrice,
+                        total: paymentDetails.total
+                    } : {
+                        method: 'pix',
+                        installments: 1,
+                        rate: 0,
+                        fee: 0,
+                        subtotal: cartState.totalPrice,
+                        total: cartState.totalPrice
+                    }
+                };
+
+                const response = await ordersAPI.createOrder(orderPayload);
                 orderData = response.order;
                 console.log('Pedido criado no backend:', orderData);
             } catch (backendError) {
@@ -362,7 +405,8 @@ export const CartProvider = ({ children }) => {
                 cartState.items, 
                 cartState.participants, 
                 cartState.totalPrice,
-                orderData.orderNumber || orderData._id || 'N/A'
+                orderData.orderNumber || orderData._id || 'N/A',
+                paymentDetails
             );
             
             // Número do WhatsApp (sem espaços e caracteres especiais)

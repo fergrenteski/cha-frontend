@@ -1,5 +1,5 @@
 // pages/CartPage.js
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
     Container,
     Typography,
@@ -27,6 +27,7 @@ import { useNavigate } from 'react-router-dom';
 import CartItem from '../components/CartItem';
 import CartSummary from '../components/CartSummary';
 import EmptyCart from '../components/EmptyCart';
+import PaymentSelector from '../components/PaymentSelector';
 import { useCart } from '../hooks/useCart';
 
 const CartPage = () => {
@@ -50,6 +51,16 @@ const CartPage = () => {
     const [loadingAddParticipant, setLoadingAddParticipant] = useState(false);
     const [loadingRemoveParticipant, setLoadingRemoveParticipant] = useState('');
 
+    // Estado para gerenciar pagamento
+    const [paymentDetails, setPaymentDetails] = useState({
+        method: 'pix',
+        installments: 1,
+        rate: 0,
+        fee: 0,
+        total: totalPrice,
+        installmentValue: totalPrice
+    });
+
     const [snackbar, setSnackbar] = useState({
         open: false,
         message: '',
@@ -66,6 +77,12 @@ const CartPage = () => {
         // Valor mínimo baseado no número de participantes
         return additionalValue + baseValue // Exemplo:
     };
+
+    // Função para lidar com mudanças no pagamento
+    const handlePaymentChange = React.useCallback((newPaymentDetails) => {
+        setPaymentDetails(newPaymentDetails);
+    }, []);
+
     // Função para adicionar participante
     const handleAddParticipant = async () => {
         if (participantName.trim()) {
@@ -183,7 +200,7 @@ const CartPage = () => {
         });
     };
 
-    const handleCheckoutProcess = async () => {
+        const handleCheckoutProcess = async () => {
         if (cartItems.length === 0) {
             setSnackbar({
                 open: true,
@@ -194,7 +211,7 @@ const CartPage = () => {
         }
 
         try {
-            const response = await handleCheckout();
+            const response = await handleCheckout(paymentDetails);
             if (response.success) {
                 setSnackbar({
                     open: true,
@@ -217,8 +234,14 @@ const CartPage = () => {
             } else if (response.requiresLogin) {
                 setSnackbar({
                     open: true,
-                    message: 'É necessário fazer login para enviar o pedido',
+                    message: 'É necessário fazer login para finalizar o pedido',
                     severity: 'warning'
+                });
+            } else {
+                setSnackbar({
+                    open: true,
+                    message: response.error || 'Erro ao preparar pedido',
+                    severity: 'error'
                 });
             }
         } catch (error) {
@@ -442,6 +465,12 @@ const CartPage = () => {
                                 )}
                             </Paper>
 
+                            {/* Seção de Pagamento */}
+                            <PaymentSelector
+                                subtotal={totalPrice}
+                                onPaymentChange={handlePaymentChange}
+                            />
+
                             {/* Resumo do Carrinho */}
                             <Box
                                 sx={{
@@ -454,7 +483,8 @@ const CartPage = () => {
                             >
                                 <CartSummary
                                     items={cartItems}
-                                    totalPrice={totalPrice}
+                                    totalPrice={paymentDetails.total}
+                                    paymentDetails={paymentDetails}
                                     onClearCart={handleClearCart}
                                     onCheckout={handleCheckoutProcess}
                                     onContinueShopping={handleContinueShopping}

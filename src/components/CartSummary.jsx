@@ -18,6 +18,7 @@ import {
 const CartSummary = ({
                 items = [],
                 totalPrice = 0,
+                paymentDetails = null,
                 onCheckout,
                 onContinueShopping,
                 participants = [],
@@ -29,8 +30,8 @@ const CartSummary = ({
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     // Cálculos
-    const subtotal = totalPrice;
-    const total = subtotal; // Sem frete para presentes
+    const subtotal = paymentDetails ? paymentDetails.total - paymentDetails.fee : totalPrice;
+    const total = paymentDetails ? paymentDetails.total : totalPrice;
     const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
     // Progresso baseado no valor mínimo (se houver convidados)
@@ -102,9 +103,42 @@ const CartSummary = ({
                         {totalItems} {totalItems === 1 ? 'item' : 'itens'}
                     </Typography>
                     <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                        R$ {subtotal.toFixed(2).replace('.', ',')}
+                        R$ {(paymentDetails ? paymentDetails.total - paymentDetails.fee : totalPrice).toFixed(2).replace('.', ',')}
                     </Typography>
                 </Box>
+
+                {/* Payment Details */}
+                {paymentDetails && paymentDetails.fee > 0 && (
+                    <Box sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        mb: 2
+                    }}>
+                        <Typography variant="body2" color="text.secondary">
+                            Taxa do cartão ({paymentDetails.rate}%)
+                        </Typography>
+                        <Typography variant="body2" color="warning.main" sx={{ fontWeight: 500 }}>
+                            + R$ {paymentDetails.fee.toFixed(2).replace('.', ',')}
+                        </Typography>
+                    </Box>
+                )}
+
+                {paymentDetails && paymentDetails.method === 'credit_card' && (
+                    <Box sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        mb: 2
+                    }}>
+                        <Typography variant="body2" color="text.secondary">
+                            {paymentDetails.installments}x no cartão
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            R$ {paymentDetails.installmentValue.toFixed(2).replace('.', ',')}
+                        </Typography>
+                    </Box>
+                )}
 
                 {/* Progress Bar */}
                 {subtotal > 0 && subtotal < targetValue && (
