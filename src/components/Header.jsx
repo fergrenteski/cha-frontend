@@ -149,6 +149,21 @@ const Header = ({
                         >
                             Álbum
                         </Button>
+                        <Button
+                            onClick={() => navigate('/convite')}
+                            sx={{
+                                color: '#212121',
+                                fontWeight: 600,
+                                textTransform: 'none',
+                                fontSize: '1rem',
+                                '&:hover': {
+                                    backgroundColor: 'transparent',
+                                    color: theme.palette.primary.main
+                                }
+                            }}
+                        >
+                            Convite 💌
+                        </Button>
                         
                         {/* Menu Admin com submenu - apenas para admins */}
                         {user?.isAdmin && (
@@ -278,6 +293,9 @@ const Header = ({
                                 </MenuItem>
                                 <MenuItem onClick={() => handleMenuItemClick(onAlbumClick)}>
                                     <ListItemText primary="Álbum" />
+                                </MenuItem>
+                                <MenuItem onClick={() => handleMenuItemClick(() => navigate('/convite'))}>
+                                    <ListItemText primary="Convite 💌" />
                                 </MenuItem>
                                 
                                 {/* Itens Admin - apenas para admins */}

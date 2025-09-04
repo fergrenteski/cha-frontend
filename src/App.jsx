@@ -23,6 +23,7 @@ import {
     LazyAlbumPage,
     LazyAuthPage,
     LazyAccountPage,
+    LazyInvitePage,
     LazyProductsAdminPage,
     LazyAdminOrdersPage,
     LazyAdminUsersPage
@@ -114,6 +115,7 @@ const AppContent = () => {
                 <Suspense fallback={<PageLoader />}>
                     <Routes>
                         <Route path="/auth" element={<LazyAuthPage />} />
+                        <Route path="/convite" element={<LazyInvitePage />} />
                         <Route 
                             path="/" 
                             element={<LazyGiftListPage />} 

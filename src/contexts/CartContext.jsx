@@ -349,7 +349,7 @@ export const CartProvider = ({ children }) => {
                         message += `- Cartão de Crédito\n`;
                         message += `- ${paymentInfo.installments || 1}x de R$ ${(paymentInfo.installmentValue || 0).toFixed(2).replace('.', ',')}\n`;
                         if ((paymentInfo.fee || 0) > 0) {
-                            message += `- Taxa do cartão (${paymentInfo.rate || 0}%): R$ ${(paymentInfo.fee || 0).toFixed(2).replace('.', ',')}\n`;
+                            message += `- Taxa composta do cartão (${paymentInfo.rate || 0}%): R$ ${(paymentInfo.fee || 0).toFixed(2).replace('.', ',')}\n`;
                         }
                         message += `*VALOR TOTAL: R$ ${(paymentInfo.total || 0).toFixed(2).replace('.', ',')}*\n\n`;
                     }

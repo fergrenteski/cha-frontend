@@ -20,14 +20,14 @@ import {
 } from '@mui/icons-material';
 import PixIcon from './PixIcon';
 
-// Taxas para cartão de crédito (recebimento em 1 dia útil)
+// Taxas para cartão de crédito (aplicadas sobre cada parcela)
 const CREDIT_CARD_RATES = {
-    1: 4.20,  // 1x (crédito à vista)
+    1: 4.2,  // 1x (crédito à vista)
     2: 6.09,  // 2x
     3: 7.01,  // 3x
     4: 7.91,  // 4x
-    5: 8.80,  // 5x
-    6: 9.67,  // 6x
+    5: 8.8,  // 5x
+    6: 9.67, // 6x
     7: 12.59, // 7x
     8: 13.42, // 8x
     9: 14.25, // 9x
@@ -54,15 +54,19 @@ const PaymentSelector = ({ subtotal, onPaymentChange }) => {
             };
         } else {
             const rate = CREDIT_CARD_RATES[installments];
-            const fee = subtotal * (rate / 100);
-            const total = subtotal + fee;
-            const installmentValue = total / installments;
-            
+            // InfinityPay: valor final = valor base / (1 - taxa/100)
+            const divisor = 1 - (rate / 100);
+            // Calcula e arredonda para cima com duas casas decimais
+            const rawTotal = subtotal / divisor;
+            const total = Math.ceil(rawTotal * 100) / 100;
+            const totalFee = total - subtotal;
+            const rawInstallmentValue = total / installments;
+            const installmentValue = Math.ceil(rawInstallmentValue * 100) / 100;
             return {
                 method: 'credit_card',
                 installments,
                 rate,
-                fee,
+                fee: totalFee,
                 total,
                 installmentValue
             };
@@ -181,12 +185,20 @@ const PaymentSelector = ({ subtotal, onPaymentChange }) => {
                             label="Número de parcelas"
                             onChange={handleInstallmentsChange}
                         >
-                            {Object.entries(CREDIT_CARD_RATES).map(([key, rate]) => (
-                                <MenuItem key={key} value={parseInt(key)}>
-                                    {key}x de R$ {((paymentDetails?.total || 0) / parseInt(key)).toFixed(2).replace('.', ',')} 
-                                    {key === '1' ? ' (à vista)' : ''} - Taxa: {rate}%
-                                </MenuItem>
-                            ))}
+                            {Object.entries(CREDIT_CARD_RATES).map(([key, rate]) => {
+                                const numInstallments = parseInt(key);
+                                // Taxa composta: total = subtotal * (1 + taxa/100)
+                                const multiplier = 1 + (rate / 100);
+                                const total = subtotal * multiplier;
+                                const installmentValue = total / numInstallments;
+                                
+                                return (
+                                    <MenuItem key={key} value={numInstallments}>
+                                        {key}x de R$ {installmentValue.toFixed(2).replace('.', ',')} 
+                                        {key === '1' ? ' (à vista)' : ''} - Taxa: {rate}%
+                                    </MenuItem>
+                                );
+                            })}
                         </Select>
                     </FormControl>
                 )}
