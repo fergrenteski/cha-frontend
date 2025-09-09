@@ -391,7 +391,6 @@ export const CartProvider = ({ children }) => {
 
                 const response = await ordersAPI.createOrder(orderPayload);
                 orderData = response.order;
-                console.log('Pedido criado no backend:', orderData);
             } catch (backendError) {
                 console.error('Erro ao criar pedido no backend:', backendError);
                 return { 

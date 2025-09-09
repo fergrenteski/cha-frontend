@@ -5,8 +5,6 @@ export const registerServiceWorker = () => {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/sw.js')
                 .then((registration) => {
-                    console.log('SW registrado com sucesso:', registration);
-                    
                     // Verificar por atualizações
                     registration.addEventListener('updatefound', () => {
                         const newWorker = registration.installing;
@@ -24,7 +22,7 @@ export const registerServiceWorker = () => {
                     });
                 })
                 .catch((error) => {
-                    console.log('Falha ao registrar SW:', error);
+                    console.error('Falha ao registrar SW:', error);
                 });
         });
 
