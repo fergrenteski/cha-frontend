@@ -30,7 +30,6 @@ import {
     useTheme,
     useMediaQuery,
     Avatar,
-    TablePagination,
     InputLabel,
     Select,
     MenuItem,
@@ -53,6 +52,7 @@ import { useProducts } from '../hooks/useProducts';
 import { useCart } from '../hooks/useCart';
 import { useFavorites } from '../hooks/useFavorites';
 import { productsAPI } from '../services/api';
+import ProductPagination from '../components/ProductPagination.jsx';
 
 const ProductsAdminPage = () => {
     const theme = useTheme();
@@ -65,15 +65,22 @@ const ProductsAdminPage = () => {
         products, 
         categories, 
         error: productsError,
+        loading: productsLoading,
+        filterLoading,
+        filters,
+        pagination,
+        searchProducts,
+        filterByCategory,
+        clearFilters: clearProductFilters,
+        goToPage,
+        setItemsPerPage,
         refresh: refreshProducts
     } = useProducts();
 
     // States locais
-    const [filteredProducts, setFilteredProducts] = useState([]);
     const [localCategories, setLocalCategories] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('');
-    const [availableFilter, setAvailableFilter] = useState('');
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogMode, setDialogMode] = useState('create'); // 'create', 'edit', 'view'
     const [selectedProduct, setSelectedProduct] = useState(null);
@@ -84,10 +91,6 @@ const ProductsAdminPage = () => {
     // Estados de loading para botões da modal
     const [loadingConfirm, setLoadingConfirm] = useState(false);
     const [loadingSave, setLoadingSave] = useState(false);
-    
-    // States da paginação
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     // State do formulário
     const [formData, setFormData] = useState({
@@ -101,33 +104,6 @@ const ProductsAdminPage = () => {
         stock: ''
     });
 
-    // Atualizar produtos filtrados quando produtos mudarem
-    useEffect(() => {
-        let filtered = [...products];
-
-        // Filtrar por busca
-        if (searchTerm) {
-            filtered = filtered.filter(product =>
-                product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                product.description.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-
-        // Filtrar por categoria
-        if (categoryFilter) {
-            filtered = filtered.filter(product => product.category === categoryFilter);
-        }
-
-        // Filtrar por disponibilidade
-        if (availableFilter !== '') {
-            filtered = filtered.filter(product => 
-                product.available === (availableFilter === 'true')
-            );
-        }
-
-        setFilteredProducts(filtered);
-    }, [products, searchTerm, categoryFilter, availableFilter]);
-
     // Atualizar categorias locais quando categorias do hook mudarem
     useEffect(() => {
         setLocalCategories(categories);
@@ -136,22 +112,28 @@ const ProductsAdminPage = () => {
     // Handler de busca
     const handleSearch = (value) => {
         setSearchTerm(value);
+        if (value.trim()) {
+            searchProducts(value);
+        } else {
+            clearProductFilters();
+        }
     };
 
     // Handler de filtros
     const handleCategoryFilter = (category) => {
         setCategoryFilter(category);
-    };
-
-    const handleAvailableFilter = (available) => {
-        setAvailableFilter(available);
+        if (category) {
+            filterByCategory(category);
+        } else {
+            clearProductFilters();
+        }
     };
 
     // Limpar filtros
     const clearFilters = () => {
         setSearchTerm('');
         setCategoryFilter('');
-        setAvailableFilter('');
+        clearProductFilters();
     };
 
     // Abrir dialog
@@ -348,24 +330,18 @@ const ProductsAdminPage = () => {
         showSnackbar('Imagem selecionada com sucesso!', 'success');
     };
 
-    // Handler da paginação
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
-
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
-    };
-
-    // Produtos paginados
-    const paginatedProducts = filteredProducts.slice(
-        page * rowsPerPage,
-        page * rowsPerPage + rowsPerPage
-    );
-
     return (
         <>
+            {/* Loading inicial */}
+            {productsLoading && (
+                <Container maxWidth="xl" sx={{ py: 4 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                        <CircularProgress size={60} />
+                    </Box>
+                </Container>
+            )}
+
+            {!productsLoading && (
             <Container maxWidth="xl" sx={{ py: 4 }}>
                 <Fade in timeout={800}>
                     <Box>
@@ -430,23 +406,7 @@ const ProductsAdminPage = () => {
                             </FormControl>
                         </Grid>
                         
-                        <Grid size={{xs: 12, sm: 6, md: 3}}>
-                            <FormControl fullWidth>
-                                <InputLabel>Disponibilidade</InputLabel>
-                                <Select
-                                    value={availableFilter}
-                                    label="Disponibilidade"
-                                    onChange={(e) => handleAvailableFilter(e.target.value)}
-                                    sx={{ borderRadius: 2 }}
-                                >
-                                    <MenuItem value="">Todos</MenuItem>
-                                    <MenuItem value="true">Disponível</MenuItem>
-                                    <MenuItem value="false">Indisponível</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        
-                        <Grid size={{xs: 12, sm: 6, md: 3}}>
+                        <Grid size={{xs: 12, sm: 6, md: 4}}>
                             <Button
                                 fullWidth
                                 variant="outlined"
@@ -463,7 +423,16 @@ const ProductsAdminPage = () => {
                         <Grid size={{xs: 12, sm: 12}}>
                             <Box sx={{ textAlign: 'center' }}>
                                 <Typography variant="body2" color="text.secondary">
-                                    {filteredProducts.length} de {products.length} presentes
+                                    {products.length > 0 
+                                        ? (() => {
+                                            const isPlural = products.length > 1;
+                                            return `${products.length} produto${isPlural ? 's' : ''} encontrado${isPlural ? 's' : ''}`;
+                                        })()
+                                        : 'Nenhum produto encontrado'
+                                    }
+                                    {Boolean(pagination.totalProducts) && (
+                                        ` de ${pagination.totalProducts} total`
+                                    )}
                                 </Typography>
                             </Box>
                         </Grid>
@@ -478,8 +447,30 @@ const ProductsAdminPage = () => {
                 )}
 
                 {/* Tabela de produtos */}
-                <Paper sx={{ borderRadius: 2, overflow: 'hidden', boxShadow: 2 }}>
-                    {paginatedProducts.length > 0 ? (
+                <Paper sx={{ borderRadius: 2, overflow: 'hidden', boxShadow: 2, position: 'relative' }}>
+                    {/* Overlay de loading para filtros */}
+                    {filterLoading && (
+                        <Box
+                            sx={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                zIndex: 10,
+                                borderRadius: 2,
+                                backdropFilter: 'blur(2px)'
+                            }}
+                        >
+                            <CircularProgress size={40} thickness={4} />
+                        </Box>
+                    )}
+                    
+                    {products.length > 0 ? (
                         <TableContainer>
                             <Table>
                                 <TableHead>
@@ -493,7 +484,7 @@ const ProductsAdminPage = () => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {paginatedProducts.map((product) => (
+                                    {products.map((product) => (
                                         <TableRow 
                                             key={product._id}
                                             sx={{ 
@@ -632,24 +623,17 @@ const ProductsAdminPage = () => {
                             </Typography>
                         </Box>
                     )}
-                    
-                    {/* Paginação */}
-                    <TablePagination
-                        component="div"
-                        count={filteredProducts.length}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        rowsPerPage={rowsPerPage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                        rowsPerPageOptions={[5, 10, 25, 50]}
-                        labelRowsPerPage="Itens por página:"
-                        labelDisplayedRows={({ from, to, count }) => {
-                            const total = count !== -1 ? count : `mais de ${to}`;
-                            return `${from}-${to} de ${total}`;
-                        }}
-                        sx={{ borderTop: 1, borderColor: 'divider' }}
-                    />
                 </Paper>
+
+                {/* Paginação */}
+                {products.length > 0 && (
+                    <ProductPagination
+                        pagination={pagination}
+                        onPageChange={goToPage}
+                        onItemsPerPageChange={setItemsPerPage}
+                        itemsPerPage={filters.limit || 20}
+                    />
+                )}
 
                 {/* FAB para mobile */}
                 {isMobile && (
@@ -669,6 +653,7 @@ const ProductsAdminPage = () => {
                     </Box>
                 </Fade>
             </Container>
+            )}
 
             {/* Dialog do formulário */}
             <Dialog 
