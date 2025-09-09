@@ -360,7 +360,7 @@ const AuthPage = () => {
                                 label="E-mail"
                                 type="email"
                                 value={formData.email}
-                                onChange={(e) => handleInputChange('email', e.target.value)}
+                                onChange={(e) => handleInputChange('email', e.target.value.toLowerCase())}
                                 error={!!formErrors.email}
                                 helperText={formErrors.email}
                                 variant="outlined"
