@@ -320,14 +320,26 @@ const CartPage = () => {
                         {/* Coluna do resumo (centralizado verticalmente) */}
                         <Grid size={isMobile ? 12 : 4}>
                             {/* Seção de Participantes */}
-                            <Paper
+                            <Box
                                 elevation={2}
                                 sx={{
-                                    p: 3,
-                                    mb: 3,
-                                    borderRadius: 2,
-                                    backgroundColor: theme.palette.background.paper
-                                }}
+                                borderRadius: '20px',
+                                background: 'rgba(255, 255, 255, 0.98)',
+                                border: '2px solid',
+                                borderColor: 'transparent',
+                                boxShadow: '0 12px 40px rgba(218, 165, 32, 0.15)',
+                                position: 'static',
+                                top: 20,
+                                mb: 3,
+                                p: 4,
+                                height: 'fit-content',
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                    transform: 'translateY(-2px)',
+                                    boxShadow: '0 16px 50px rgba(218, 165, 32, 0.2)',
+                                    borderColor: 'rgba(218, 165, 32, 0.3)'
+                                }
+                            }}
                             >
                                 {/* Informação do Organizador */}
                                 {isAuthenticated && user && (
@@ -366,14 +378,18 @@ const CartPage = () => {
                                     variant="h6"
                                     gutterBottom
                                     sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 1,
-                                        fontWeight: 600,
-                                        color: theme.palette.text.primary
+                                        fontFamily: "'Playfair Display', serif",
+                                        fontWeight: 500,
+                                        background: 'linear-gradient(135deg, #daa520, #b8860b)',
+                                        backgroundClip: 'text',
+                                        WebkitBackgroundClip: 'text',
+                                        WebkitTextFillColor: 'transparent',
+                                        mb: 3,
+                                        fontSize: '1.3rem',
+                                        letterSpacing: '0.5px',
+                                        textAlign: 'center'
                                     }}
                                 >
-                                    <PersonIcon />
                                     Convidados Adicionais
                                 </Typography>
                                 
@@ -463,7 +479,7 @@ const CartPage = () => {
                                         </Typography>
                                     </Box>
                                 )}
-                            </Paper>
+                            </Box>
 
                             {/* Seção de Pagamento */}
                             <PaymentSelector

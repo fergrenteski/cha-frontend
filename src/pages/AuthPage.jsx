@@ -170,28 +170,38 @@ const AuthPage = () => {
     };
 
     return (
-        <>
-            <Box
-                sx={{
-                    minHeight: '100vh', // Ajusta para tela cheia sem header
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    py: 4,
-                    px: 2,
-                }}
-            >
+        <Box
+            sx={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                py: 4,
+                px: 2,
+                background: 'linear-gradient(135deg, rgba(218, 165, 32, 0.03) 0%, rgba(139, 69, 19, 0.05) 25%, rgba(184, 134, 11, 0.03) 50%, rgba(205, 133, 63, 0.04) 75%, rgba(218, 165, 32, 0.02) 100%)',
+                position: 'relative',
+                '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'radial-gradient(circle at 30% 20%, rgba(218, 165, 32, 0.08) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(139, 69, 19, 0.06) 0%, transparent 50%)',
+                    pointerEvents: 'none'
+                }
+            }}
+        >
                 <Container maxWidth="sm">
                     <Slide direction="up" in={true} timeout={600}>
                         <Paper
                             elevation={24}
                             sx={{
-                                p: isMobile ? 3 : 5,
-                                borderRadius: 4,
-                                background: 'rgba(255, 255, 255, 0.98)',
+                                p: 5,
+                                borderRadius: '20px',
                                 backdropFilter: 'blur(20px)',
-                                boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
-                                border: '1px solid rgba(255,255,255,0.3)',
+                                boxShadow: '0 25px 80px rgba(218, 165, 32, 0.15), 0 15px 40px rgba(139, 69, 19, 0.1)',
+                                border: '2px solid linear-gradient(135deg, #daa520, #b8860b)',
                                 position: 'relative',
                                 overflow: 'hidden',
                                 '&::before': {
@@ -200,8 +210,7 @@ const AuthPage = () => {
                                     top: 0,
                                     left: 0,
                                     right: 0,
-                                    height: '4px',
-                                    background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+                                    height: '4px'
                                 }
                             }}
                         >
@@ -215,16 +224,16 @@ const AuthPage = () => {
                                         width: 70,
                                         height: 70,
                                         borderRadius: '50%',
-                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                        background: 'linear-gradient(135deg, #daa520 0%, #b8860b 100%)',
                                         mb: 3,
-                                        boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+                                        boxShadow: '0 12px 35px rgba(218, 165, 32, 0.3)',
                                         position: 'relative',
                                         '&::after': {
                                             content: '""',
                                             position: 'absolute',
                                             inset: '3px',
                                             borderRadius: '50%',
-                                            background: 'linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%)',
+                                            background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 100%)',
                                         }
                                     }}
                                 >
@@ -234,14 +243,16 @@ const AuthPage = () => {
                                     variant="h4"
                                     component="h1"
                                     sx={{
-                                        fontWeight: 700,
-                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                        fontFamily: "'Playfair Display', serif",
+                                        fontWeight: 400,
+                                        background: 'linear-gradient(135deg, #daa520 0%, #b8860b 50%, #cd853f 100%)',
                                         backgroundClip: 'text',
                                         WebkitBackgroundClip: 'text',
                                         WebkitTextFillColor: 'transparent',
                                         mb: 1,
                                         fontSize: isMobile ? '2rem' : '2.5rem',
-                                        letterSpacing: '-0.5px'
+                                        letterSpacing: '1px',
+                                        textShadow: '0 2px 4px rgba(218, 165, 32, 0.1)'
                                     }}
                                 >
                                     {isLogin ? 'Bem-vindo de volta!' : 'Criar Conta'}
@@ -249,9 +260,12 @@ const AuthPage = () => {
                                 <Typography
                                     variant="body1"
                                     sx={{
-                                        color: 'text.secondary',
+                                        fontFamily: "'Playfair Display', serif",
+                                        fontWeight: 300,
+                                        fontStyle: 'italic',
+                                        color: '#ab7f19ff',
                                         fontSize: '1.1rem',
-                                        fontWeight: 400
+                                        letterSpacing: '0.5px'
                                     }}
                                 >
                                     {isLogin ? 'Entre na sua conta para continuar' : 'Cadastre-se para ter acesso completo'}
@@ -313,15 +327,24 @@ const AuthPage = () => {
                                             sx={{
                                                 '& .MuiOutlinedInput-root': {
                                                     borderRadius: 3,
-                                                    backgroundColor: 'rgba(255,255,255,0.8)',
+                                                    backgroundColor: 'rgba(255,255,255,0.9)',
+                                                    border: '1px solid rgba(218, 165, 32, 0.1)',
                                                     transition: 'all 0.3s ease',
                                                     '&:hover': {
                                                         backgroundColor: 'rgba(255,255,255,1)',
-                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                                                        borderColor: 'rgba(218, 165, 32, 0.3)',
+                                                        boxShadow: '0 4px 15px rgba(218, 165, 32, 0.1)'
                                                     },
                                                     '&.Mui-focused': {
                                                         backgroundColor: 'rgba(255,255,255,1)',
-                                                        boxShadow: '0 4px 20px rgba(102, 126, 234, 0.15)'
+                                                        borderColor: '#daa520',
+                                                        boxShadow: '0 4px 20px rgba(218, 165, 32, 0.2)'
+                                                    }
+                                                },
+                                                '& .MuiInputLabel-root': {
+                                                    fontFamily: "'Playfair Display', serif",
+                                                    '&.Mui-focused': {
+                                                        color: '#daa520'
                                                     }
                                                 }
                                             }}
@@ -337,15 +360,24 @@ const AuthPage = () => {
                                             sx={{
                                                 '& .MuiOutlinedInput-root': {
                                                     borderRadius: 3,
-                                                    backgroundColor: 'rgba(255,255,255,0.8)',
+                                                    backgroundColor: 'rgba(255,255,255,0.9)',
+                                                    border: '1px solid rgba(218, 165, 32, 0.1)',
                                                     transition: 'all 0.3s ease',
                                                     '&:hover': {
                                                         backgroundColor: 'rgba(255,255,255,1)',
-                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                                                        borderColor: 'rgba(218, 165, 32, 0.3)',
+                                                        boxShadow: '0 4px 15px rgba(218, 165, 32, 0.1)'
                                                     },
                                                     '&.Mui-focused': {
                                                         backgroundColor: 'rgba(255,255,255,1)',
-                                                        boxShadow: '0 4px 20px rgba(102, 126, 234, 0.15)'
+                                                        borderColor: '#daa520',
+                                                        boxShadow: '0 4px 20px rgba(218, 165, 32, 0.2)'
+                                                    }
+                                                },
+                                                '& .MuiInputLabel-root': {
+                                                    fontFamily: "'Playfair Display', serif",
+                                                    '&.Mui-focused': {
+                                                        color: '#daa520'
                                                     }
                                                 }
                                             }}
@@ -367,7 +399,7 @@ const AuthPage = () => {
                                 InputProps={{
                                     startAdornment: (
                                         <InputAdornment position="start">
-                                            <Email sx={{ color: 'text.secondary' }} />
+                                            <Email sx={{ color: '#ab7f19ff' }} />
                                         </InputAdornment>
                                     ),
                                 }}
@@ -375,15 +407,24 @@ const AuthPage = () => {
                                     mb: 3,
                                     '& .MuiOutlinedInput-root': {
                                         borderRadius: 3,
-                                        backgroundColor: 'rgba(255,255,255,0.8)',
+                                        backgroundColor: 'rgba(255,255,255,0.9)',
+                                        border: '1px solid rgba(218, 165, 32, 0.1)',
                                         transition: 'all 0.3s ease',
                                         '&:hover': {
                                             backgroundColor: 'rgba(255,255,255,1)',
-                                            boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                                            borderColor: 'rgba(218, 165, 32, 0.3)',
+                                            boxShadow: '0 4px 15px rgba(218, 165, 32, 0.1)'
                                         },
                                         '&.Mui-focused': {
                                             backgroundColor: 'rgba(255,255,255,1)',
-                                            boxShadow: '0 4px 20px rgba(102, 126, 234, 0.15)'
+                                            borderColor: '#daa520',
+                                            boxShadow: '0 4px 20px rgba(218, 165, 32, 0.2)'
+                                        }
+                                    },
+                                    '& .MuiInputLabel-root': {
+                                        fontFamily: "'Playfair Display', serif",
+                                        '&.Mui-focused': {
+                                            color: '#daa520'
                                         }
                                     }
                                 }}
@@ -403,7 +444,7 @@ const AuthPage = () => {
                                         InputProps={{
                                             startAdornment: (
                                                 <InputAdornment position="start">
-                                                    <Phone sx={{ color: 'text.secondary' }} />
+                                                    <Phone sx={{ color: '#ab7f19ff' }} />
                                                 </InputAdornment>
                                             ),
                                         }}
@@ -411,15 +452,24 @@ const AuthPage = () => {
                                             mb: 3,
                                             '& .MuiOutlinedInput-root': {
                                                 borderRadius: 3,
-                                                backgroundColor: 'rgba(255,255,255,0.8)',
+                                                backgroundColor: 'rgba(255,255,255,0.9)',
+                                                border: '1px solid rgba(218, 165, 32, 0.1)',
                                                 transition: 'all 0.3s ease',
                                                 '&:hover': {
                                                     backgroundColor: 'rgba(255,255,255,1)',
-                                                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                                                    borderColor: 'rgba(218, 165, 32, 0.3)',
+                                                    boxShadow: '0 4px 15px rgba(218, 165, 32, 0.1)'
                                                 },
                                                 '&.Mui-focused': {
                                                     backgroundColor: 'rgba(255,255,255,1)',
-                                                    boxShadow: '0 4px 20px rgba(102, 126, 234, 0.15)'
+                                                    borderColor: '#daa520',
+                                                    boxShadow: '0 4px 20px rgba(218, 165, 32, 0.2)'
+                                                }
+                                            },
+                                            '& .MuiInputLabel-root': {
+                                                fontFamily: "'Playfair Display', serif",
+                                                '&.Mui-focused': {
+                                                    color: '#daa520'
                                                 }
                                             }
                                         }}
@@ -440,7 +490,7 @@ const AuthPage = () => {
                                 InputProps={{
                                     startAdornment: (
                                         <InputAdornment position="start">
-                                            <Lock sx={{ color: 'text.secondary' }} />
+                                            <Lock sx={{ color: '#ab7f19ff' }} />
                                         </InputAdornment>
                                     ),
                                     endAdornment: (
@@ -450,7 +500,7 @@ const AuthPage = () => {
                                                 edge="end"
                                                 sx={{
                                                     '&:hover': {
-                                                        backgroundColor: 'rgba(102, 126, 234, 0.04)'
+                                                        backgroundColor: 'rgba(218, 165, 32, 0.08)'
                                                     }
                                                 }}
                                             >
@@ -463,15 +513,24 @@ const AuthPage = () => {
                                     mb: 4,
                                     '& .MuiOutlinedInput-root': {
                                         borderRadius: 3,
-                                        backgroundColor: 'rgba(255,255,255,0.8)',
+                                        backgroundColor: 'rgba(255,255,255,0.9)',
+                                        border: '1px solid rgba(218, 165, 32, 0.1)',
                                         transition: 'all 0.3s ease',
                                         '&:hover': {
                                             backgroundColor: 'rgba(255,255,255,1)',
-                                            boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                                            borderColor: 'rgba(218, 165, 32, 0.3)',
+                                            boxShadow: '0 4px 15px rgba(218, 165, 32, 0.1)'
                                         },
                                         '&.Mui-focused': {
                                             backgroundColor: 'rgba(255,255,255,1)',
-                                            boxShadow: '0 4px 20px rgba(102, 126, 234, 0.15)'
+                                            borderColor: '#daa520',
+                                            boxShadow: '0 4px 20px rgba(218, 165, 32, 0.2)'
+                                        }
+                                    },
+                                    '& .MuiInputLabel-root': {
+                                        fontFamily: "'Playfair Display', serif",
+                                        '&.Mui-focused': {
+                                            color: '#daa520'
                                         }
                                     }
                                 }}
@@ -486,13 +545,16 @@ const AuthPage = () => {
                                 disabled={loading}
                                 sx={{
                                     py: 2,
-                                    borderRadius: 3,
-                                    fontWeight: 600,
-                                    fontSize: '1.1rem',
-                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                    boxShadow: '0 8px 30px rgba(102, 126, 234, 0.3)',
+                                    borderRadius: '25px',
+                                    fontFamily: "'Playfair Display', serif",
+                                    fontWeight: 900,
+                                    color: '#fff',
+                                    fontSize: '1.2rem',
+                                    background: 'linear-gradient(135deg, #daa520 0%, #b8860b 50%, #cd853f 100%)',
+                                    boxShadow: '0 12px 40px rgba(218, 165, 32, 0.3)',
                                     textTransform: 'none',
                                     letterSpacing: '0.5px',
+                                    border: '1px solid rgba(184, 134, 11, 0.3)',
                                     position: 'relative',
                                     overflow: 'hidden',
                                     '&::before': {
@@ -506,9 +568,10 @@ const AuthPage = () => {
                                         transition: 'left 0.5s',
                                     },
                                     '&:hover': {
-                                        background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
-                                        boxShadow: '0 12px 40px rgba(102, 126, 234, 0.4)',
+                                        background: 'linear-gradient(135deg, #b8860b 0%, #cd853f 50%, #daa520 100%)',
+                                        boxShadow: '0 16px 50px rgba(218, 165, 32, 0.4)',
                                         transform: 'translateY(-2px)',
+                                        borderColor: 'rgba(218, 165, 32, 0.5)',
                                         '&::before': {
                                             left: '100%',
                                         }
@@ -551,9 +614,11 @@ const AuthPage = () => {
                             
                             <Box sx={{ textAlign: 'center' }}>
                                 <Typography variant="body1" sx={{ 
-                                    color: 'text.secondary', 
+                                    fontFamily: "'Playfair Display', serif",
+                                    color: '#ab7f19ff', 
                                     mb: 2,
-                                    fontWeight: 400 
+                                    fontWeight: 300,
+                                    fontStyle: 'italic'
                                 }}>
                                     {isLogin ? 'Ainda não tem uma conta?' : 'Já possui uma conta?'}
                                 </Typography>
@@ -562,20 +627,22 @@ const AuthPage = () => {
                                     variant="outlined"
                                     size="large"
                                     sx={{
-                                        borderRadius: 3,
-                                        fontWeight: 600,
+                                        borderRadius: '20px',
+                                        fontFamily: "'Playfair Display', serif",
+                                        fontWeight: 500,
                                         px: 4,
                                         py: 1.5,
                                         borderColor: 'transparent',
-                                        background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
-                                        color: 'primary.main',
+                                        background: 'linear-gradient(135deg, rgba(218, 165, 32, 0.1) 0%, rgba(184, 134, 11, 0.1) 100%)',
+                                        color: '#daa520',
                                         textTransform: 'none',
                                         fontSize: '1rem',
+                                        border: '1px solid rgba(218, 165, 32, 0.3)',
                                         '&:hover': {
-                                            borderColor: 'transparent',
-                                            background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%)',
+                                            borderColor: 'rgba(218, 165, 32, 0.5)',
+                                            background: 'linear-gradient(135deg, rgba(218, 165, 32, 0.15) 0%, rgba(184, 134, 11, 0.15) 100%)',
                                             transform: 'translateY(-1px)',
-                                            boxShadow: '0 4px 12px rgba(102, 126, 234, 0.2)'
+                                            boxShadow: '0 6px 20px rgba(218, 165, 32, 0.2)'
                                         },
                                         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                                     }}
@@ -588,7 +655,6 @@ const AuthPage = () => {
                 </Slide>
             </Container>
         </Box>
-        </>
     );
 };
 

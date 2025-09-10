@@ -52,7 +52,7 @@ const PageLoader = () => (
 const theme = createTheme({
     palette: {
         primary: {
-            main: '#1976d2',
+            main: '#daa520',
         },
         secondary: {
             main: '#dc004e',

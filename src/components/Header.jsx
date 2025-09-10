@@ -94,9 +94,9 @@ const Header = ({
         <AppBar
             position="sticky"
             sx={{
-                backgroundColor: 'white',
-                boxShadow: '0 2px 20px rgba(0,0,0,0.08)',
-                borderBottom: `1px solid ${theme.palette.grey[200]}`
+                background: 'linear-gradient(135deg, #fdfbf7 0%, #f8f4e6 100%)',
+                boxShadow: '0 4px 30px rgba(218, 165, 32, 0.15)',
+                borderBottom: `2px solid rgba(218, 165, 32, 0.2)`
             }}
         >
             <Toolbar sx={{ justifyContent: 'space-between', py: 1 }}>
@@ -106,10 +106,14 @@ const Header = ({
                         variant="h5"
                         component="div"
                         sx={{
+                            fontFamily: "'Playfair Display', serif",
                             fontWeight: 700,
-                            color: '#212121',
-                            letterSpacing: '-0.5px',
-                            cursor: 'pointer'
+                            color: '#daa520',
+                            backgroundClip: 'text',
+                            WebkitBackgroundClip: 'text',
+                            letterSpacing: '2px',
+                            cursor: 'pointer',
+                            textShadow: '0 2px 4px rgba(218, 165, 32, 0.1)'
                         }}
                     >
                         ANA & LUIZ
@@ -122,13 +126,31 @@ const Header = ({
                         <Button
                             onClick={onProductClick}
                             sx={{
-                                color: '#212121',
+                                fontFamily: "'Playfair Display', serif",
+                                color: '#8b4513',
                                 fontWeight: 600,
                                 textTransform: 'none',
                                 fontSize: '1rem',
+                                letterSpacing: '0.5px',
+                                position: 'relative',
                                 '&:hover': {
-                                    backgroundColor: 'transparent',
-                                    color: theme.palette.primary.main
+                                    backgroundColor: 'rgba(218, 165, 32, 0.08)',
+                                    color: '#daa520',
+                                    transform: 'translateY(-1px)'
+                                },
+                                '&::after': {
+                                    content: '""',
+                                    position: 'absolute',
+                                    bottom: 0,
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    width: 0,
+                                    height: '2px',
+                                    background: 'linear-gradient(90deg, #daa520, #b8860b)',
+                                    transition: 'width 0.3s ease'
+                                },
+                                '&:hover::after': {
+                                    width: '80%'
                                 }
                             }}
                         >
@@ -137,13 +159,31 @@ const Header = ({
                         <Button
                             onClick={onAlbumClick}
                             sx={{
-                                color: '#212121',
+                                fontFamily: "'Playfair Display', serif",
+                                color: '#8b4513',
                                 fontWeight: 600,
                                 textTransform: 'none',
                                 fontSize: '1rem',
+                                letterSpacing: '0.5px',
+                                position: 'relative',
                                 '&:hover': {
-                                    backgroundColor: 'transparent',
-                                    color: theme.palette.primary.main
+                                    backgroundColor: 'rgba(218, 165, 32, 0.08)',
+                                    color: '#daa520',
+                                    transform: 'translateY(-1px)'
+                                },
+                                '&::after': {
+                                    content: '""',
+                                    position: 'absolute',
+                                    bottom: 0,
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    width: 0,
+                                    height: '2px',
+                                    background: 'linear-gradient(90deg, #daa520, #b8860b)',
+                                    transition: 'width 0.3s ease'
+                                },
+                                '&:hover::after': {
+                                    width: '80%'
                                 }
                             }}
                         >
@@ -152,13 +192,31 @@ const Header = ({
                         <Button
                             onClick={() => navigate('/convite')}
                             sx={{
-                                color: '#212121',
+                                fontFamily: "'Playfair Display', serif",
+                                color: '#8b4513',
                                 fontWeight: 600,
                                 textTransform: 'none',
                                 fontSize: '1rem',
+                                letterSpacing: '0.5px',
+                                position: 'relative',
                                 '&:hover': {
-                                    backgroundColor: 'transparent',
-                                    color: theme.palette.primary.main
+                                    backgroundColor: 'rgba(218, 165, 32, 0.08)',
+                                    color: '#daa520',
+                                    transform: 'translateY(-1px)'
+                                },
+                                '&::after': {
+                                    content: '""',
+                                    position: 'absolute',
+                                    bottom: 0,
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    width: 0,
+                                    height: '2px',
+                                    background: 'linear-gradient(90deg, #daa520, #b8860b)',
+                                    transition: 'width 0.3s ease'
+                                },
+                                '&:hover::after': {
+                                    width: '80%'
                                 }
                             }}
                         >
@@ -171,13 +229,31 @@ const Header = ({
                                 <Button
                                     onClick={handleAdminMenuClick}
                                     sx={{
-                                        color: '#212121',
+                                        fontFamily: "'Playfair Display', serif",
+                                        color: '#8b4513',
                                         fontWeight: 600,
                                         textTransform: 'none',
                                         fontSize: '1rem',
+                                        letterSpacing: '0.5px',
+                                        position: 'relative',
                                         '&:hover': {
-                                            backgroundColor: 'transparent',
-                                            color: theme.palette.primary.main
+                                            backgroundColor: 'rgba(218, 165, 32, 0.08)',
+                                            color: '#daa520',
+                                            transform: 'translateY(-1px)'
+                                        },
+                                        '&::after': {
+                                            content: '""',
+                                            position: 'absolute',
+                                            bottom: 0,
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
+                                            width: 0,
+                                            height: '2px',
+                                            background: 'linear-gradient(90deg, #daa520, #b8860b)',
+                                            transition: 'width 0.3s ease'
+                                        },
+                                        '&:hover::after': {
+                                            width: '80%'
                                         }
                                     }}
                                 >
@@ -237,10 +313,14 @@ const Header = ({
                     <IconButton
                         onClick={onCartClick}
                         sx={{
-                            color: '#212121',
+                            color: '#8b4513',
+                            background: 'rgba(218, 165, 32, 0.1)',
                             '&:hover': {
-                                backgroundColor: 'rgba(33, 33, 33, 0.04)'
-                            }
+                                backgroundColor: 'rgba(218, 165, 32, 0.2)',
+                                transform: 'scale(1.05)',
+                                color: '#daa520'
+                            },
+                            transition: 'all 0.3s ease'
                         }}
                     >
                         <Badge
@@ -358,14 +438,24 @@ const Header = ({
                                 onClick={isAuthenticated ? handleAccountMenuClick : onLoginClick}
                                 startIcon={isAuthenticated ? <AccountCircle /> : <Login />}
                                 sx={{
-                                    color: '#212121',
+                                    fontFamily: "'Playfair Display', serif",
+                                    color: '#8b4513',
                                     fontWeight: 600,
                                     textTransform: 'none',
-                                    borderRadius: 2,
-                                    px: 2,
+                                    borderRadius: 3,
+                                    px: 3,
+                                    py: 1,
+                                    background: 'rgba(218, 165, 32, 0.1)',
+                                    border: '1px solid rgba(218, 165, 32, 0.3)',
+                                    letterSpacing: '0.5px',
                                     '&:hover': {
-                                        backgroundColor: 'rgba(33, 33, 33, 0.04)'
-                                    }
+                                        backgroundColor: 'rgba(218, 165, 32, 0.2)',
+                                        borderColor: '#daa520',
+                                        color: '#daa520',
+                                        transform: 'translateY(-1px)',
+                                        boxShadow: '0 4px 15px rgba(218, 165, 32, 0.3)'
+                                    },
+                                    transition: 'all 0.3s ease'
                                 }}
                             >
                                 {isAuthenticated ? 'Minha Conta' : 'Fazer Login'}

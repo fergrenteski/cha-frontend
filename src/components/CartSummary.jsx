@@ -56,26 +56,23 @@ const CartSummary = ({
         return <WhatsApp />;
     };
 
-    // Função para determinar a cor do botão
-    const getButtonColor = () => {
-        if (!isAuthenticated) return '#1976d2'; // Azul para login
-        return '#25D366'; // Verde do WhatsApp
-    };
-
-    // Função para determinar a cor do hover
-    const getButtonHoverColor = () => {
-        if (!isAuthenticated) return '#1565c0';
-        return '#128C7E';
-    };
-
     return (
         <Card
             sx={{
-                borderRadius: 2,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                borderRadius: '20px',
+                background: 'rgba(255, 255, 255, 0.98)',
+                border: '2px solid',
+                borderColor: 'transparent',
+                boxShadow: '0 12px 40px rgba(218, 165, 32, 0.15)',
                 position: isMobile ? 'static' : 'sticky',
                 top: isMobile ? 'auto' : 20,
-                height: 'fit-content'
+                height: 'fit-content',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 16px 50px rgba(218, 165, 32, 0.2)',
+                    borderColor: 'rgba(218, 165, 32, 0.3)'
+                }
             }}
         >
             <CardContent sx={{ p: 3 }}>
@@ -83,10 +80,16 @@ const CartSummary = ({
                 <Typography
                     variant="h6"
                     sx={{
-                        fontWeight: 700,
-                        color: 'text.primary',
+                        fontFamily: "'Playfair Display', serif",
+                        fontWeight: 500,
+                        background: 'linear-gradient(135deg, #daa520, #b8860b)',
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
                         mb: 3,
-                        fontSize: '1.2rem'
+                        fontSize: '1.3rem',
+                        letterSpacing: '0.5px',
+                        textAlign: 'center'
                     }}
                 >
                     Resumo do Pedido
@@ -99,10 +102,19 @@ const CartSummary = ({
                     alignItems: 'center',
                     mb: 2
                 }}>
-                    <Typography variant="body1" color="text.secondary">
+                    <Typography variant="body1" sx={{ 
+                        fontFamily: "'Playfair Display', serif",
+                        color: '#8b4513',
+                        fontWeight: 300,
+                        fontStyle: 'italic'
+                    }}>
                         {totalItems} {totalItems === 1 ? 'item' : 'itens'}
                     </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    <Typography variant="body1" sx={{ 
+                        fontFamily: "'Playfair Display', serif",
+                        fontWeight: 500,
+                        color: '#daa520'
+                    }}>
                         R$ {(paymentDetails ? paymentDetails.total - paymentDetails.fee : totalPrice).toFixed(2).replace('.', ',')}
                     </Typography>
                 </Box>
@@ -181,23 +193,28 @@ const CartSummary = ({
                     </Box>
                 )}
 
-                <Divider sx={{ my: 2 }} />
+                <Divider sx={{ 
+                    my: 2,
+                    background: 'linear-gradient(90deg, transparent, rgba(218, 165, 32, 0.3), transparent)'
+                }} />
 
                 {/* Mensagem de sucesso quando meta é atingida */}
                 {subtotal >= targetValue && (
                     <Box sx={{
                         p: 2,
-                        backgroundColor: theme.palette.success.light,
-                        borderRadius: 1,
+                        background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.1), rgba(27, 94, 32, 0.1))',
+                        border: '1px solid rgba(46, 125, 50, 0.3)',
+                        borderRadius: '12px',
                         mb: 2
                     }}>
                         <Typography
                             variant="body2"
                             sx={{
-                                color: theme.palette.success.dark,
+                                fontFamily: "'Playfair Display', serif",
+                                color: '#2e7d32',
                                 fontSize: '0.8rem',
                                 textAlign: 'center',
-                                fontWeight: 600
+                                fontWeight: 500
                             }}
                         >
                             🎉 {successText}
@@ -205,7 +222,10 @@ const CartSummary = ({
                     </Box>
                 )}
 
-                <Divider sx={{ my: 2 }} />
+                <Divider sx={{ 
+                    my: 2,
+                    background: 'linear-gradient(90deg, transparent, rgba(218, 165, 32, 0.3), transparent)'
+                }} />
 
                 {/* Total */}
                 <Box sx={{
@@ -217,8 +237,9 @@ const CartSummary = ({
                     <Typography
                         variant="h6"
                         sx={{
-                            fontWeight: 700,
-                            color: 'text.primary'
+                            fontFamily: "'Playfair Display', serif",
+                            fontWeight: 600,
+                            color: '#8b4513'
                         }}
                     >
                         Total
@@ -226,8 +247,12 @@ const CartSummary = ({
                     <Typography
                         variant="h5"
                         sx={{
+                            fontFamily: "'Playfair Display', serif",
                             fontWeight: 700,
-                            color: 'primary.main'
+                            background: 'linear-gradient(135deg, #daa520, #b8860b)',
+                            backgroundClip: 'text',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
                         }}
                     >
                         R$ {total.toFixed(2).replace('.', ',')}
@@ -243,18 +268,36 @@ const CartSummary = ({
                         disabled={items.length === 0 || (!isAuthenticated ? false : subtotal < targetValue)}
                         sx={{
                             py: 1.5,
-                            borderRadius: 2,
-                            fontWeight: 600,
+                            borderRadius: '25px',
+                            fontFamily: "'Playfair Display', serif",
+                            fontWeight: 500,
                             textTransform: 'none',
                             fontSize: '1rem',
-                            backgroundColor: getButtonColor(),
+                            letterSpacing: '0.5px',
+                            background: !isAuthenticated 
+                                ? 'linear-gradient(135deg, #daa520, #b8860b)' 
+                                : 'linear-gradient(135deg, #25D366, #128C7E)',
+                            border: !isAuthenticated 
+                                ? '1px solid rgba(218, 165, 32, 0.3)'
+                                : '1px solid rgba(37, 211, 102, 0.3)',
+                            boxShadow: !isAuthenticated
+                                ? '0 8px 25px rgba(218, 165, 32, 0.3)'
+                                : '0 8px 25px rgba(37, 211, 102, 0.3)',
                             '&:hover': {
-                                backgroundColor: getButtonHoverColor()
+                                background: !isAuthenticated
+                                    ? 'linear-gradient(135deg, #b8860b, #cd853f)'
+                                    : 'linear-gradient(135deg, #128C7E, #0d5d4f)',
+                                transform: 'translateY(-2px)',
+                                boxShadow: !isAuthenticated
+                                    ? '0 12px 35px rgba(218, 165, 32, 0.4)'
+                                    : '0 12px 35px rgba(37, 211, 102, 0.4)'
                             },
                             '&:disabled': {
-                                backgroundColor: theme.palette.grey[300],
-                                color: theme.palette.grey[500]
-                            }
+                                background: 'linear-gradient(135deg, #ccc, #999)',
+                                boxShadow: 'none',
+                                transform: 'none'
+                            },
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                         }}
                     >
                         {getButtonText()}
@@ -265,16 +308,21 @@ const CartSummary = ({
                         onClick={onContinueShopping}
                         sx={{
                             py: 1.5,
-                            borderRadius: 2,
-                            fontWeight: 600,
+                            borderRadius: '20px',
+                            fontFamily: "'Playfair Display', serif",
+                            fontWeight: 500,
                             textTransform: 'none',
                             fontSize: '0.9rem',
-                            borderColor: theme.palette.grey[300],
-                            color: 'text.primary',
+                            borderColor: 'rgba(218, 165, 32, 0.3)',
+                            color: '#8b4513',
+                            backgroundColor: 'rgba(218, 165, 32, 0.05)',
                             '&:hover': {
-                                borderColor: theme.palette.grey[400],
-                                backgroundColor: 'transparent'
-                            }
+                                borderColor: 'rgba(218, 165, 32, 0.5)',
+                                backgroundColor: 'rgba(218, 165, 32, 0.1)',
+                                color: '#daa520',
+                                transform: 'translateY(-1px)'
+                            },
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                         }}
                     >
                         Continuar Comprando
@@ -282,14 +330,25 @@ const CartSummary = ({
                 </Box>
 
                 {/* Payment Info */}
-                <Box sx={{ mt: 3, pt: 2, borderTop: `1px solid ${theme.palette.grey[200]}` }}>
+                <Box sx={{ 
+                    mt: 3, 
+                    pt: 2, 
+                    borderTop: `1px solid rgba(218, 165, 32, 0.2)`,
+                    background: 'linear-gradient(135deg, rgba(218, 165, 32, 0.02), rgba(184, 134, 11, 0.02))',
+                    borderRadius: '8px',
+                    p: 2,
+                    mx: -1
+                }}>
                     <Typography
                         variant="body2"
-                        color="text.secondary"
                         sx={{
+                            fontFamily: "'Playfair Display', serif",
                             fontSize: '0.75rem',
                             textAlign: 'center',
-                            lineHeight: 1.4
+                            lineHeight: 1.4,
+                            color: '#8b4513',
+                            fontStyle: 'italic',
+                            fontWeight: 300
                         }}
                     >
                         {!isAuthenticated 

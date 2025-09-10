@@ -11,14 +11,16 @@ import {
     useTheme,
     useMediaQuery,
     Fade,
-    Grow
+    Grow,
+    Divider
 } from '@mui/material';
 import {
     CalendarToday as CalendarIcon,
     AccessTime as TimeIcon,
     LocationOn as LocationIcon,
     ShoppingBag as ShoppingIcon,
-    Payment as PaymentIcon
+    Payment as PaymentIcon,
+    LocalFlorist as FloristIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -31,27 +33,103 @@ const InvitePage = () => {
         <Box
             sx={{
                 minHeight: '100vh',
-                background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 50%, #90caf9 100%)',
-                py: { xs: 3, md: 6 }
+                background: 'linear-gradient(135deg, #fdfbf7 0%, #f8f4e6 30%, #f5f0e1 70%, #f0e6d2 100%)',
+                position: 'relative',
+                py: { xs: 3, md: 6 },
+                '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundImage: `
+                        radial-gradient(circle at 20% 20%, rgba(218, 165, 32, 0.03) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(218, 165, 32, 0.02) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 60%, rgba(212, 175, 55, 0.015) 0%, transparent 50%)
+                    `,
+                    zIndex: 1
+                }
             }}
         >
-            <Container maxWidth="lg">
+            {/* Decorative floral elements */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    top: 50,
+                    left: 50,
+                    width: 100,
+                    height: 100,
+                    opacity: 0.1,
+                    transform: 'rotate(-15deg)',
+                    zIndex: 1
+                }}
+            >
+                <FloristIcon sx={{ fontSize: 100, color: '#daa520' }} />
+            </Box>
+            <Box
+                sx={{
+                    position: 'absolute',
+                    top: 100,
+                    right: 80,
+                    width: 120,
+                    height: 120,
+                    opacity: 0.08,
+                    transform: 'rotate(25deg)',
+                    zIndex: 1
+                }}
+            >
+                <FloristIcon sx={{ fontSize: 120, color: '#b8860b' }} />
+            </Box>
+            <Box
+                sx={{
+                    position: 'absolute',
+                    bottom: 150,
+                    left: 80,
+                    width: 80,
+                    height: 80,
+                    opacity: 0.06,
+                    transform: 'rotate(45deg)',
+                    zIndex: 1
+                }}
+            >
+                <FloristIcon sx={{ fontSize: 80, color: '#daa520' }} />
+            </Box>
+
+            <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
                 {/* Hero Section */}
                 <Fade in timeout={1000}>
                     <Box
                         sx={{
                             textAlign: 'center',
                             mb: 8,
-                            py: { xs: 6, md: 10 }
+                            py: { xs: 6, md: 10 },
+                            position: 'relative'
                         }}
                     >
+                        {/* Decorative border */}
+                        <Box
+                            sx={{
+                                position: 'absolute',
+                                top: 20,
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                width: { xs: 280, md: 400 },
+                                height: 2,
+                                background: 'linear-gradient(90deg, transparent 0%, #daa520 20%, #b8860b 50%, #daa520 80%, transparent 100%)',
+                                opacity: 0.6
+                            }}
+                        />
+                        
                         <Typography
                             variant={isMobile ? "h3" : "h2"}
                             sx={{
-                                fontWeight: 300,
-                                color: '#0d47a1',
-                                mb: 2,
-                                letterSpacing: '0.02em'
+                                fontFamily: "'Playfair Display', serif",
+                                fontWeight: 400,
+                                color: '#8b4513',
+                                mb: 1,
+                                letterSpacing: '0.02em',
+                                textShadow: '0 2px 4px rgba(139, 69, 19, 0.1)'
                             }}
                         >
                             Chá de Casa Nova
@@ -59,27 +137,55 @@ const InvitePage = () => {
                         
                         <Box
                             sx={{
-                                width: 60,
-                                height: 1,
-                                bgcolor: '#1976d2',
-                                mx: 'auto',
-                                mb: 3
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                mb: 3,
+                                gap: 2
                             }}
-                        />
+                        >
+                            <FloristIcon sx={{ fontSize: 24, color: '#daa520', transform: 'rotate(-15deg)' }} />
+                            <Box
+                                sx={{
+                                    width: 80,
+                                    height: 1,
+                                    bgcolor: '#daa520',
+                                    opacity: 0.7
+                                }}
+                            />
+                            <FloristIcon sx={{ fontSize: 24, color: '#daa520', transform: 'rotate(15deg)' }} />
+                        </Box>
                         
                         <Typography
                             variant="h6"
                             sx={{
+                                fontFamily: "'Playfair Display', serif",
                                 fontWeight: 300,
-                                color: '#42a5f5',
+                                fontStyle: 'italic',
+                                color: '#a0522d',
                                 maxWidth: 600,
                                 mx: 'auto',
-                                lineHeight: 1.6
+                                lineHeight: 1.8,
+                                fontSize: { xs: '1.1rem', md: '1.3rem' }
                             }}
                         >
-                            Você está cordialmente convidado(a) para celebrar conosco 
-                            esta nova etapa da nossa vida
+                            "Você está cordialmente convidado(a) para celebrar conosco 
+                            esta nova etapa da nossa vida"
                         </Typography>
+                        
+                        {/* Bottom decorative border */}
+                        <Box
+                            sx={{
+                                position: 'absolute',
+                                bottom: 20,
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                width: { xs: 280, md: 400 },
+                                height: 2,
+                                background: 'linear-gradient(90deg, transparent 0%, #daa520 20%, #b8860b 50%, #daa520 80%, transparent 100%)',
+                                opacity: 0.6
+                            }}
+                        />
                     </Box>
                 </Fade>
 
@@ -92,26 +198,76 @@ const InvitePage = () => {
                                     elevation={0}
                                     sx={{
                                         textAlign: 'center',
-                                        minHeight: '250px',
+                                        minHeight: '280px',
                                         minWidth: '200px',
                                         p: 4,
-                                        border: '1px solid #e3f2fd',
-                                        borderRadius: 2,
-                                        transition: 'all 0.3s ease',
+                                        background: 'linear-gradient(135deg, #fefdfb 0%, #faf8f3 100%)',
+                                        border: '2px solid #f4e4bc',
+                                        borderRadius: 4,
+                                        position: 'relative',
+                                        transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                                         '&:hover': {
-                                            transform: 'translateY(-4px)',
-                                            boxShadow: '0 10px 30px rgba(25, 118, 210, 0.15)'
+                                            transform: 'translateY(-8px) scale(1.02)',
+                                            boxShadow: '0 20px 40px rgba(218, 165, 32, 0.2)',
+                                            borderColor: '#daa520'
+                                        },
+                                        '&::before': {
+                                            content: '""',
+                                            position: 'absolute',
+                                            top: -2,
+                                            left: -2,
+                                            right: -2,
+                                            bottom: -2,
+                                            background: 'linear-gradient(45deg, #daa520, #b8860b, #daa520)',
+                                            borderRadius: 4,
+                                            zIndex: -1,
+                                            opacity: 0,
+                                            transition: 'opacity 0.3s ease'
+                                        },
+                                        '&:hover::before': {
+                                            opacity: 0.3
                                         }
                                     }}
                                 >
-                                    <CalendarIcon sx={{ fontSize: 40, color: '#1976d2', mb: 2 }} />
-                                    <Typography variant="h6" sx={{ fontWeight: 500, mb: 1, color: '#1565c0' }}>
+                                    <Box
+                                        sx={{
+                                            width: 60,
+                                            height: 60,
+                                            borderRadius: '50%',
+                                            background: 'linear-gradient(135deg, #daa520, #b8860b)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            mx: 'auto',
+                                            mb: 3,
+                                            boxShadow: '0 8px 20px rgba(218, 165, 32, 0.3)'
+                                        }}
+                                    >
+                                        <CalendarIcon sx={{ fontSize: 32, color: 'white' }} />
+                                    </Box>
+                                    <Typography variant="h6" sx={{ 
+                                        fontFamily: "'Playfair Display', serif",
+                                        fontWeight: 600, 
+                                        mb: 2, 
+                                        color: '#8b4513',
+                                        letterSpacing: '0.5px'
+                                    }}>
                                         Data
                                     </Typography>
-                                    <Typography variant="h5" sx={{ fontWeight: 300, color: '#0d47a1' }}>
+                                    <Typography variant="h4" sx={{ 
+                                        fontFamily: "'Playfair Display', serif",
+                                        fontWeight: 400, 
+                                        color: '#daa520',
+                                        mb: 1,
+                                        textShadow: '0 2px 4px rgba(218, 165, 32, 0.2)'
+                                    }}>
                                         15/11
                                     </Typography>
-                                    <Typography variant="body2" sx={{ color: '#64b5f6', mt: 1 }}>
+                                    <Typography variant="h6" sx={{ 
+                                        color: '#a0522d', 
+                                        fontFamily: "'Playfair Display', serif",
+                                        fontStyle: 'italic'
+                                    }}>
                                         2025
                                     </Typography>
                                 </Card>
@@ -125,26 +281,76 @@ const InvitePage = () => {
                                     sx={{
                                         textAlign: 'center',
                                         p: 4,
-                                        minHeight: '250px',
+                                        minHeight: '280px',
                                         minWidth: '200px',
-                                        border: '1px solid #e3f2fd',
-                                        borderRadius: 2,
-                                        transition: 'all 0.3s ease',
+                                        background: 'linear-gradient(135deg, #fefdfb 0%, #faf8f3 100%)',
+                                        border: '2px solid #f4e4bc',
+                                        borderRadius: 4,
+                                        position: 'relative',
+                                        transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                                         '&:hover': {
-                                            transform: 'translateY(-4px)',
-                                            boxShadow: '0 10px 30px rgba(25, 118, 210, 0.15)'
+                                            transform: 'translateY(-8px) scale(1.02)',
+                                            boxShadow: '0 20px 40px rgba(218, 165, 32, 0.2)',
+                                            borderColor: '#daa520'
+                                        },
+                                        '&::before': {
+                                            content: '""',
+                                            position: 'absolute',
+                                            top: -2,
+                                            left: -2,
+                                            right: -2,
+                                            bottom: -2,
+                                            background: 'linear-gradient(45deg, #daa520, #b8860b, #daa520)',
+                                            borderRadius: 4,
+                                            zIndex: -1,
+                                            opacity: 0,
+                                            transition: 'opacity 0.3s ease'
+                                        },
+                                        '&:hover::before': {
+                                            opacity: 0.3
                                         }
                                     }}
                                 >
-                                    <TimeIcon sx={{ fontSize: 40, color: '#1976d2', mb: 2 }} />
-                                    <Typography variant="h6" sx={{ fontWeight: 500, mb: 1, color: '#1565c0' }}>
+                                    <Box
+                                        sx={{
+                                            width: 60,
+                                            height: 60,
+                                            borderRadius: '50%',
+                                            background: 'linear-gradient(135deg, #daa520, #b8860b)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            mx: 'auto',
+                                            mb: 3,
+                                            boxShadow: '0 8px 20px rgba(218, 165, 32, 0.3)'
+                                        }}
+                                    >
+                                        <TimeIcon sx={{ fontSize: 32, color: 'white' }} />
+                                    </Box>
+                                    <Typography variant="h6" sx={{ 
+                                        fontFamily: "'Playfair Display', serif",
+                                        fontWeight: 600, 
+                                        mb: 2, 
+                                        color: '#8b4513',
+                                        letterSpacing: '0.5px'
+                                    }}>
                                         Horário
                                     </Typography>
-                                    <Typography variant="h5" sx={{ fontWeight: 300, color: '#0d47a1' }}>
-                                        11:00
+                                    <Typography variant="h4" sx={{ 
+                                        fontFamily: "'Playfair Display', serif",
+                                        fontWeight: 400, 
+                                        color: '#daa520',
+                                        mb: 1,
+                                        textShadow: '0 2px 4px rgba(218, 165, 32, 0.2)'
+                                    }}>
+                                        13:00
                                     </Typography>
-                                    <Typography variant="body2" sx={{ color: '#64b5f6', mt: 1 }}>
-                                        da manhã
+                                    <Typography variant="h6" sx={{ 
+                                        color: '#a0522d', 
+                                        fontFamily: "'Playfair Display', serif",
+                                        fontStyle: 'italic'
+                                    }}>
+                                        da tarde
                                     </Typography>
                                 </Card>
                             </Grow>
@@ -157,25 +363,77 @@ const InvitePage = () => {
                                     sx={{
                                         textAlign: 'center',
                                         p: 4,
-                                        minHeight: '250px',
+                                        minHeight: '280px',
                                         minWidth: '200px',
-                                        border: '1px solid #e3f2fd',
-                                        borderRadius: 2,
-                                        transition: 'all 0.3s ease',
+                                        background: 'linear-gradient(135deg, #fefdfb 0%, #faf8f3 100%)',
+                                        border: '2px solid #f4e4bc',
+                                        borderRadius: 4,
+                                        position: 'relative',
+                                        transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                                         '&:hover': {
-                                            transform: 'translateY(-4px)',
-                                            boxShadow: '0 10px 30px rgba(25, 118, 210, 0.15)'
+                                            transform: 'translateY(-8px) scale(1.02)',
+                                            boxShadow: '0 20px 40px rgba(218, 165, 32, 0.2)',
+                                            borderColor: '#daa520'
+                                        },
+                                        '&::before': {
+                                            content: '""',
+                                            position: 'absolute',
+                                            top: -2,
+                                            left: -2,
+                                            right: -2,
+                                            bottom: -2,
+                                            background: 'linear-gradient(45deg, #daa520, #b8860b, #daa520)',
+                                            borderRadius: 4,
+                                            zIndex: -1,
+                                            opacity: 0,
+                                            transition: 'opacity 0.3s ease'
+                                        },
+                                        '&:hover::before': {
+                                            opacity: 0.3
                                         }
                                     }}
                                 >
-                                    <LocationIcon sx={{ fontSize: 40, color: '#1976d2', mb: 2 }} />
-                                    <Typography variant="h6" sx={{ fontWeight: 500, mb: 1, color: '#1565c0' }}>
+                                    <Box
+                                        sx={{
+                                            width: 60,
+                                            height: 60,
+                                            borderRadius: '50%',
+                                            background: 'linear-gradient(135deg, #daa520, #b8860b)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            mx: 'auto',
+                                            mb: 3,
+                                            boxShadow: '0 8px 20px rgba(218, 165, 32, 0.3)'
+                                        }}
+                                    >
+                                        <LocationIcon sx={{ fontSize: 32, color: 'white' }} />
+                                    </Box>
+                                    <Typography variant="h6" sx={{ 
+                                        fontFamily: "'Playfair Display', serif",
+                                        fontWeight: 600, 
+                                        mb: 2, 
+                                        color: '#8b4513',
+                                        letterSpacing: '0.5px'
+                                    }}>
                                         Local
                                     </Typography>
-                                    <Typography variant="body1" sx={{ fontWeight: 400, color: '#0d47a1', lineHeight: 1.4 }}>
+                                    <Typography variant="body1" sx={{ 
+                                        fontFamily: "'Playfair Display', serif",
+                                        fontWeight: 400, 
+                                        color: '#daa520', 
+                                        lineHeight: 1.6,
+                                        fontSize: '1.1rem',
+                                        mb: 1
+                                    }}>
                                         Av. Jacob Macanhan, 3697
                                     </Typography>
-                                    <Typography variant="body2" sx={{ color: '#64b5f6', mt: 1 }}>
+                                    <Typography variant="body2" sx={{ 
+                                        color: '#a0522d', 
+                                        fontFamily: "'Playfair Display', serif",
+                                        fontStyle: 'italic',
+                                        fontSize: '0.95rem'
+                                    }}>
                                         Atuba, Pinhais - PR
                                     </Typography>
                                 </Card>
@@ -189,40 +447,119 @@ const InvitePage = () => {
                     <Card
                         elevation={0}
                         sx={{
-                            border: '1px solid #e3f2fd',
-                            borderRadius: 2,
+                            background: 'linear-gradient(135deg, #fefdfb 0%, #faf8f3 100%)',
+                            border: '3px solid #f4e4bc',
+                            borderRadius: 6,
                             mb: 6,
-                            overflow: 'hidden'
+                            overflow: 'hidden',
+                            position: 'relative',
+                            '&::before': {
+                                content: '""',
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                height: 6,
+                                background: 'linear-gradient(90deg, #daa520, #b8860b, #daa520)',
+                            }
                         }}
                     >
                         <Box
                             sx={{
-                                bgcolor: '#1565c0',
+                                background: 'linear-gradient(135deg, #daa520 0%, #b8860b 50%, #daa520 100%)',
                                 color: 'white',
-                                p: 4,
-                                textAlign: 'center'
+                                p: 5,
+                                textAlign: 'center',
+                                position: 'relative',
+                                '&::after': {
+                                    content: '""',
+                                    position: 'absolute',
+                                    bottom: -1,
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    width: 0,
+                                    height: 0,
+                                    borderLeft: '20px solid transparent',
+                                    borderRight: '20px solid transparent',
+                                    borderTop: '20px solid #b8860b',
+                                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                                }
                             }}
                         >
-                            <Typography variant="h5" sx={{ fontWeight: 300, mb: 2 }}>
+                            <FloristIcon sx={{ fontSize: 40, mb: 2, opacity: 0.9 }} />
+                            <Typography variant="h4" sx={{ 
+                                fontFamily: "'Playfair Display', serif",
+                                fontWeight: 400, 
+                                mb: 3,
+                                textShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                            }}>
                                 Confirmação de Presença
                             </Typography>
-                            <Typography variant="body1" sx={{ opacity: 0.9, maxWidth: 600, mx: 'auto' }}>
-                                Para confirmar sua presença, realize uma compra de presentes no valor mínimo de R$ 100,00
+                            <Typography variant="h6" sx={{ 
+                                opacity: 0.95, 
+                                maxWidth: 600, 
+                                mx: 'auto',
+                                fontFamily: "'Playfair Display', serif",
+                                fontWeight: 300,
+                                fontStyle: 'italic',
+                                lineHeight: 1.7
+                            }}>
+                                Para confirmar sua presença, realize uma compra de presentes 
+                                no valor mínimo de R$ 100,00
                             </Typography>
                         </Box>
                         
-                        <CardContent sx={{ p: 5 }}>
-                            <Grid container spacing={4} alignItems="center">
+                        <CardContent sx={{ p: 6 }}>
+                            <Grid container spacing={6} alignItems="center">
                                 <Grid size={{xs: 12, md: 6}}>
                                     <Box sx={{ textAlign: 'center' }}>
-                                        <ShoppingIcon sx={{ fontSize: 50, color: '#1976d2', mb: 2 }} />
-                                        <Typography variant="h6" sx={{ fontWeight: 500, mb: 2, color: '#1565c0' }}>
+                                        <Box
+                                            sx={{
+                                                width: 80,
+                                                height: 80,
+                                                borderRadius: '50%',
+                                                background: 'linear-gradient(135deg, #daa520, #b8860b)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                mx: 'auto',
+                                                mb: 3,
+                                                boxShadow: '0 12px 30px rgba(218, 165, 32, 0.3)',
+                                                position: 'relative',
+                                                '&::after': {
+                                                    content: '""',
+                                                    position: 'absolute',
+                                                    inset: '4px',
+                                                    borderRadius: '50%',
+                                                    background: 'linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1))'
+                                                }
+                                            }}
+                                        >
+                                            <ShoppingIcon sx={{ fontSize: 40, color: 'white', zIndex: 1 }} />
+                                        </Box>
+                                        <Typography variant="h5" sx={{ 
+                                            fontFamily: "'Playfair Display', serif",
+                                            fontWeight: 600, 
+                                            mb: 3, 
+                                            color: '#8b4513',
+                                            letterSpacing: '0.5px'
+                                        }}>
                                             Valor Mínimo
                                         </Typography>
-                                        <Typography variant="h4" sx={{ fontWeight: 300, color: '#1976d2', mb: 1 }}>
+                                        <Typography variant="h3" sx={{ 
+                                            fontFamily: "'Playfair Display', serif",
+                                            fontWeight: 700, 
+                                            color: '#daa520', 
+                                            mb: 2,
+                                            textShadow: '0 2px 8px rgba(218, 165, 32, 0.3)'
+                                        }}>
                                             R$ 100,00
                                         </Typography>
-                                        <Typography variant="body2" sx={{ color: '#64b5f6' }}>
+                                        <Typography variant="body1" sx={{ 
+                                            color: '#a0522d',
+                                            fontFamily: "'Playfair Display', serif",
+                                            fontStyle: 'italic'
+                                        }}>
                                             em produtos da lista
                                         </Typography>
                                     </Box>
@@ -230,14 +567,52 @@ const InvitePage = () => {
                                 
                                 <Grid size={{xs: 12, md: 6}}>
                                     <Box sx={{ textAlign: 'center' }}>
-                                        <PaymentIcon sx={{ fontSize: 50, color: '#1976d2', mb: 2 }} />
-                                        <Typography variant="h6" sx={{ fontWeight: 500, mb: 2, color: '#1565c0' }}>
+                                        <Box
+                                            sx={{
+                                                width: 80,
+                                                height: 80,
+                                                borderRadius: '50%',
+                                                background: 'linear-gradient(135deg, #daa520, #b8860b)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                mx: 'auto',
+                                                mb: 3,
+                                                boxShadow: '0 12px 30px rgba(218, 165, 32, 0.3)',
+                                                position: 'relative',
+                                                '&::after': {
+                                                    content: '""',
+                                                    position: 'absolute',
+                                                    inset: '4px',
+                                                    borderRadius: '50%',
+                                                    background: 'linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1))'
+                                                }
+                                            }}
+                                        >
+                                            <PaymentIcon sx={{ fontSize: 40, color: 'white', zIndex: 1 }} />
+                                        </Box>
+                                        <Typography variant="h5" sx={{ 
+                                            fontFamily: "'Playfair Display', serif",
+                                            fontWeight: 600, 
+                                            mb: 3, 
+                                            color: '#8b4513',
+                                            letterSpacing: '0.5px'
+                                        }}>
                                             Formas de Pagamento
                                         </Typography>
-                                        <Typography variant="body1" sx={{ color: '#0d47a1', mb: 1 }}>
+                                        <Typography variant="h6" sx={{ 
+                                            color: '#daa520', 
+                                            mb: 2,
+                                            fontFamily: "'Playfair Display', serif",
+                                            fontWeight: 500
+                                        }}>
                                             PIX ou Cartão de Crédito
                                         </Typography>
-                                        <Typography variant="body2" sx={{ color: '#64b5f6' }}>
+                                        <Typography variant="body1" sx={{ 
+                                            color: '#a0522d',
+                                            fontFamily: "'Playfair Display', serif",
+                                            fontStyle: 'italic'
+                                        }}>
                                             Pagamento seguro e fácil
                                         </Typography>
                                     </Box>
@@ -246,19 +621,44 @@ const InvitePage = () => {
                             
                             <Box
                                 sx={{
-                                    mt: 4,
-                                    p: 3,
-                                    bgcolor: '#e3f2fd',
-                                    border: '1px solid #bbdefb',
-                                    borderRadius: 2,
-                                    textAlign: 'center'
+                                    mt: 6,
+                                    p: 4,
+                                    background: 'linear-gradient(135deg, #f9f6f0 0%, #f5f0e1 100%)',
+                                    border: '2px solid #f4e4bc',
+                                    borderRadius: 4,
+                                    textAlign: 'center',
+                                    position: 'relative',
+                                    '&::before': {
+                                        content: '""',
+                                        position: 'absolute',
+                                        top: -8,
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        width: 0,
+                                        height: 0,
+                                        borderLeft: '12px solid transparent',
+                                        borderRight: '12px solid transparent',
+                                        borderBottom: '12px solid #f4e4bc',
+                                    }
                                 }}
                             >
-                                <Typography variant="body1" sx={{ fontWeight: 500, color: '#0d47a1', mb: 1 }}>
+                                <FloristIcon sx={{ fontSize: 28, color: '#daa520', mb: 2, opacity: 0.7 }} />
+                                <Typography variant="h6" sx={{ 
+                                    fontFamily: "'Playfair Display', serif",
+                                    fontWeight: 600, 
+                                    color: '#8b4513', 
+                                    mb: 2,
+                                    letterSpacing: '0.5px'
+                                }}>
                                     Prazo para Confirmação
                                 </Typography>
-                                <Typography variant="h6" sx={{ fontWeight: 400, color: '#1565c0' }}>
-                                    Até 14 de Novembro de 2025
+                                <Typography variant="h5" sx={{ 
+                                    fontFamily: "'Playfair Display', serif",
+                                    fontWeight: 500, 
+                                    color: '#daa520',
+                                    textShadow: '0 1px 3px rgba(218, 165, 32, 0.2)'
+                                }}>
+                                    Até 05 de Novembro de 2025
                                 </Typography>
                             </Box>
                         </CardContent>
@@ -269,32 +669,50 @@ const InvitePage = () => {
                 <Fade in timeout={2000}>
                     <Stack
                         direction={{ xs: 'column', md: 'row' }}
-                        spacing={3}
+                        spacing={4}
                         justifyContent="center"
-                        sx={{ mb: 6 }}
+                        sx={{ mb: 8 }}
                     >
                         <Button
                             variant="contained"
                             size="large"
                             onClick={() => navigate('/')}
                             sx={{
-                                px: 6,
-                                py: 2,
-                                fontSize: '1rem',
-                                fontWeight: 500,
-                                bgcolor: '#1976d2',
+                                px: 8,
+                                py: 3,
+                                fontSize: '1.1rem',
+                                fontFamily: "'Playfair Display', serif",
+                                fontWeight: 600,
+                                background: 'linear-gradient(135deg, #daa520 0%, #b8860b 50%, #daa520 100%)',
                                 color: 'white',
-                                borderRadius: 2,
+                                borderRadius: 8,
                                 textTransform: 'none',
-                                boxShadow: '0 4px 20px rgba(25, 118, 210, 0.3)',
-                                '&:hover': {
-                                    bgcolor: '#1565c0',
-                                    transform: 'translateY(-2px)',
-                                    boxShadow: '0 8px 30px rgba(25, 118, 210, 0.4)',
+                                letterSpacing: '0.5px',
+                                boxShadow: '0 8px 30px rgba(218, 165, 32, 0.4)',
+                                position: 'relative',
+                                overflow: 'hidden',
+                                '&::before': {
+                                    content: '""',
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: '-100%',
+                                    width: '100%',
+                                    height: '100%',
+                                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+                                    transition: 'left 0.6s',
                                 },
-                                transition: 'all 0.3s ease'
+                                '&:hover': {
+                                    background: 'linear-gradient(135deg, #b8860b 0%, #996515 50%, #b8860b 100%)',
+                                    transform: 'translateY(-3px) scale(1.02)',
+                                    boxShadow: '0 15px 40px rgba(218, 165, 32, 0.5)',
+                                    '&::before': {
+                                        left: '100%',
+                                    }
+                                },
+                                transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
                             }}
                         >
+                            <FloristIcon sx={{ mr: 2, fontSize: 24 }} />
                             Ver Lista de Presentes
                         </Button>
                         
@@ -303,25 +721,30 @@ const InvitePage = () => {
                             size="large"
                             onClick={() => navigate('/cart')}
                             sx={{
-                                px: 6,
-                                py: 2,
-                                fontSize: '1rem',
-                                fontWeight: 500,
-                                borderColor: '#1976d2',
-                                color: '#1976d2',
-                                borderRadius: 2,
+                                px: 8,
+                                py: 3,
+                                fontSize: '1.1rem',
+                                fontFamily: "'Playfair Display', serif",
+                                fontWeight: 600,
+                                borderColor: '#daa520',
+                                color: '#daa520',
+                                borderRadius: 8,
                                 textTransform: 'none',
                                 borderWidth: 2,
+                                letterSpacing: '0.5px',
+                                background: 'rgba(218, 165, 32, 0.05)',
                                 '&:hover': {
-                                    borderColor: '#1976d2',
-                                    bgcolor: '#1976d2',
+                                    borderColor: '#daa520',
+                                    background: 'linear-gradient(135deg, #daa520 0%, #b8860b 100%)',
                                     color: 'white',
-                                    transform: 'translateY(-2px)',
-                                    boxShadow: '0 8px 30px rgba(25, 118, 210, 0.3)',
+                                    transform: 'translateY(-3px) scale(1.02)',
+                                    boxShadow: '0 15px 40px rgba(218, 165, 32, 0.4)',
+                                    borderWidth: 2
                                 },
-                                transition: 'all 0.3s ease'
+                                transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
                             }}
                         >
+                            <ShoppingIcon sx={{ mr: 2, fontSize: 24 }} />
                             Meu Carrinho
                         </Button>
                     </Stack>
@@ -332,33 +755,53 @@ const InvitePage = () => {
                     <Box
                         sx={{
                             textAlign: 'center',
-                            py: 4,
-                            borderTop: '1px solid #e3f2fd',
-                            mt: 6
+                            py: 6,
+                            position: 'relative',
+                            '&::before': {
+                                content: '""',
+                                position: 'absolute',
+                                top: 0,
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                width: { xs: 200, md: 300 },
+                                height: 2,
+                                background: 'linear-gradient(90deg, transparent 0%, #daa520 20%, #b8860b 50%, #daa520 80%, transparent 100%)',
+                                opacity: 0.4
+                            }
                         }}
                     >
+                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 4, mt: 2 }}>
+                            <FloristIcon sx={{ fontSize: 32, color: '#daa520', mx: 2, transform: 'rotate(-20deg)', opacity: 0.7 }} />
+                            <Typography
+                                variant="h4"
+                                sx={{
+                                    fontFamily: "'Playfair Display', serif",
+                                    fontWeight: 400,
+                                    color: '#8b4513',
+                                    mx: 3,
+                                    textShadow: '0 2px 4px rgba(139, 69, 19, 0.1)'
+                                }}
+                            >
+                                Contamos com sua presença
+                            </Typography>
+                            <FloristIcon sx={{ fontSize: 32, color: '#daa520', mx: 2, transform: 'rotate(20deg)', opacity: 0.7 }} />
+                        </Box>
                         <Typography
                             variant="h6"
                             sx={{
-                                fontWeight: 300,
-                                color: '#1565c0',
-                                mb: 2
-                            }}
-                        >
-                            Contamos com sua presença
-                        </Typography>
-                        <Typography
-                            variant="body1"
-                            sx={{
-                                color: '#64b5f6',
+                                color: '#a0522d',
+                                fontFamily: "'Playfair Display', serif",
                                 fontStyle: 'italic',
-                                maxWidth: 500,
+                                fontWeight: 300,
+                                maxWidth: 600,
                                 mx: 'auto',
-                                lineHeight: 1.6
+                                lineHeight: 1.8,
+                                px: 2,
+                                position: 'relative',
                             }}
                         >
-                            "Uma casa se torna um lar quando é preenchida com amor, 
-                            risadas e as pessoas que mais amamos"
+                            Uma casa se torna um lar quando é preenchida com amor, 
+                            risadas e as pessoas que mais amamos
                         </Typography>
                     </Box>
                 </Fade>

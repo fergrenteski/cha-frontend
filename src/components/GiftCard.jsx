@@ -96,12 +96,32 @@ const GiftCard = ({
                 minHeight: '500px',
                 height: '100%',
                 width: isMobile ? '450px' : '300px',
-                borderRadius: 3,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                borderRadius: 4,
+                background: 'linear-gradient(135deg, #fefdfb 0%, #faf8f3 100%)',
+                border: '2px solid #f4e4bc',
+                boxShadow: '0 8px 30px rgba(218, 165, 32, 0.12)',
+                transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                position: 'relative',
                 '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: '0 12px 40px rgba(0,0,0,0.12)',
+                    transform: 'translateY(-8px) scale(1.02)',
+                    boxShadow: '0 20px 50px rgba(218, 165, 32, 0.25)',
+                    borderColor: '#daa520'
+                },
+                '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: -2,
+                    left: -2,
+                    right: -2,
+                    bottom: -2,
+                    background: 'linear-gradient(45deg, #daa520, #b8860b, #daa520)',
+                    borderRadius: 4,
+                    zIndex: -1,
+                    opacity: 0,
+                    transition: 'opacity 0.3s ease'
+                },
+                '&:hover::before': {
+                    opacity: 0.1
                 },
                 display: 'flex',
                 flexDirection: 'column',
@@ -165,15 +185,18 @@ const GiftCard = ({
                         title={!user ? "Login necessário para favoritar" : ""}
                         sx={{
                             position: 'absolute',
-                            top: 8,
-                            right: 8,
-                            backgroundColor: 'rgba(255,255,255,0.9)',
+                            top: 12,
+                            right: 12,
+                            background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,244,230,0.9) 100%)',
                             backdropFilter: 'blur(10px)',
+                            border: '1px solid rgba(218, 165, 32, 0.2)',
                             '&:hover': {
-                                backgroundColor: 'white',
-                                transform: 'scale(1.1)'
+                                background: 'linear-gradient(135deg, #fff 0%, #f8f4e6 100%)',
+                                transform: 'scale(1.1)',
+                                borderColor: '#daa520',
+                                boxShadow: '0 4px 15px rgba(218, 165, 32, 0.3)'
                             },
-                            transition: 'all 0.2s ease'
+                            transition: 'all 0.3s ease'
                         }}
                     >
                         {loadingFavorite ? (
@@ -194,15 +217,17 @@ const GiftCard = ({
                         variant="h6"
                         component="h3"
                         sx={{
+                            fontFamily: "'Playfair Display', serif",
                             fontWeight: 600,
-                            color: 'text.primary',
-                            fontSize: '0.9rem',
+                            color: '#8b4513',
+                            fontSize: '0.95rem',
                             minHeight: '50px',
                             display: '-webkit-box',
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: 'vertical',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
+                            letterSpacing: '0.5px'
                         }}
                     >
                         {gift.name?.toUpperCase()}
@@ -220,6 +245,9 @@ const GiftCard = ({
                         width: '100%',
                         fontSize: '0.75rem',
                         flexGrow: 1,
+                        fontFamily: "'Playfair Display', serif",
+                        fontStyle: 'italic',
+                        fontWeight: 300,
                         display: '-webkit-box',
                         WebkitLineClamp: 3,
                         WebkitBoxOrient: 'vertical',
@@ -241,8 +269,10 @@ const GiftCard = ({
                         variant="h6"
                         component="span"
                         sx={{
+                            fontFamily: "'Playfair Display', serif",
                             fontWeight: 700,
-                            color: 'text.primary'
+                            color: '#daa520',
+                            textShadow: '0 1px 3px rgba(218, 165, 32, 0.2)'
                         }}
                     >
                         R$ {gift.price?.toFixed(2).replace('.', ',')}
@@ -251,10 +281,12 @@ const GiftCard = ({
                         label={gift.capacity || gift.category || 'Produto'}
                         size="small"
                         sx={{
-                            backgroundColor: theme.palette.grey[100],
-                            color: theme.palette.text.secondary,
+                            background: 'linear-gradient(135deg, rgba(218, 165, 32, 0.15) 0%, rgba(25, 118, 210, 0.1) 100%)',
+                            color: '#8b4513',
+                            fontFamily: "'Playfair Display', serif",
                             fontWeight: 500,
-                            fontSize: '0.7rem'
+                            fontSize: '0.7rem',
+                            border: '1px solid rgba(218, 165, 32, 0.3)'
                         }}
                     />
                 </Box>
@@ -266,24 +298,38 @@ const GiftCard = ({
                     title={!user ? "Login necessário para selecionar" : ""}
                     sx={{
                         flex: 1,
-                        py: 1,
-                        borderRadius: 2,
+                        py: 1.5,
+                        borderRadius: 3,
+                        fontFamily: "'Playfair Display', serif",
                         fontWeight: 600,
                         textTransform: 'none',
-                        fontSize: '0.85rem',
-                        backgroundColor: isUnavailable || !user
-                            ? '#9e9e9e'
+                        fontSize: '0.9rem',
+                        letterSpacing: '0.5px',
+                        background: isUnavailable || !user
+                            ? 'linear-gradient(135deg, #e4e4e4ff, #d4d4d4ff)'
                             : isSelected
-                                ? '#4caf50'
-                                : '#212121',
+                                ? 'linear-gradient(135deg, #4caf50, #388e3c)'
+                                : 'linear-gradient(135deg, #e7bf20ff, #e4b035ff)',
                         color: '#ffffff',
+                        boxShadow: isUnavailable || !user 
+                            ? 'none' 
+                            : isSelected
+                                ? '0 4px 15px rgba(76, 175, 80, 0.3)'
+                                : '0 4px 15px rgba(212, 174, 37, 0.4)',
                         '&:hover': {
-                            backgroundColor: isUnavailable || !user
-                                ? '#9e9e9e'
+                            background: isUnavailable || !user
+                                ? 'linear-gradient(135deg, #e4e4e4ff, #d4d4d4ff)'
                                 : isSelected
-                                    ? '#45a049'
-                                    : '#424242'
-                        }
+                                    ? 'linear-gradient(135deg, #45a049, #2e7d32)'
+                                    : 'linear-gradient(135deg, #e7bf20ff, #e4b035ff)',
+                            transform: isUnavailable || !user ? 'none' : 'translateY(-2px)',
+                            boxShadow: isUnavailable || !user 
+                                ? 'none' 
+                                : isSelected
+                                    ? '0 6px 20px rgba(76, 175, 80, 0.4)'
+                                    : '0 6px 25px rgba(218, 165, 32, 0.5)'
+                        },
+                        transition: 'all 0.3s ease'
                     }}
                 >
                     {!user

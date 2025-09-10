@@ -14,7 +14,7 @@ import {
     DialogActions
 } from '@mui/material';
 import {
-    Shuffle as ShuffleIcon,
+    Shuffle,
     Close as CloseIcon,
 } from '@mui/icons-material';
 import { albumPhotos, shuffleArray } from '../data/albumData';
@@ -27,7 +27,7 @@ const AlbumPage = () => {
     const [selectedPhoto, setSelectedPhoto] = useState(null);
     const [isShuffling, setIsShuffling] = useState(false);
 
-    const handleShuffleWithAnimation = useCallback(() => {
+    const handleShuffle = useCallback(() => {
         setIsShuffling(true);
         setTimeout(() => {
             setPhotos(shuffleArray(albumPhotos));
@@ -60,59 +60,120 @@ const AlbumPage = () => {
             <Box sx={{ 
                 width: '100%', 
                 minHeight: '100vh',
+                background: 'linear-gradient(135deg, #fdfbf7 0%, #f8f4e6 30%, #f5f0e1 70%, #f0e6d2 100%)',
                 px: { xs: 0.5, sm: 1, md: 2 }, 
                 py: 2,
-                pb: 0
+                pb: 0,
+                position: 'relative',
+                '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundImage: `
+                        radial-gradient(circle at 20% 20%, rgba(218, 165, 32, 0.03) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(25, 118, 210, 0.02) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 60%, rgba(212, 175, 55, 0.015) 0%, transparent 50%)
+                    `,
+                    zIndex: 1
+                }
             }}>
                 <Fade in timeout={800}>
-                    <Box>
+                    <Box sx={{ position: 'relative', zIndex: 2 }}>
                         {/* Cabeçalho da página */}
                         <Box sx={{ 
                             mb: { xs: 2, md: 3 }, 
                             textAlign: 'center',
-                            px: { xs: 1, sm: 2 }
+                            px: { xs: 1, sm: 2 },
+                            position: 'relative'
                         }}>
+                            {/* Decorative border */}
+                            <Box
+                                sx={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    width: { xs: 200, md: 300 },
+                                    height: 2,
+                                    background: 'linear-gradient(90deg, transparent 0%, #daa520 10%, #b8860b 30%, #cd853f 50%, #daa520 70%, #b8860b 90%, transparent 100%)',
+                                    opacity: 0.6,
+                                    mb: 3
+                                }}
+                            />
+                            
                             <Typography
                                 variant={isMobile ? "h4" : "h3"}
                                 component="h1"
                                 sx={{
-                                    fontWeight: 300,
-                                    color: theme.palette.text.primary,
-                                    mb: 1,
-                                    fontSize: { xs: '1.75rem', sm: '2.125rem', md: '3rem' }
+                                    fontFamily: "'Playfair Display', serif",
+                                    fontWeight: 400,
+                                    background: 'linear-gradient(135deg, #daa520 0%, #b8860b 50%, #cd853f 100%)',
+                                    backgroundClip: 'text',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    mb: 2,
+                                    fontSize: { xs: '1.75rem', sm: '2.125rem', md: '3rem' },
+                                    letterSpacing: '1px',
+                                    textShadow: '0 2px 4px rgba(218, 165, 32, 0.1)',
+                                    mt: 4
                                 }}
                             >
                                 Álbum de Fotos
                             </Typography>
                             <Typography
                                 variant="body1"
-                                color="text.secondary"
                                 sx={{ 
+                                    fontFamily: "'Playfair Display', serif",
+                                    fontWeight: 300,
+                                    fontStyle: 'italic',
+                                    color: '#8b4513',
                                     maxWidth: 600, 
                                     mx: 'auto',
-                                    fontSize: { xs: '0.875rem', sm: '1rem' },
+                                    fontSize: { xs: '1rem', sm: '1.1rem' },
                                     px: { xs: 2, sm: 0 },
-                                    mb: 3
+                                    mb: 4,
+                                    lineHeight: 1.6
                                 }}
                             >
-                                Momentos especiais capturados em {photos.length} fotografias
+                                "Momentos especiais capturados em {photos.length} fotografias que contam nossa história"
                             </Typography>
 
                             {/* Botão de embaralhar */}
                             <Button
-                                variant="outlined"
-                                startIcon={<ShuffleIcon />}
-                                onClick={handleShuffleWithAnimation}
-                                disabled={isShuffling}
+                                onClick={handleShuffle}
+                                variant="contained"
+                                startIcon={<Shuffle />}
                                 sx={{
-                                    borderRadius: 2,
+                                    mt: 2,
+                                    px: 4,
+                                    py: 1.5,
+                                    borderRadius: '25px',
+                                    background: 'linear-gradient(135deg, #daa520 0%, #b8860b 50%, #cd853f 100%)',
+                                    color: 'white',
+                                    fontSize: { xs: '0.875rem', sm: '1rem' },
+                                    fontFamily: "'Playfair Display', serif",
+                                    fontWeight: 500,
+                                    letterSpacing: '0.5px',
                                     textTransform: 'none',
-                                    fontWeight: 600,
-                                    px: 3,
-                                    py: 1
+                                    boxShadow: '0 8px 32px rgba(218, 165, 32, 0.3)',
+                                    border: '1px solid rgba(218, 165, 32, 0.3)',
+                                    backdropFilter: 'blur(10px)',
+                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    '&:hover': {
+                                        background: 'linear-gradient(135deg, #b8860b 0%, #cd853f 50%, #daa520 100%)',
+                                        transform: 'translateY(-2px)',
+                                        boxShadow: '0 12px 48px rgba(218, 165, 32, 0.4)',
+                                        borderColor: 'rgba(218, 165, 32, 0.5)'
+                                    },
+                                    '&:active': {
+                                        transform: 'translateY(0px)'
+                                    }
                                 }}
                             >
-                                {isShuffling ? 'Embaralhando...' : 'Embaralhar Fotos'}
+                                Embaralhar Fotos
                             </Button>
                         </Box>
 
@@ -140,22 +201,39 @@ const AlbumPage = () => {
                                         key={`${photo.id}-${index}`}
                                         sx={{
                                             ...getPhotoGridStyle(),
-                                            display: 'flex'
+                                            display: 'flex',
+                                            '&:hover .photo-overlay': {
+                                                opacity: 1
+                                            },
+                                            '&:hover .photo-gradient-overlay': {
+                                                opacity: 1
+                                            }
                                         }}
                                     >
                                         <Card
                                             sx={{
                                                 cursor: 'pointer',
-                                                borderRadius: 2,
+                                                borderRadius: '16px',
                                                 overflow: 'hidden',
-                                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                background: 'linear-gradient(135deg, rgba(218, 165, 32, 0.05) 0%, rgba(184, 134, 11, 0.05) 100%)',
+                                                border: '2px solid',
+                                                borderColor: 'transparent',
+                                                backgroundImage: 'linear-gradient(white, white), linear-gradient(135deg, #daa520, #b8860b)',
+                                                backgroundOrigin: 'border-box',
+                                                backgroundClip: 'content-box, border-box',
+                                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                                                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                                                 '&:hover': {
-                                                    transform: 'scale(1.02)',
-                                                    boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                                                    transform: 'translateY(-8px) scale(1.02)',
+                                                    boxShadow: '0 10px 10px rgba(218, 165, 32, 0.2)',
+                                                    borderColor: 'rgba(218, 165, 32, 0.6)',
+                                                },
+                                                '&:active': {
+                                                    transform: 'translateY(-4px) scale(1.01)'
                                                 },
                                                 position: 'relative',
                                                 width: '100%',
-                                                aspectRatio: '1', // Card também quadrado
+                                                aspectRatio: '1',
                                                 display: 'flex',
                                                 flexDirection: 'column'
                                             }}
@@ -177,32 +255,7 @@ const AlbumPage = () => {
                                             />
                                             
                                             {/* Overlay com título */}
-                                            <Box
-                                                sx={{
-                                                    position: 'absolute',
-                                                    bottom: 0,
-                                                    left: 0,
-                                                    right: 0,
-                                                    background: 'linear-gradient(transparent, rgba(0,0,0,0.7))',
-                                                    color: 'white',
-                                                    p: { xs: 1, sm: 2 },
-                                                    opacity: 0,
-                                                    transition: 'opacity 0.3s ease',
-                                                    '&:hover': {
-                                                        opacity: 1
-                                                    }
-                                                }}
-                                            >
-                                                <Typography 
-                                                    variant="body2" 
-                                                    sx={{ 
-                                                        fontWeight: 600,
-                                                        fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                                                    }}
-                                                >
-                                                    {photo.title}
-                                                </Typography>
-                                            </Box>
+                                            
                                         </Card>
                                     </Box>
                                 ))}

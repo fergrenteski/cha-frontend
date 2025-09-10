@@ -95,24 +95,40 @@ const PaymentSelector = ({ subtotal, onPaymentChange }) => {
     return (
         <Card
             sx={{
-                borderRadius: 2,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                mb: 3
+                borderRadius: '20px',
+                background: 'rgba(255, 255, 255, 0.98)',
+                border: '2px solid',
+                borderColor: 'transparent',
+                boxShadow: '0 12px 40px rgba(218, 165, 32, 0.15)',
+                position: 'static',
+                top: 20,
+                mb: 3,
+                height: 'fit-content',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 16px 50px rgba(218, 165, 32, 0.2)',
+                    borderColor: 'rgba(218, 165, 32, 0.3)'
+                }
             }}
         >
             <CardContent sx={{ p: 3 }}>
                 <Typography
                     variant="h6"
                     sx={{
-                        fontWeight: 600,
-                        color: 'text.primary',
+                        fontFamily: "'Playfair Display', serif",
+                        fontWeight: 500,
+                        background: 'linear-gradient(135deg, #daa520, #b8860b)',
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
                         mb: 3,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1
+                        fontSize: '1.3rem',
+                        letterSpacing: '0.5px',
+                        textAlign: 'center'
                     }}
                 >
-                    💳 Forma de Pagamento
+                    Forma de Pagamento
                 </Typography>
 
                 {/* Seleção do método de pagamento */}

@@ -90,11 +90,12 @@ const EmptyCart = ({ onContinueShopping }) => {
                     fontWeight: 600,
                     textTransform: 'none',
                     fontSize: '1rem',
-                    backgroundColor: '#212121',
+                    color: '#fff',
+                    backgroundColor: theme.palette.primary.main,
                     boxShadow: '0 4px 20px rgba(33, 33, 33, 0.3)',
                     '&:hover': {
-                        backgroundColor: '#424242',
-                        boxShadow: '0 6px 30px rgba(33, 33, 33, 0.4)',
+                        backgroundColor: theme.palette.primary.main,
+                        boxShadow: '0 6px 30px theme.palette.primary.main',
                         transform: 'translateY(-2px)'
                     },
                     transition: 'all 0.3s ease'

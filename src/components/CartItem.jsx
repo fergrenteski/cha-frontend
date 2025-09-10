@@ -62,7 +62,23 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
     };
 
     return (
-        <Card sx={{ mb: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+        <Card sx={{ 
+            mb: 2, 
+            borderRadius: '16px',
+            background: 'rgba(255, 255, 255, 0.98)',
+            border: '2px solid',
+            borderColor: 'transparent',
+            backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.98)), linear-gradient(135deg, rgba(218, 165, 32, 0.1), rgba(184, 134, 11, 0.1))',
+            backgroundOrigin: 'border-box',
+            backgroundClip: 'content-box, border-box',
+            boxShadow: '0 8px 32px rgba(218, 165, 32, 0.1)',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 12px 40px rgba(218, 165, 32, 0.15)',
+                borderColor: 'rgba(218, 165, 32, 0.3)'
+            }
+        }}>
             <CardContent sx={{ p: isMobile ? 2 : 3 }}>
                 <Box
                     sx={{
@@ -87,11 +103,23 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
 
                     {/* Informações */}
                     <Box sx={{ flexGrow: 1, width: '100%' }}>
-                        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.05rem' }}>
+                        <Typography variant="h6" sx={{ 
+                            fontFamily: "'Playfair Display', serif",
+                            fontWeight: 500, 
+                            fontSize: '1.05rem',
+                            color: '#8b4513',
+                            mb: 0.5
+                        }}>
                             {product.name || 'Produto sem nome'}
                         </Typography>
 
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1, minHeight: 40 }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ 
+                            mb: 1, 
+                            minHeight: 40,
+                            fontFamily: "'Playfair Display', serif",
+                            fontStyle: 'italic',
+                            fontWeight: 300
+                        }}>
                             {product.description || 'Sem descrição'}
                         </Typography>
 
@@ -102,7 +130,15 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                             justifyContent: 'space-between',
                         }}>
                             {!isMobile && (
-                                <Typography variant="h6" color="primary" sx={{ fontWeight: 700, fontSize: '1.05rem' }}>
+                                <Typography variant="h6" sx={{ 
+                                    fontFamily: "'Playfair Display', serif",
+                                    fontWeight: 600, 
+                                    fontSize: '1.05rem',
+                                    background: 'linear-gradient(135deg, #daa520, #b8860b)',
+                                    backgroundClip: 'text',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent'
+                                }}>
                                     R$ {product.price?.toFixed(2) || '0.00'}
                                 </Typography>
                             )}
@@ -112,6 +148,20 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                                     size="small"
                                     disabled={!user || item.quantity <= 1 || loadingQuantity}
                                     title={!user ? "Login necessário" : ""}
+                                    sx={{
+                                        color: '#8b4513',
+                                        backgroundColor: 'rgba(218, 165, 32, 0.1)',
+                                        border: '1px solid rgba(218, 165, 32, 0.2)',
+                                        '&:hover': {
+                                            backgroundColor: 'rgba(218, 165, 32, 0.2)',
+                                            borderColor: 'rgba(218, 165, 32, 0.4)',
+                                            color: '#daa520'
+                                        },
+                                        '&:disabled': {
+                                            backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                            borderColor: 'rgba(0, 0, 0, 0.12)'
+                                        }
+                                    }}
                                 >
                                     {loadingQuantity ? (
                                         <CircularProgress size={16} />
@@ -127,12 +177,27 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                                     disabled={!user || loadingQuantity}
                                     inputProps={{
                                         min: 1,
-                                        style: { textAlign: 'center', width: '20px' }
+                                        style: { 
+                                            textAlign: 'center', 
+                                            width: '20px',
+                                            fontFamily: "'Playfair Display', serif",
+                                            fontWeight: 500,
+                                            color: '#8b4513'
+                                        }
                                     }}
                                     sx={{
+                                        mx: 1,
                                         '& .MuiOutlinedInput-root': {
+                                            borderRadius: 2,
+                                            backgroundColor: 'rgba(218, 165, 32, 0.05)',
                                             '& fieldset': {
-                                                borderColor: '#e0e0e0',
+                                                borderColor: 'rgba(218, 165, 32, 0.3)',
+                                            },
+                                            '&:hover fieldset': {
+                                                borderColor: 'rgba(218, 165, 32, 0.5)',
+                                            },
+                                            '&.Mui-focused fieldset': {
+                                                borderColor: '#daa520',
                                             },
                                         },
                                     }}
@@ -144,6 +209,20 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                                     size="small"
                                     disabled={!user || loadingQuantity}
                                     title={!user ? "Login necessário" : ""}
+                                    sx={{
+                                        color: '#8b4513',
+                                        backgroundColor: 'rgba(218, 165, 32, 0.1)',
+                                        border: '1px solid rgba(218, 165, 32, 0.2)',
+                                        '&:hover': {
+                                            backgroundColor: 'rgba(218, 165, 32, 0.2)',
+                                            borderColor: 'rgba(218, 165, 32, 0.4)',
+                                            color: '#daa520'
+                                        },
+                                        '&:disabled': {
+                                            backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                            borderColor: 'rgba(0, 0, 0, 0.12)'
+                                        }
+                                    }}
                                 >
                                     {loadingQuantity ? (
                                         <CircularProgress size={16} />
@@ -154,10 +233,23 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                             </Box>
                             {/* Subtotal */}
                             <Box sx={{ textAlign: 'right'}}>
-                                <Typography variant="body2" color="text.secondary">
+                                <Typography variant="body2" sx={{ 
+                                    fontFamily: "'Playfair Display', serif",
+                                    color: '#8b4513',
+                                    fontWeight: 300,
+                                    fontStyle: 'italic'
+                                }}>
                                     Subtotal
                                 </Typography>
-                                <Typography variant="h6" sx={{ fontWeight: 700,color: 'primary.main', fontSize: '1.05rem' }}>
+                                <Typography variant="h6" sx={{ 
+                                    fontFamily: "'Playfair Display', serif",
+                                    fontWeight: 600, 
+                                    fontSize: '1.05rem',
+                                    background: 'linear-gradient(135deg, #daa520, #b8860b)',
+                                    backgroundClip: 'text',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent'
+                                }}>
                                     R$ {((product.price || 0) * item.quantity).toFixed(2)}
                                 </Typography>
                             </Box>
@@ -166,13 +258,19 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                                 <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                                     <IconButton
                                         onClick={handleRemove}
-                                        color="error"
                                         disabled={!user || loadingRemove}
                                         title={!user ? "Login necessário" : ""}
                                         sx={{
+                                            color: '#d32f2f',
+                                            backgroundColor: 'rgba(211, 47, 47, 0.08)',
+                                            border: '1px solid rgba(211, 47, 47, 0.2)',
+                                            borderRadius: '12px',
                                             '&:hover': {
-                                                backgroundColor: 'rgba(244, 67, 54, 0.08)'
-                                            }
+                                                backgroundColor: 'rgba(211, 47, 47, 0.12)',
+                                                borderColor: 'rgba(211, 47, 47, 0.3)',
+                                                transform: 'scale(1.05)'
+                                            },
+                                            transition: 'all 0.2s ease'
                                         }}
                                     >
                                         {loadingRemove ? (
@@ -190,14 +288,20 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
                     {!isMobile && (
                         <IconButton
                             onClick={handleRemove}
-                            color="error"
                             disabled={!user || loadingRemove}
                             title={!user ? "Login necessário" : ""}
                             sx={{
                                 ml: 1,
+                                color: '#d32f2f',
+                                backgroundColor: 'rgba(211, 47, 47, 0.08)',
+                                border: '1px solid rgba(211, 47, 47, 0.2)',
+                                borderRadius: '12px',
                                 '&:hover': {
-                                    backgroundColor: 'rgba(244, 67, 54, 0.08)'
-                                }
+                                    backgroundColor: 'rgba(211, 47, 47, 0.12)',
+                                    borderColor: 'rgba(211, 47, 47, 0.3)',
+                                    transform: 'scale(1.05)'
+                                },
+                                transition: 'all 0.2s ease'
                             }}
                         >
                             {loadingRemove ? (
