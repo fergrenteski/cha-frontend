@@ -196,7 +196,7 @@ const AdminOrdersPage = () => {
     };
 
     // Função para enviar mensagem de WhatsApp
-    const handleSendWhatsApp = (order) => {
+    const handleSendWhatsApp = async (order) => {
         const phone = order.user?.phone;
         
         if (!phone) {
@@ -214,6 +214,7 @@ const AdminOrdersPage = () => {
         // Adicionar código do país se não tiver
         const formattedPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
 
+        // Mensagem com emojis originais para copiar
         const message = `*🎉 Presença Confirmada! 🎉*
 
 Seu presente para o nosso Chá de Casa Nova foi registrado com sucesso! 💛
@@ -224,19 +225,27 @@ Estamos muito felizes em contar com você para celebrar este momento especial. L
 
 Mal podemos esperar para comemorar juntos! 🏡✨`;
 
-        // Codificar corretamente para WhatsApp Web
-        // O WhatsApp Web funciona melhor com encodeURIComponent duplo para emojis
-        const encodedMessage = encodeURIComponent(message);
-        const whatsappUrl = `https://web.whatsapp.com/send?phone=${formattedPhone}&text=${encodedMessage}`;
-        
-        // Abrir WhatsApp em nova aba
-        window.open(whatsappUrl, '_blank');
-        
-        setSnackbar({
-            open: true,
-            message: `Mensagem enviada para ${order.user?.firstName} ${order.user?.lastName}`,
-            severity: 'success'
-        });
+        try {
+            // Copiar mensagem para o clipboard
+            await navigator.clipboard.writeText(message);
+            
+            // Abrir WhatsApp apenas com o número
+            const whatsappUrl = `https://wa.me/${formattedPhone}`;
+            window.open(whatsappUrl, '_blank');
+            
+            setSnackbar({
+                open: true,
+                message: `Mensagem copiada! WhatsApp aberto para ${order.user?.firstName} ${order.user?.lastName}`,
+                severity: 'success'
+            });
+        } catch {
+            // Fallback caso não consiga copiar
+            setSnackbar({
+                open: true,
+                message: 'Não foi possível copiar a mensagem. Tente novamente.',
+                severity: 'error'
+            });
+        }
     };
 
     const handleViewDetails = async (orderId) => {
