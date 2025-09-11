@@ -37,6 +37,8 @@ import {
     Fade,
     Divider,
     TextField,
+    Pagination,
+    Stack
 } from '@mui/material';
 import {
     Visibility,
@@ -51,6 +53,7 @@ import {
     Search as SearchIcon,
     CreditCard,
     AccountBalance as PixIcon,
+    Delete,
 } from '@mui/icons-material';
 import api from '../services/api';
 
@@ -69,25 +72,56 @@ const AdminOrdersPage = () => {
     const [updating, setUpdating] = useState(false);
     const [stats, setStats] = useState({});
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success'});
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [orderToDelete, setOrderToDelete] = useState(null);
+    const [deleting, setDeleting] = useState(false);
 
     // Estados dos filtros
     const [customerFilter, setCustomerFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
 
+    // Estados de paginação
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalOrders, setTotalOrders] = useState(0);
+    const [hasMore, setHasMore] = useState(false);
+
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down('md'));
 
-    const fetchOrders = useCallback(async () => {
+    const fetchOrders = useCallback(async (page = currentPage, limit = itemsPerPage, filters = {}) => {
         try {
             setLoading(true);
+            
+            // Construir parâmetros da query
+            const queryParams = new URLSearchParams({
+                page: page.toString(),
+                limit: limit.toString(),
+                admin: 'true'
+            });
+
+            // Adicionar filtros se existirem
+            if (filters.status || statusFilter) {
+                queryParams.append('status', filters.status || statusFilter);
+            }
+
             const [ordersResponse, statsResponse] = await Promise.all([
-                api.orders.getAllOrders(),
+                api.orders.getUserOrders({ status: filters.status || statusFilter }, true, page, limit),
                 api.orders.getAllOrderStats()
             ]);
             
-            
-            setOrders(ordersResponse.orders || ordersResponse || []);
+            // Atualizar dados de pedidos e paginação
+            setOrders(ordersResponse.orders || []);
+            setCurrentPage(ordersResponse.pagination?.currentPage || page);
+            setTotalPages(ordersResponse.pagination?.totalPages || 0);
+            setTotalOrders(ordersResponse.pagination?.totalOrders || 0);
+            setHasMore(ordersResponse.pagination?.hasMore || false);
             setStats(statsResponse || {});
+            
+            // Debug log
+            console.log('Pagination data:', ordersResponse.pagination);
+            console.log('Orders count:', ordersResponse.orders?.length);
         } catch (error) {
             console.error('Erro ao carregar pedidos:', error);
             setSnackbar({
@@ -98,17 +132,17 @@ const AdminOrdersPage = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [currentPage, itemsPerPage, statusFilter]);
 
     useEffect(() => {
         fetchOrders();
     }, [fetchOrders]);
 
-    // Effect para filtrar pedidos
+    // Effect para filtrar pedidos por cliente (filtro local)
     useEffect(() => {
         let filtered = [...orders];
 
-        // Filtrar por cliente
+        // Filtrar por cliente (mantido como filtro local)
         if (customerFilter.trim()) {
             filtered = filtered.filter(order => {
                 const firstName = order.user?.firstName?.toLowerCase() || '';
@@ -124,13 +158,8 @@ const AdminOrdersPage = () => {
             });
         }
 
-        // Filtrar por status
-        if (statusFilter) {
-            filtered = filtered.filter(order => order.status === statusFilter);
-        }
-
         setFilteredOrders(filtered);
-    }, [orders, customerFilter, statusFilter]);
+    }, [orders, customerFilter]);
 
     // Handlers para filtros
     const handleCustomerFilterChange = (value) => {
@@ -139,11 +168,29 @@ const AdminOrdersPage = () => {
 
     const handleStatusFilterChange = (value) => {
         setStatusFilter(value);
+        setCurrentPage(1);
+        fetchOrders(1, itemsPerPage, { status: value });
     };
 
     const clearFilters = () => {
         setCustomerFilter('');
         setStatusFilter('');
+        setCurrentPage(1);
+        fetchOrders(1, itemsPerPage);
+    };
+
+    // Funções de paginação
+    const goToPage = (page) => {
+        if (page >= 1 && page <= totalPages && page !== currentPage) {
+            setCurrentPage(page);
+            fetchOrders(page, itemsPerPage, { status: statusFilter });
+        }
+    };
+
+    const handleItemsPerPageChange = (newItemsPerPage) => {
+        setItemsPerPage(newItemsPerPage);
+        setCurrentPage(1);
+        fetchOrders(1, newItemsPerPage, { status: statusFilter });
     };
 
     const handleViewDetails = async (orderId) => {
@@ -178,16 +225,14 @@ const AdminOrdersPage = () => {
                 setSelectedOrder(prev => ({ ...prev, status: newStatus }));
             }
 
-            // Recarregar as estatísticas após atualizar o status
+            // Recarregar as estatísticas e pedidos após atualizar o status
             try {
-                const [ordersResponse, statsResponse] = await Promise.all([
-                api.orders.getAllOrders(),
-                api.orders.getAllOrderStats()
-                ]);
-                setOrders(ordersResponse.orders || ordersResponse || []);
-                setStats(statsResponse || {});  
+                const statsResponse = await api.orders.getAllOrderStats();
+                setStats(statsResponse || {});
+                // Recarregar a página atual de pedidos
+                fetchOrders(currentPage, itemsPerPage, { status: statusFilter });
             } catch (statsError) {
-                console.error('Erro ao recarregar estatísticas:', statsError);
+                console.error('Erro ao recarregar dados:', statsError);
             }    
             setSnackbar({
                 open: true,
@@ -205,6 +250,63 @@ const AdminOrdersPage = () => {
         } finally {
             setUpdating(false);
         }
+    };
+
+    const handleDeleteOrder = (order) => {
+        setOrderToDelete(order);
+        setDeleteConfirmOpen(true);
+    };
+
+    const confirmDeleteOrder = async () => {
+        if (!orderToDelete) return;
+
+        try {
+            setDeleting(true);
+            const response = await api.orders.deleteOrder(orderToDelete._id, true);
+            
+            // Remove o pedido da lista local
+            setOrders(prevOrders => 
+                prevOrders.filter(order => order._id !== orderToDelete._id)
+            );
+
+            // Recarregar as estatísticas
+            try {
+                const statsResponse = await api.orders.getAllOrderStats();
+                setStats(statsResponse || {});
+                // Recarregar a página atual de pedidos
+                fetchOrders(currentPage, itemsPerPage, { status: statusFilter });
+            } catch (statsError) {
+                console.error('Erro ao recarregar estatísticas:', statsError);
+            }
+
+            // Fechar o modal de detalhes se o pedido deletado estava sendo visualizado
+            if (selectedOrder && selectedOrder._id === orderToDelete._id) {
+                setDetailsOpen(false);
+                setSelectedOrder(null);
+            }
+
+            setSnackbar({
+                open: true,
+                message: response.msg || 'Pedido removido com sucesso',
+                severity: 'success'
+            });
+        } catch (error) {
+            console.error('Erro ao remover pedido:', error);
+            setSnackbar({
+                open: true,
+                message: error.message || 'Erro ao remover pedido',
+                severity: 'error'
+            });
+        } finally {
+            setDeleting(false);
+            setDeleteConfirmOpen(false);
+            setOrderToDelete(null);
+        }
+    };
+
+    const cancelDeleteOrder = () => {
+        setDeleteConfirmOpen(false);
+        setOrderToDelete(null);
     };
 
     const formatCurrency = (value) => {
@@ -519,7 +621,8 @@ const AdminOrdersPage = () => {
                             <Grid size={{xs: 12, sm: 12}}>
                                 <Box sx={{ textAlign: 'center' }}>
                                     <Typography variant="body2" color="text.secondary">
-                                        {filteredOrders.length} de {orders.length} pedidos
+                                        {filteredOrders.length} de {totalOrders} pedidos
+                                        {totalPages > 1 && ` • Página ${currentPage} de ${totalPages}`}
                                     </Typography>
                                 </Box>
                             </Grid>
@@ -581,15 +684,33 @@ const AdminOrdersPage = () => {
                                                     />
                                                 </TableCell>
                                                 <TableCell align="center">
-                                                    <Tooltip title="Ver detalhes">
-                                                        <IconButton
-                                                            onClick={() => handleViewDetails(order._id)}
-                                                            size="small"
-                                                            color="primary"
-                                                        >
-                                                            <Visibility />
-                                                        </IconButton>
-                                                    </Tooltip>
+                                                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                                                        <Tooltip title="Ver detalhes">
+                                                            <IconButton
+                                                                onClick={() => handleViewDetails(order._id)}
+                                                                size="small"
+                                                                color="primary"
+                                                            >
+                                                                <Visibility />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                        {(order.status === 'pending' || order.status === 'cancelled') && (
+                                                            <Tooltip title="Remover pedido">
+                                                                <IconButton
+                                                                    onClick={() => handleDeleteOrder(order)}
+                                                                    size="small"
+                                                                    sx={{ 
+                                                                        color: '#f44336',
+                                                                        '&:hover': {
+                                                                            backgroundColor: 'rgba(244, 67, 54, 0.04)'
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    <Delete />
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        )}
+                                                    </Box>
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -627,6 +748,58 @@ const AdminOrdersPage = () => {
                                 </Typography>
                             </Box>
                         )}
+                    </Paper>
+
+                    {/* Controles de Paginação */}
+                    <Paper elevation={1} sx={{ p: 3, mt: 2, borderRadius: 2 }}>
+                        <Stack 
+                            direction={isSmall ? 'column' : 'row'} 
+                            spacing={2} 
+                            alignItems="center" 
+                            justifyContent="space-between"
+                        >
+                            {/* Seletor de itens por página */}
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Typography variant="body2" color="text.secondary">
+                                    Itens por página:
+                                </Typography>
+                                <FormControl size="small" sx={{ minWidth: 80 }}>
+                                    <Select
+                                        value={itemsPerPage}
+                                        onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                                        sx={{ borderRadius: 1 }}
+                                    >
+                                        <MenuItem value={5}>5</MenuItem>
+                                        <MenuItem value={10}>10</MenuItem>
+                                        <MenuItem value={25}>25</MenuItem>
+                                        <MenuItem value={50}>50</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Box>
+
+                            {/* Componente de Paginação */}
+                            {totalPages > 0 && (
+                                <Pagination
+                                    count={totalPages}
+                                    page={currentPage}
+                                    onChange={(event, page) => goToPage(page)}
+                                    color="primary"
+                                    size={isSmall ? 'small' : 'medium'}
+                                    showFirstButton
+                                    showLastButton
+                                    sx={{
+                                        '& .MuiPaginationItem-root': {
+                                            borderRadius: 2,
+                                        },
+                                    }}
+                                />
+                            )}
+
+                            {/* Informação de páginas */}
+                            <Typography variant="body2" color="text.secondary">
+                                Mostrando {totalOrders > 0 ? ((currentPage - 1) * itemsPerPage) + 1 : 0}-{Math.min(currentPage * itemsPerPage, totalOrders)} de {totalOrders}
+                            </Typography>
+                        </Stack>
                     </Paper>
 
                     {/* Dialog de Detalhes do Pedido */}
@@ -887,6 +1060,162 @@ const AdminOrdersPage = () => {
                 </Box>
                 </Fade>
             </Container>
+
+            {/* Modal de Confirmação de Exclusão */}
+            <Dialog
+                open={deleteConfirmOpen}
+                onClose={cancelDeleteOrder}
+                maxWidth="sm"
+                fullWidth
+                sx={{
+                        borderRadius: 3,
+                        background: 'linear-gradient(135deg, rgba(218, 165, 32, 0.02), rgba(184, 134, 11, 0.02))',
+                        border: '1px solid rgba(218, 165, 32, 0.1)',
+                        boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+                    }}
+            >
+                <DialogTitle sx={{ 
+                    textAlign: 'center', 
+                    pb: 1,
+                    background: 'linear-gradient(135deg, #daa520, #b8860b)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    fontFamily: 'Playfair Display, serif',
+                    fontWeight: 700,
+                    fontSize: '1.5rem',
+                }}>
+                    <Delete sx={{ 
+                        fontSize: 48, 
+                        color: '#f44336', 
+                        mb: 2, 
+                        display: 'block', 
+                        mx: 'auto' 
+                    }} />
+                    Confirmar Remoção
+                </DialogTitle>
+                
+                <DialogContent sx={{ textAlign: 'center', py: 3 }}>
+                    <Typography 
+                        variant="body1" 
+                        sx={{ 
+                            mb: 2,
+                            color: 'text.primary',
+                            fontFamily: 'Playfair Display, serif',
+                        }}
+                    >
+                        Tem certeza que deseja remover este pedido?
+                    </Typography>
+                    
+                    {orderToDelete && (
+                        <Paper 
+                            elevation={2} 
+                            sx={{ 
+                                p: 3, 
+                                mt: 2,
+                                background: 'linear-gradient(135deg, rgba(218, 165, 32, 0.05), rgba(184, 134, 11, 0.05))',
+                                border: '1px solid rgba(218, 165, 32, 0.2)',
+                                borderRadius: 2,
+                            }}
+                        >
+                            <Typography 
+                                variant="h6" 
+                                sx={{ 
+                                    fontFamily: 'monospace',
+                                    background: 'linear-gradient(135deg, #daa520, #b8860b)',
+                                    backgroundClip: 'text',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    fontWeight: 700,
+                                    mb: 1,
+                                }}
+                            >
+                                #{orderToDelete._id.slice(-8)}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                Cliente: {orderToDelete.user?.firstName} {orderToDelete.user?.lastName}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                Total: {formatCurrency(orderToDelete.totalAmount)}
+                            </Typography>
+                            <Chip
+                                label={OrderStatus[orderToDelete.status]?.label || orderToDelete.status}
+                                color={OrderStatus[orderToDelete.status]?.color || 'default'}
+                                size="small"
+                                variant="outlined"
+                            />
+                        </Paper>
+                    )}
+
+                    <Box sx={{ 
+                        mt: 3, 
+                        p: 2, 
+                        backgroundColor: 'rgba(244, 67, 54, 0.05)',
+                        borderRadius: 2,
+                        border: '1px solid rgba(244, 67, 54, 0.1)',
+                    }}>
+                        <Typography variant="body2" sx={{ 
+                            color: '#f44336',
+                            fontWeight: 500,
+                            fontStyle: 'italic',
+                        }}>
+                            ⚠️ Esta ação não pode ser desfeita. O pedido será permanentemente removido do sistema.
+                        </Typography>
+                    </Box>
+                </DialogContent>
+                
+                <DialogActions sx={{ 
+                    p: 3, 
+                    gap: 2, 
+                    justifyContent: 'center',
+                    borderTop: '1px solid rgba(218, 165, 32, 0.1)',
+                }}>
+                    <Button
+                        onClick={cancelDeleteOrder}
+                        variant="outlined"
+                        disabled={deleting}
+                        sx={{
+                            borderColor: 'rgba(218, 165, 32, 0.5)',
+                            color: '#daa520',
+                            fontFamily: 'Playfair Display, serif',
+                            fontWeight: 600,
+                            px: 3,
+                            py: 1,
+                            '&:hover': {
+                                borderColor: '#daa520',
+                                backgroundColor: 'rgba(218, 165, 32, 0.04)',
+                            },
+                        }}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        onClick={confirmDeleteOrder}
+                        variant="contained"
+                        disabled={deleting}
+                        startIcon={deleting ? <CircularProgress size={16} color="inherit" /> : <Delete />}
+                        sx={{
+                            background: 'linear-gradient(135deg, #f44336, #d32f2f)',
+                            color: 'white',
+                            fontFamily: 'Playfair Display, serif',
+                            fontWeight: 600,
+                            px: 3,
+                            py: 1,
+                            boxShadow: '0 4px 12px rgba(244, 67, 54, 0.3)',
+                            '&:hover': {
+                                background: 'linear-gradient(135deg, #d32f2f, #c62828)',
+                                boxShadow: '0 6px 16px rgba(244, 67, 54, 0.4)',
+                            },
+                            '&:disabled': {
+                                background: 'rgba(244, 67, 54, 0.3)',
+                                color: 'rgba(255, 255, 255, 0.7)',
+                            },
+                        }}
+                    >
+                        {deleting ? 'Removendo...' : 'Confirmar Remoção'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             <Snackbar
                 open={snackbar.open}

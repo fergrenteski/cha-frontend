@@ -35,7 +35,9 @@ import {
     MenuItem,
     FormControl,
     Card,
-    CircularProgress
+    CircularProgress,
+    Stack,
+    Pagination
 } from '@mui/material';
 import {
     Add as AddIcon,
@@ -625,14 +627,73 @@ const ProductsAdminPage = () => {
                     )}
                 </Paper>
 
-                {/* Paginação */}
+                {/* Controles de Paginação */}
                 {products.length > 0 && (
-                    <ProductPagination
-                        pagination={pagination}
-                        onPageChange={goToPage}
-                        onItemsPerPageChange={setItemsPerPage}
-                        itemsPerPage={filters.limit || 20}
-                    />
+                    <Paper elevation={1} sx={{ p: 3, mt: 2, borderRadius: 2 }}>
+                        <Stack 
+                            direction={isMobile ? 'column' : 'row'} 
+                            spacing={2} 
+                            alignItems="center" 
+                            justifyContent="space-between"
+                        >
+                            {/* Seletor de itens por página */}
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Typography variant="body2" color="text.secondary">
+                                    Itens por página:
+                                </Typography>
+                                <FormControl size="small" sx={{ minWidth: 80 }}>
+                                    <Select
+                                        value={filters.limit || 20}
+                                        onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                                        sx={{ borderRadius: 1 }}
+                                    >
+                                        <MenuItem value={5}>5</MenuItem>
+                                        <MenuItem value={10}>10</MenuItem>
+                                        <MenuItem value={20}>20</MenuItem>
+                                        <MenuItem value={25}>25</MenuItem>
+                                        <MenuItem value={50}>50</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Box>
+
+                            {/* Componente de Paginação */}
+                            {pagination.totalPages > 0 && (
+                                <Pagination
+                                    count={pagination.totalPages}
+                                    page={pagination.currentPage}
+                                    onChange={(event, page) => goToPage(page)}
+                                    color="primary"
+                                    size={isMobile ? 'small' : 'medium'}
+                                    showFirstButton
+                                    showLastButton
+                                    sx={{
+                                        '& .MuiPaginationItem-root': {
+                                            background: 'linear-gradient(45deg, #daa520 30%, #b8860b 90%)',
+                                            border: '1px solid #cd853f',
+                                            color: '#fff',
+                                            fontFamily: 'Playfair Display, serif',
+                                            fontWeight: 500,
+                                            boxShadow: '0 2px 8px rgba(218, 165, 32, 0.3)',
+                                            transition: 'all 0.3s ease',
+                                            '&:hover': {
+                                                background: 'linear-gradient(45deg, #b8860b 30%, #8b7355 90%)',
+                                                transform: 'translateY(-2px)',
+                                                boxShadow: '0 4px 12px rgba(218, 165, 32, 0.4)',
+                                            },
+                                            '&.Mui-selected': {
+                                                background: 'linear-gradient(45deg, #8b4513 30%, #654321 90%)',
+                                                transform: 'scale(1.1)',
+                                                fontWeight: 600,
+                                                '&:hover': {
+                                                    background: 'linear-gradient(45deg, #654321 30%, #4a2c17 90%)',
+                                                }
+                                            }
+                                        }
+                                    }}
+                                />
+                            )}
+                        </Stack>
+                    </Paper>
                 )}
 
                 {/* FAB para mobile */}

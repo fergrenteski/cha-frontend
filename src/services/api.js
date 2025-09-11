@@ -668,12 +668,12 @@ export const ordersAPI = {
     },
 
     // Obter pedidos do usuário
-    async getUserOrders(filters = {}, admin=false) {
+    async getUserOrders(filters = {}, admin = false, page = 1, limit = 10) {
         const queryParams = new URLSearchParams();
         
         if (filters.status) queryParams.append('status', filters.status);
-        if (filters.page) queryParams.append('page', filters.page);
-        if (filters.limit) queryParams.append('limit', filters.limit);
+        queryParams.append('page', page.toString());
+        queryParams.append('limit', limit.toString());
         if(admin) queryParams.append('admin', admin);
 
         const response = await fetch(`${API_BASE_URL}/orders?${queryParams}`, {
@@ -736,19 +736,39 @@ export const ordersAPI = {
         return handleResponse(response);
     },
 
-    // Obter todos os pedidos (admin) - usa rota de usuário por enquanto
-    async getAllOrders(filters = {}) {
-        // Por enquanto, usamos getUserOrders que retorna os pedidos do usuário logado
-        // Idealmente, deveria haver uma rota específica para admin
-        return this.getUserOrders(filters, true);
+    // Obter todos os pedidos (admin) 
+    async getAllOrders(filters = {}, page = 1, limit = 10) {
+        return this.getUserOrders(filters, true, page, limit);
+    },
+
+    // Deletar pedido (admin ou usuário)
+    async deleteOrder(orderId, admin = false) {
+        const queryParams = new URLSearchParams();
+        if (admin) queryParams.append('admin', admin);
+
+        const response = await fetch(`${API_BASE_URL}/orders/${orderId}?${queryParams}`, {
+            method: 'DELETE',
+            headers: createHeaders(true),
+        });
+        
+        return handleResponse(response);
     },
 };
 
 // API de Usuários (Admin)
 const usersAPI = {
     // Obter todos os usuários (admin)
-    async getAllUsers() {
-        const response = await fetch(`${API_BASE_URL}/users`, {
+    async getAllUsers(params = {}) {
+        const url = new URL(`${API_BASE_URL}/users`);
+        
+        if (params.page) {
+            url.searchParams.append('page', params.page);
+        }
+        if (params.limit) {
+            url.searchParams.append('limit', params.limit);
+        }
+        
+        const response = await fetch(url.toString(), {
             method: 'GET',
             headers: createHeaders(true),
         });

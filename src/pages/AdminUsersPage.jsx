@@ -32,7 +32,9 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
-    DialogActions
+    DialogActions,
+    Pagination,
+    Stack
 } from '@mui/material';
 import {
     Delete,
@@ -55,6 +57,12 @@ const AdminUsersPage = () => {
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
     const [confirmDialog, setConfirmDialog] = useState({ open: false, title: '', message: '', onConfirm: null, color: 'error' });
     
+    // Estados de paginação
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalUsers, setTotalUsers] = useState(0);
+    const pageSize = 10;
+    
     // Estados de loading para botões da modal
     const [loadingConfirm, setLoadingConfirm] = useState(false);
 
@@ -63,13 +71,18 @@ const AdminUsersPage = () => {
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down('md'));
 
-    const fetchUsers = useCallback(async () => {
+    const fetchUsers = useCallback(async (currentPage = 1) => {
         try {
             setLoading(true);
-            const usersData = await api.users.getAllUsers();
+            const usersData = await api.users.getAllUsers({
+                page: currentPage,
+                limit: pageSize
+            });
             
             setUsers(usersData.users || []);
             setFilteredUsers(usersData.users || []);
+            setTotalPages(Math.ceil((usersData.total || 0) / pageSize));
+            setTotalUsers(usersData.total || 0);
         } catch (error) {
             console.error('Erro ao carregar usuários:', error);
             
@@ -81,11 +94,11 @@ const AdminUsersPage = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [pageSize]);
 
     useEffect(() => {
-        fetchUsers();
-    }, [fetchUsers]);
+        fetchUsers(page);
+    }, [fetchUsers, page]);
 
     // Filtros
     useEffect(() => {
@@ -109,6 +122,11 @@ const AdminUsersPage = () => {
 
         setFilteredUsers(filtered);
     }, [users, searchTerm, filterRole]);
+
+    // Handler para mudança de página
+    const handlePageChange = (event, newPage) => {
+        setPage(newPage);
+    };
 
     // Mostrar dialog de confirmação
     const showConfirmDialog = (title, message, onConfirm, color) => {
@@ -567,6 +585,54 @@ const AdminUsersPage = () => {
                                 </Box>
                             )}
                         </Paper>
+
+                        {/* Paginação */}
+                        {totalUsers > pageSize && (
+                            <Stack
+                                direction="row"
+                                justifyContent="center"
+                                alignItems="center"
+                                spacing={2}
+                                sx={{
+                                    mt: 3,
+                                    mb: 2
+                                }}
+                            >
+                                <Pagination
+                                    count={totalPages}
+                                    page={page}
+                                    onChange={handlePageChange}
+                                    color="primary"
+                                    size="large"
+                                    variant="outlined"
+                                    shape="rounded"
+                                    sx={{
+                                        '& .MuiPaginationItem-root': {
+                                            background: 'linear-gradient(45deg, #daa520 30%, #b8860b 90%)',
+                                            border: '1px solid #cd853f',
+                                            color: '#fff',
+                                            fontFamily: 'Playfair Display, serif',
+                                            fontWeight: 500,
+                                            boxShadow: '0 2px 8px rgba(218, 165, 32, 0.3)',
+                                            transition: 'all 0.3s ease',
+                                            '&:hover': {
+                                                background: 'linear-gradient(45deg, #b8860b 30%, #8b7355 90%)',
+                                                transform: 'translateY(-2px)',
+                                                boxShadow: '0 4px 12px rgba(218, 165, 32, 0.4)',
+                                            },
+                                            '&.Mui-selected': {
+                                                background: 'linear-gradient(45deg, #8b4513 30%, #654321 90%)',
+                                                transform: 'scale(1.1)',
+                                                fontWeight: 600,
+                                                '&:hover': {
+                                                    background: 'linear-gradient(45deg, #654321 30%, #4a2c17 90%)',
+                                                }
+                                            }
+                                        }
+                                    }}
+                                />
+                            </Stack>
+                        )}
 
                     </Box>
                 </Fade>
