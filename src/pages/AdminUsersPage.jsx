@@ -533,15 +533,56 @@ const AdminUsersPage = () => {
                                         </TableHead>
                                         <TableBody>
                                             {filteredUsers.map((user) => (
-                                                <TableRow key={user._id} hover>
+                                                <TableRow 
+                                                    key={user._id} 
+                                                    hover
+                                                    sx={{
+                                                        ...(user.confirmed && {
+                                                            borderLeft: '4px solid #4caf50',
+                                                            backgroundColor: 'rgba(76, 175, 80, 0.05)',
+                                                            '&:hover': {
+                                                                backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                                                            }
+                                                        })
+                                                    }}
+                                                >
                                                     <TableCell>
                                                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                            <Avatar sx={{ mr: 2 }}>
+                                                            <Avatar 
+                                                                sx={{ 
+                                                                    mr: 2,
+                                                                    ...(user.confirmed && {
+                                                                        border: '2px solid #4caf50',
+                                                                        backgroundColor: '#4caf50',
+                                                                        color: 'white',
+                                                                        fontWeight: 'bold'
+                                                                    })
+                                                                }}
+                                                            >
                                                                 {user.firstName.charAt(0).toUpperCase()}
                                                             </Avatar>
                                                             <Box>
-                                                                <Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+                                                                <Typography 
+                                                                    variant="body1" 
+                                                                    sx={{ 
+                                                                        fontWeight: 'medium',
+                                                                        ...(user.confirmed && {
+                                                                            color: '#2e7d32',
+                                                                            fontWeight: 'bold'
+                                                                        })
+                                                                    }}
+                                                                >
                                                                     {user.firstName} {user.lastName}
+                                                                    {user.confirmed && (
+                                                                        <CheckCircle 
+                                                                            sx={{ 
+                                                                                color: '#4caf50', 
+                                                                                fontSize: 16,
+                                                                                ml: 1,
+                                                                                verticalAlign: 'middle'
+                                                                            }} 
+                                                                        />
+                                                                    )}
                                                                 </Typography>
                                                                 <Typography variant="caption" color="text.secondary">
                                                                     ID: {user._id}
@@ -560,13 +601,14 @@ const AdminUsersPage = () => {
                                                         />
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Box sx={{ display: 'flex', textAlign: 'center',alignItems: 'center', gap: 1 }}>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                             <Chip
                                                                 label={user.confirmed ? 'Confirmado' : 'Pendente'}
                                                                 color={user.confirmed ? 'success' : 'default'}
                                                                 size="small"
                                                                 variant={user.confirmed ? 'filled' : 'outlined'}
                                                                 sx={{
+                                                                    fontWeight: 'normal',
                                                                     ...(user.confirmed && {
                                                                         backgroundColor: '#4caf50',
                                                                         color: 'white',
