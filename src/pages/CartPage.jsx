@@ -224,7 +224,6 @@ const CartPage = () => {
                 
                 // Limpar carrinho após 2 segundos
                 setTimeout(() => {
-                    clearCart();
                     setSnackbar({
                         open: true,
                         message: 'Pedido enviado! Carrinho limpo.',
