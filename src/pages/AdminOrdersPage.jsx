@@ -54,6 +54,8 @@ import {
     CreditCard,
     AccountBalance as PixIcon,
     Delete,
+    WhatsApp,
+    Warning,
 } from '@mui/icons-material';
 import api from '../services/api';
 
@@ -191,6 +193,50 @@ const AdminOrdersPage = () => {
         setItemsPerPage(newItemsPerPage);
         setCurrentPage(1);
         fetchOrders(1, newItemsPerPage, { status: statusFilter });
+    };
+
+    // Função para enviar mensagem de WhatsApp
+    const handleSendWhatsApp = (order) => {
+        const phone = order.user?.phone;
+        
+        if (!phone) {
+            setSnackbar({
+                open: true,
+                message: 'Número de telefone não encontrado para este usuário.',
+                severity: 'error'
+            });
+            return;
+        }
+
+        // Limpar o número de telefone (remover caracteres especiais)
+        const cleanPhone = phone.replace(/\D/g, '');
+        
+        // Adicionar código do país se não tiver
+        const formattedPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
+
+        const message = `*🎉 Presença Confirmada! 🎉*
+
+Seu presente para o nosso Chá de Casa Nova foi registrado com sucesso! 💛
+
+Estamos muito felizes em contar com você para celebrar este momento especial. Lembre-se: o evento será no dia *15 de novembro*, na *Av. Jacob Macanhan, 3697*.
+
+🍖 Teremos um *churrasco especial*, e a única coisa que você precisa levar é a *bebida de sua preferência*.
+
+Mal podemos esperar para comemorar juntos! 🏡✨`;
+
+        // Codificar corretamente para WhatsApp Web
+        // O WhatsApp Web funciona melhor com encodeURIComponent duplo para emojis
+        const encodedMessage = encodeURIComponent(message);
+        const whatsappUrl = `https://web.whatsapp.com/send?phone=${formattedPhone}&text=${encodedMessage}`;
+        
+        // Abrir WhatsApp em nova aba
+        window.open(whatsappUrl, '_blank');
+        
+        setSnackbar({
+            open: true,
+            message: `Mensagem enviada para ${order.user?.firstName} ${order.user?.lastName}`,
+            severity: 'success'
+        });
     };
 
     const handleViewDetails = async (orderId) => {
@@ -694,6 +740,25 @@ const AdminOrdersPage = () => {
                                                                 <Visibility />
                                                             </IconButton>
                                                         </Tooltip>
+                                                        
+                                                        {order.status === 'completed' && (
+                                                            <Tooltip title="Enviar mensagem de confirmação no WhatsApp">
+                                                                <IconButton
+                                                                    onClick={() => handleSendWhatsApp(order)}
+                                                                    size="small"
+                                                                    sx={{ 
+                                                                        color: '#25d366',
+                                                                        '&:hover': {
+                                                                            backgroundColor: 'rgba(37, 211, 102, 0.08)',
+                                                                            transform: 'scale(1.1)'
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    <WhatsApp />
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        )}
+
                                                         {(order.status === 'pending' || order.status === 'cancelled') && (
                                                             <Tooltip title="Remover pedido">
                                                                 <IconButton
@@ -1158,8 +1223,12 @@ const AdminOrdersPage = () => {
                             color: '#f44336',
                             fontWeight: 500,
                             fontStyle: 'italic',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
                         }}>
-                            ⚠️ Esta ação não pode ser desfeita. O pedido será permanentemente removido do sistema.
+                            <Warning sx={{ fontSize: 18 }} />
+                            Esta ação não pode ser desfeita. O pedido será permanentemente removido do sistema.
                         </Typography>
                     </Box>
                 </DialogContent>
