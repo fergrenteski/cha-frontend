@@ -668,27 +668,8 @@ const ProductsAdminPage = () => {
                                     showLastButton
                                     sx={{
                                         '& .MuiPaginationItem-root': {
-                                            background: 'linear-gradient(45deg, #daa520 30%, #b8860b 90%)',
-                                            border: '1px solid #cd853f',
-                                            color: '#fff',
-                                            fontFamily: 'Playfair Display, serif',
-                                            fontWeight: 500,
-                                            boxShadow: '0 2px 8px rgba(218, 165, 32, 0.3)',
-                                            transition: 'all 0.3s ease',
-                                            '&:hover': {
-                                                background: 'linear-gradient(45deg, #b8860b 30%, #8b7355 90%)',
-                                                transform: 'translateY(-2px)',
-                                                boxShadow: '0 4px 12px rgba(218, 165, 32, 0.4)',
-                                            },
-                                            '&.Mui-selected': {
-                                                background: 'linear-gradient(45deg, #8b4513 30%, #654321 90%)',
-                                                transform: 'scale(1.1)',
-                                                fontWeight: 600,
-                                                '&:hover': {
-                                                    background: 'linear-gradient(45deg, #654321 30%, #4a2c17 90%)',
-                                                }
-                                            }
-                                        }
+                                            borderRadius: 2,
+                                        },
                                     }}
                                 />
                             )}

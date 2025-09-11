@@ -54,6 +54,7 @@ const AdminUsersPage = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterRole, setFilterRole] = useState('');
+    const [filterConfirmed, setFilterConfirmed] = useState('');
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
     const [confirmDialog, setConfirmDialog] = useState({ open: false, title: '', message: '', onConfirm: null, color: 'error' });
     
@@ -61,7 +62,7 @@ const AdminUsersPage = () => {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalUsers, setTotalUsers] = useState(0);
-    const pageSize = 10;
+    const [pageSize, setPageSize] = useState(10);
     
     // Estados de loading para botões da modal
     const [loadingConfirm, setLoadingConfirm] = useState(false);
@@ -81,8 +82,16 @@ const AdminUsersPage = () => {
             
             setUsers(usersData.users || []);
             setFilteredUsers(usersData.users || []);
-            setTotalPages(Math.ceil((usersData.total || 0) / pageSize));
-            setTotalUsers(usersData.total || 0);
+            
+            // A API retorna totalPages e totalUsers diretamente
+            if (usersData.pagination) {
+                setTotalPages(usersData.pagination.totalPages || 1);
+                setTotalUsers(usersData.pagination.totalUsers || 0);
+            } else {
+                // Fallback se não houver objeto pagination
+                setTotalPages(usersData.totalPages || Math.ceil((usersData.totalUsers || 0) / pageSize));
+                setTotalUsers(usersData.totalUsers || 0);
+            }
         } catch (error) {
             console.error('Erro ao carregar usuários:', error);
             
@@ -120,12 +129,25 @@ const AdminUsersPage = () => {
             );
         }
 
+        // Filtro por confirmação
+        if (filterConfirmed) {
+            filtered = filtered.filter(user =>
+                filterConfirmed === 'confirmed' ? user.confirmed : !user.confirmed
+            );
+        }
+
         setFilteredUsers(filtered);
-    }, [users, searchTerm, filterRole]);
+    }, [users, searchTerm, filterRole, filterConfirmed]);
 
     // Handler para mudança de página
     const handlePageChange = (event, newPage) => {
         setPage(newPage);
+    };
+
+    // Handler para mudança de itens por página
+    const handleItemsPerPageChange = (newPageSize) => {
+        setPageSize(newPageSize);
+        setPage(1); // Reset para primeira página quando mudar o tamanho
     };
 
     // Mostrar dialog de confirmação
@@ -216,13 +238,15 @@ const AdminUsersPage = () => {
     const clearFilters = () => {
         setSearchTerm('');
         setFilterRole('');
+        setFilterConfirmed('');
     };
 
     // Calcular estatísticas localmente
     const stats = {
         totalUsers: users.length,
         adminUsers: users.filter(user => user.isAdmin).length,
-        regularUsers: users.filter(user => !user.isAdmin).length
+        regularUsers: users.filter(user => !user.isAdmin).length,
+        confirmedUsers: users.filter(user => user.confirmed).length
     };
 
     if (loading) {
@@ -326,10 +350,10 @@ const AdminUsersPage = () => {
                                             </Box>
                                             <Box sx={{ flex: 1 }}>
                                                 <Typography variant="h5" component="div" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                                                    {stats.activeUsers || 0}
+                                                    {stats.confirmedUsers || 0}
                                                 </Typography>
                                                 <Typography variant="body2" color="text.secondary">
-                                                    Usuários Ativos
+                                                    Usuários Confirmados
                                                 </Typography>
                                             </Box>
                                         </Box>
@@ -432,7 +456,7 @@ const AdminUsersPage = () => {
                                 Filtros
                             </Typography>
                             <Grid container spacing={2} alignItems="center">
-                                <Grid size={{xs: 12,sm: 4, md: 6}}>
+                                <Grid size={{xs: 12, sm: 6, md: 4}}>
                                     <TextField
                                         fullWidth
                                         label="Buscar usuários"
@@ -440,7 +464,7 @@ const AdminUsersPage = () => {
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
                                 </Grid>
-                                <Grid size={{xs: 12,sm: 4, md: 3}}>
+                                <Grid size={{xs: 12, sm: 3, md: 2.5}}>
                                     <FormControl fullWidth>
                                         <InputLabel>Tipo de Usuário</InputLabel>
                                         <Select
@@ -454,7 +478,21 @@ const AdminUsersPage = () => {
                                         </Select>
                                     </FormControl>
                                 </Grid>
-                                <Grid size={{xs: 12, sm: 4, md: 3}}>
+                                <Grid size={{xs: 12, sm: 3, md: 2.5}}>
+                                    <FormControl fullWidth>
+                                        <InputLabel>Status</InputLabel>
+                                        <Select
+                                            value={filterConfirmed}
+                                            label="Status"
+                                            onChange={(e) => setFilterConfirmed(e.target.value)}
+                                        >
+                                            <MenuItem value="">Todos</MenuItem>
+                                            <MenuItem value="confirmed">Confirmados</MenuItem>
+                                            <MenuItem value="pending">Pendentes</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                </Grid>
+                                <Grid size={{xs: 12, sm: 12, md: 3}}>
                                     <Button
                                         fullWidth
                                         variant="outlined"
@@ -489,6 +527,7 @@ const AdminUsersPage = () => {
                                                 <TableCell sx={{ fontWeight: 'bold' }}>Email</TableCell>
                                                 <TableCell sx={{ fontWeight: 'bold' }}>Telefone</TableCell>
                                                 <TableCell sx={{ fontWeight: 'bold' }}>Tipo</TableCell>
+                                                <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
                                                 <TableCell sx={{ fontWeight: 'bold' }} align="center">Ações</TableCell>
                                             </TableRow>
                                         </TableHead>
@@ -519,6 +558,22 @@ const AdminUsersPage = () => {
                                                             size="small"
                                                             variant="filled"
                                                         />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Box sx={{ display: 'flex', textAlign: 'center',alignItems: 'center', gap: 1 }}>
+                                                            <Chip
+                                                                label={user.confirmed ? 'Confirmado' : 'Pendente'}
+                                                                color={user.confirmed ? 'success' : 'default'}
+                                                                size="small"
+                                                                variant={user.confirmed ? 'filled' : 'outlined'}
+                                                                sx={{
+                                                                    ...(user.confirmed && {
+                                                                        backgroundColor: '#4caf50',
+                                                                        color: 'white',
+                                                                    })
+                                                                }}
+                                                            />
+                                                        </Box>
                                                     </TableCell>
                                                     <TableCell align="center">
                                                         {user._id === currentUser?._id ? (
@@ -586,53 +641,67 @@ const AdminUsersPage = () => {
                             )}
                         </Paper>
 
-                        {/* Paginação */}
-                        {totalUsers > pageSize && (
-                            <Stack
-                                direction="row"
-                                justifyContent="center"
-                                alignItems="center"
-                                spacing={2}
-                                sx={{
-                                    mt: 3,
-                                    mb: 2
-                                }}
-                            >
-                                <Pagination
-                                    count={totalPages}
-                                    page={page}
-                                    onChange={handlePageChange}
-                                    color="primary"
-                                    size="large"
-                                    variant="outlined"
-                                    shape="rounded"
-                                    sx={{
+                {/* Controles de Paginação */}
+                {totalUsers > 0 && (
+                    <Paper elevation={1} sx={{ p: 3, mt: 2, borderRadius: 2 }}>
+                        <Stack 
+                            direction={isSmall ? 'column' : 'row'} 
+                            spacing={2} 
+                            alignItems="center" 
+                            justifyContent="space-between"
+                        >
+                        {/* Seletor de itens por página */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="body2" color="text.secondary">
+                                Itens por página:
+                            </Typography>
+                            <FormControl size="small" sx={{ minWidth: 80 }}>
+                                <Select
+                                    value={pageSize}
+                                    onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                                    sx={{ borderRadius: 1 }}
+                                >
+                                    <MenuItem value={5}>5</MenuItem>
+                                    <MenuItem value={10}>10</MenuItem>
+                                    <MenuItem value={25}>25</MenuItem>
+                                    <MenuItem value={50}>50</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Box>
+
+                            {/* Componente de Paginação */}
+                            <Box>
+                                {totalPages >= 1 ? (
+                                    <Pagination
+                                        count={totalPages}
+                                        page={page}
+                                        onChange={handlePageChange}
+                                        color="primary"
+                                        size={isSmall ? 'small' : 'medium'}
+                                        showFirstButton
+                                        showLastButton
+                                        sx={{
                                         '& .MuiPaginationItem-root': {
-                                            background: 'linear-gradient(45deg, #daa520 30%, #b8860b 90%)',
-                                            border: '1px solid #cd853f',
-                                            color: '#fff',
-                                            fontFamily: 'Playfair Display, serif',
-                                            fontWeight: 500,
-                                            boxShadow: '0 2px 8px rgba(218, 165, 32, 0.3)',
-                                            transition: 'all 0.3s ease',
-                                            '&:hover': {
-                                                background: 'linear-gradient(45deg, #b8860b 30%, #8b7355 90%)',
-                                                transform: 'translateY(-2px)',
-                                                boxShadow: '0 4px 12px rgba(218, 165, 32, 0.4)',
-                                            },
-                                            '&.Mui-selected': {
-                                                background: 'linear-gradient(45deg, #8b4513 30%, #654321 90%)',
-                                                transform: 'scale(1.1)',
-                                                fontWeight: 600,
-                                                '&:hover': {
-                                                    background: 'linear-gradient(45deg, #654321 30%, #4a2c17 90%)',
-                                                }
-                                            }
-                                        }
+                                            borderRadius: 2,
+                                        },
                                     }}
-                                />
-                            </Stack>
-                        )}
+                                    />
+                                ) : (
+                                    <Typography variant="caption" color="text.secondary">
+                                        Nenhuma paginação necessária
+                                    </Typography>
+                                )}
+                            </Box>
+
+                                                        {/* Informações de paginação */}
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Typography variant="body2" color="text.secondary">
+                                    Página {page} de {totalPages} • {totalUsers} usuários total
+                                </Typography>
+                            </Box> 
+                        </Stack>
+                    </Paper>
+                )}
 
                     </Box>
                 </Fade>
