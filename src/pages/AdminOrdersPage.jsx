@@ -38,11 +38,12 @@ import {
     Divider,
     TextField,
     Pagination,
-    Stack
+    Stack,
+    Collapse,
+    ListItemIcon
 } from '@mui/material';
 import {
     Visibility,
-    Refresh,
     ShoppingCart,
     Person,
     CalendarToday,
@@ -50,12 +51,15 @@ import {
     Cancel,
     Check,
     PhotoCamera as PhotoIcon,
-    Search as SearchIcon,
     CreditCard,
     AccountBalance as PixIcon,
     Delete,
     WhatsApp,
     Warning,
+    KeyboardArrowDown,
+    KeyboardArrowRight,
+    Group,
+    PersonOutline
 } from '@mui/icons-material';
 import api from '../services/api';
 
@@ -88,6 +92,9 @@ const AdminOrdersPage = () => {
     const [totalPages, setTotalPages] = useState(0);
     const [totalOrders, setTotalOrders] = useState(0);
     const [hasMore, setHasMore] = useState(false);
+
+    // Estados do acordeão de participantes
+    const [expandedOrders, setExpandedOrders] = useState({});
 
     const theme = useTheme();
     const isSmall = useMediaQuery(theme.breakpoints.down('md'));
@@ -193,6 +200,14 @@ const AdminOrdersPage = () => {
         setItemsPerPage(newItemsPerPage);
         setCurrentPage(1);
         fetchOrders(1, newItemsPerPage, { status: statusFilter });
+    };
+
+    // Função para toggle do acordeão de participantes
+    const handleToggleParticipants = (orderId) => {
+        setExpandedOrders(prev => ({
+            ...prev,
+            [orderId]: !prev[orderId]
+        }));
     };
 
     // Função para enviar mensagem de WhatsApp
@@ -701,92 +716,171 @@ Mal podemos esperar para comemorar juntos! 🏡✨`;
                                     </TableHead>
                                     <TableBody>
                                         {filteredOrders.map((order) => (
-                                            <TableRow key={order._id} hover>
-                                                <TableCell>
-                                                    <Typography variant="body2" fontFamily="monospace">
-                                                        #{order._id.slice(-8)}
-                                                    </Typography>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Box display="flex" alignItems="center">
-                                                        <Person sx={{ mr: 1, color: 'text.secondary' }} />
-                                                        <Box>
-                                                            <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                                                                {order.user?.firstName + " " + order.user?.lastName || 'Nome não disponível'}
-                                                            </Typography>
-                                                            <Typography variant="caption" color="text.secondary">
-                                                                {order.user?.email || 'Email não disponível'}
-                                                            </Typography>
+                                            <React.Fragment key={order._id}>
+                                                <TableRow hover>
+                                                    <TableCell>
+                                                        <Typography variant="body2" fontFamily="monospace">
+                                                            #{order._id.slice(-8)}
+                                                        </Typography>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Box display="flex" alignItems="center">
+                                                            <Person sx={{ mr: 1, color: 'text.secondary' }} />
+                                                            <Box sx={{ flex: 1 }}>
+                                                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                                    <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                                                                        {order.user?.firstName + " " + order.user?.lastName || 'Nome não disponível'}
+                                                                    </Typography>
+                                                                    {/* Botão para expandir participantes - só mostra se houver participantes */}
+                                                                    {order.participants && order.participants.length > 0 && (
+                                                                        <IconButton
+                                                                            size="small"
+                                                                            onClick={() => handleToggleParticipants(order._id)}
+                                                                            sx={{ ml: 1 }}
+                                                                        >
+                                                                            {expandedOrders[order._id] ? (
+                                                                                <KeyboardArrowDown />
+                                                                            ) : (
+                                                                                <KeyboardArrowRight />
+                                                                            )}
+                                                                        </IconButton>
+                                                                    )}
+                                                                </Box>
+                                                                <Typography variant="caption" color="text.secondary">
+                                                                    {order.user?.email || 'Email não disponível'}
+                                                                </Typography>
+                                                            </Box>
                                                         </Box>
-                                                    </Box>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Typography variant="body2">
-                                                        {formatDate(order.createdAt)}
-                                                    </Typography>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                                                        {formatCurrency(order.totalAmount)}
-                                                    </Typography>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Chip
-                                                        label={OrderStatus[order.status]?.label || order.status}
-                                                        color={OrderStatus[order.status]?.color || 'default'}
-                                                        size="small"
-                                                        variant="filled"
-                                                    />
-                                                </TableCell>
-                                                <TableCell align="center">
-                                                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                                                        <Tooltip title="Ver detalhes">
-                                                            <IconButton
-                                                                onClick={() => handleViewDetails(order._id)}
-                                                                size="small"
-                                                                color="primary"
-                                                            >
-                                                                <Visibility />
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                        
-                                                        {order.status === 'completed' && (
-                                                            <Tooltip title="Enviar mensagem de confirmação no WhatsApp">
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Typography variant="body2">
+                                                            {formatDate(order.createdAt)}
+                                                        </Typography>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                                                            {formatCurrency(order.totalAmount)}
+                                                        </Typography>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Chip
+                                                            label={OrderStatus[order.status]?.label || order.status}
+                                                            color={OrderStatus[order.status]?.color || 'default'}
+                                                            size="small"
+                                                            variant="filled"
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell align="center">
+                                                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                                                            <Tooltip title="Ver detalhes">
                                                                 <IconButton
-                                                                    onClick={() => handleSendWhatsApp(order)}
+                                                                    onClick={() => handleViewDetails(order._id)}
                                                                     size="small"
-                                                                    sx={{ 
-                                                                        color: '#25d366',
-                                                                        '&:hover': {
-                                                                            backgroundColor: 'rgba(37, 211, 102, 0.08)',
-                                                                            transform: 'scale(1.1)'
-                                                                        }
-                                                                    }}
+                                                                    color="primary"
                                                                 >
-                                                                    <WhatsApp />
+                                                                    <Visibility />
                                                                 </IconButton>
                                                             </Tooltip>
-                                                        )}
+                                                            
+                                                            {order.status === 'completed' && (
+                                                                <Tooltip title="Enviar mensagem de confirmação no WhatsApp">
+                                                                    <IconButton
+                                                                        onClick={() => handleSendWhatsApp(order)}
+                                                                        size="small"
+                                                                        sx={{ 
+                                                                            color: '#25d366',
+                                                                            '&:hover': {
+                                                                                backgroundColor: 'rgba(37, 211, 102, 0.08)',
+                                                                                transform: 'scale(1.1)'
+                                                                            }
+                                                                        }}
+                                                                    >
+                                                                        <WhatsApp />
+                                                                    </IconButton>
+                                                                </Tooltip>
+                                                            )}
 
-                                                        {(order.status === 'pending' || order.status === 'cancelled') && (
-                                                            <Tooltip title="Remover pedido">
-                                                                <IconButton
-                                                                    onClick={() => handleDeleteOrder(order)}
-                                                                    size="small"
-                                                                    sx={{ 
-                                                                        color: '#f44336',
-                                                                        '&:hover': {
-                                                                            backgroundColor: 'rgba(244, 67, 54, 0.04)'
-                                                                        }
-                                                                    }}
-                                                                >
-                                                                    <Delete />
-                                                                </IconButton>
-                                                            </Tooltip>
-                                                        )}
-                                                    </Box>
-                                                </TableCell>
-                                            </TableRow>
+                                                            {(order.status === 'pending' || order.status === 'cancelled') && (
+                                                                <Tooltip title="Remover pedido">
+                                                                    <IconButton
+                                                                        onClick={() => handleDeleteOrder(order)}
+                                                                        size="small"
+                                                                        sx={{ 
+                                                                            color: '#f44336',
+                                                                            '&:hover': {
+                                                                                backgroundColor: 'rgba(244, 67, 54, 0.04)'
+                                                                            }
+                                                                        }}
+                                                                    >
+                                                                        <Delete />
+                                                                    </IconButton>
+                                                                </Tooltip>
+                                                            )}
+                                                        </Box>
+                                                    </TableCell>
+                                                </TableRow>
+
+                                                {/* Linha do acordeão para participantes */}
+                                                {order.participants && order.participants.length > 0 && (
+                                                    <TableRow>
+                                                        <TableCell 
+                                                            colSpan={6} 
+                                                            sx={{ 
+                                                                py: 0,
+                                                                border: 0,
+                                                                backgroundColor: expandedOrders[order._id] ? 'rgba(0, 0, 0, 0.02)' : 'transparent'
+                                                            }}
+                                                        >
+                                                            <Collapse in={expandedOrders[order._id]} timeout="auto" unmountOnExit>
+                                                                <Box sx={{ py: 2, px: 3 }}>
+                                                                    <Typography 
+                                                                        variant="subtitle2" 
+                                                                        sx={{ 
+                                                                            mb: 2,
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            gap: 1,
+                                                                            color: 'text.secondary'
+                                                                        }}
+                                                                    >
+                                                                        <Group fontSize="small" />
+                                                                        Participantes ({order.participants.length})
+                                                                    </Typography>
+                                                                    
+                                                                    <List dense sx={{ bgcolor: 'background.paper', borderRadius: 1 }}>
+                                                                        {order.participants.map((participant, index) => (
+                                                                            <ListItem 
+                                                                                key={`${order._id}-participant-${index}`}
+                                                                                sx={{
+                                                                                    border: '1px solid',
+                                                                                    borderColor: 'grey.200',
+                                                                                    borderRadius: 1,
+                                                                                    mb: 0.5,
+                                                                                    '&:last-child': {
+                                                                                        mb: 0
+                                                                                    }
+                                                                                }}
+                                                                            >
+                                                                                <ListItemIcon sx={{ minWidth: 36 }}>
+                                                                                    <PersonOutline fontSize="small" />
+                                                                                </ListItemIcon>
+                                                                                <ListItemText 
+                                                                                    primary={participant}
+                                                                                    slotProps={{
+                                                                                        primary: {
+                                                                                            variant: 'body2'
+                                                                                        }
+                                                                                    }}
+                                                                                />
+                                                                            </ListItem>
+                                                                        ))}
+                                                                    </List>
+                                                                </Box>
+                                                            </Collapse>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )}
+                                            </React.Fragment>
                                         ))}
                                     </TableBody>
                                 </Table>

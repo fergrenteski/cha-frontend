@@ -34,13 +34,22 @@ import {
     DialogContent,
     DialogActions,
     Pagination,
-    Stack
+    Stack,
+    List,
+    ListItem,
+    ListItemText,
+    ListItemIcon,
+    Collapse
 } from '@mui/material';
 import {
     Delete,
     Person,
     AdminPanelSettings,
-    CheckCircle
+    CheckCircle,
+    KeyboardArrowDown,
+    KeyboardArrowRight,
+    Group,
+    PersonOutline
 } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
@@ -66,6 +75,9 @@ const AdminUsersPage = () => {
     
     // Estados de loading para botões da modal
     const [loadingConfirm, setLoadingConfirm] = useState(false);
+
+    // Estados do acordeão de participantes
+    const [expandedUsers, setExpandedUsers] = useState({});
 
     const { user: currentUser } = useAuth();
 
@@ -241,12 +253,34 @@ const AdminUsersPage = () => {
         setFilterConfirmed('');
     };
 
+    // Função para toggle do acordeão de participantes
+    const handleToggleParticipants = (userId) => {
+        setExpandedUsers(prev => ({
+            ...prev,
+            [userId]: !prev[userId]
+        }));
+    };
+
+    // Função auxiliar para determinar o label da fonte do participante
+    const getParticipantSourceLabel = (source) => {
+        if (source === 'cart') return 'Carrinho';
+        if (source === 'order') return 'Pedido';
+        return 'Ambos';
+    };
+
     // Calcular estatísticas localmente
+    const totalParticipants = users.reduce((total, user) => total + (user.participants?.length || 0), 0);
+    const confirmedParticipants = users.reduce((total, user) => 
+        total + (user.participants?.filter(p => p.confirmed)?.length || 0), 0
+    );
+    
     const stats = {
-        totalUsers: users.length,
+        totalUsers: users.length + totalParticipants, // Usuários + Participantes
         adminUsers: users.filter(user => user.isAdmin).length,
         regularUsers: users.filter(user => !user.isAdmin).length,
-        confirmedUsers: users.filter(user => user.confirmed).length
+        confirmedUsers: users.filter(user => user.confirmed).length + confirmedParticipants, // Usuários confirmados + Participantes confirmados
+        onlyUsers: users.length, // Apenas usuários (para referência)
+        onlyParticipants: totalParticipants // Apenas participantes (para referência)
     };
 
     if (loading) {
@@ -302,14 +336,17 @@ const AdminUsersPage = () => {
                                                     flexShrink: 0
                                                 }}
                                             >
-                                                <Person sx={{ color: 'white', fontSize: 24 }} />
+                                                <Group sx={{ color: 'white', fontSize: 24 }} />
                                             </Box>
                                             <Box sx={{ flex: 1 }}>
                                                 <Typography variant="h5" component="div" sx={{ fontWeight: 'bold', mb: 0.5 }}>
                                                     {stats.totalUsers || 0}
                                                 </Typography>
                                                 <Typography variant="body2" color="text.secondary">
-                                                    Total de Usuários
+                                                    Total de Participantes
+                                                </Typography>
+                                                <Typography variant="caption" color="text.secondary">
+                                                    ({stats.onlyUsers} usuários + {stats.onlyParticipants} convidados)
                                                 </Typography>
                                             </Box>
                                         </Box>
@@ -353,7 +390,7 @@ const AdminUsersPage = () => {
                                                     {stats.confirmedUsers || 0}
                                                 </Typography>
                                                 <Typography variant="body2" color="text.secondary">
-                                                    Usuários Confirmados
+                                                    Participantes Confirmados
                                                 </Typography>
                                             </Box>
                                         </Box>
@@ -533,122 +570,230 @@ const AdminUsersPage = () => {
                                         </TableHead>
                                         <TableBody>
                                             {filteredUsers.map((user) => (
-                                                <TableRow 
-                                                    key={user._id} 
-                                                    hover
-                                                    sx={{
-                                                        ...(user.confirmed && {
-                                                            borderLeft: '4px solid #4caf50',
-                                                            backgroundColor: 'rgba(76, 175, 80, 0.05)',
-                                                            '&:hover': {
-                                                                backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                                                            }
-                                                        })
-                                                    }}
-                                                >
-                                                    <TableCell>
-                                                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                            <Avatar 
-                                                                sx={{ 
-                                                                    mr: 2,
-                                                                    ...(user.confirmed && {
-                                                                        border: '2px solid #4caf50',
-                                                                        backgroundColor: '#4caf50',
-                                                                        color: 'white',
-                                                                        fontWeight: 'bold'
-                                                                    })
-                                                                }}
-                                                            >
-                                                                {user.firstName.charAt(0).toUpperCase()}
-                                                            </Avatar>
-                                                            <Box>
-                                                                <Typography 
-                                                                    variant="body1" 
+                                                <React.Fragment key={user._id}>
+                                                    <TableRow 
+                                                        hover
+                                                        sx={{
+                                                            ...(user.confirmed && {
+                                                                borderLeft: '4px solid #4caf50',
+                                                                backgroundColor: 'rgba(76, 175, 80, 0.05)',
+                                                                '&:hover': {
+                                                                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                                                                }
+                                                            })
+                                                        }}
+                                                    >
+                                                        <TableCell>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                                <Avatar 
                                                                     sx={{ 
-                                                                        fontWeight: 'medium',
+                                                                        mr: 2,
                                                                         ...(user.confirmed && {
-                                                                            color: '#2e7d32',
+                                                                            border: '2px solid #4caf50',
+                                                                            backgroundColor: '#4caf50',
+                                                                            color: 'white',
                                                                             fontWeight: 'bold'
                                                                         })
                                                                     }}
                                                                 >
-                                                                    {user.firstName} {user.lastName}
-                                                                    {user.confirmed && (
-                                                                        <CheckCircle 
+                                                                    {user.firstName.charAt(0).toUpperCase()}
+                                                                </Avatar>
+                                                                <Box sx={{ flex: 1 }}>
+                                                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                                        <Typography 
+                                                                            variant="body1" 
                                                                             sx={{ 
-                                                                                color: '#4caf50', 
-                                                                                fontSize: 16,
-                                                                                ml: 1,
-                                                                                verticalAlign: 'middle'
-                                                                            }} 
-                                                                        />
-                                                                    )}
-                                                                </Typography>
-                                                                <Typography variant="caption" color="text.secondary">
-                                                                    ID: {user._id}
-                                                                </Typography>
+                                                                                fontWeight: 'medium',
+                                                                                ...(user.confirmed && {
+                                                                                    color: '#2e7d32',
+                                                                                    fontWeight: 'bold'
+                                                                                })
+                                                                            }}
+                                                                        >
+                                                                            {user.firstName} {user.lastName}
+                                                                            {user.confirmed && (
+                                                                                <CheckCircle 
+                                                                                    sx={{ 
+                                                                                        color: '#4caf50', 
+                                                                                        fontSize: 16,
+                                                                                        ml: 1,
+                                                                                        verticalAlign: 'middle'
+                                                                                    }} 
+                                                                                />
+                                                                            )}
+                                                                        </Typography>
+                                                                        {/* Botão para mostrar participantes se houver */}
+                                                                        {user.participants && user.participants.length > 0 && (
+                                                                            <IconButton
+                                                                                size="small"
+                                                                                onClick={() => handleToggleParticipants(user._id)}
+                                                                                sx={{ ml: 1 }}
+                                                                            >
+                                                                                {expandedUsers[user._id] ? (
+                                                                                    <KeyboardArrowDown />
+                                                                                ) : (
+                                                                                    <KeyboardArrowRight />
+                                                                                )}
+                                                                            </IconButton>
+                                                                        )}
+                                                                    </Box>
+                                                                    <Typography variant="caption" color="text.secondary">
+                                                                        ID: {user._id}
+                                                                        {user.participants && user.participants.length > 0 && (
+                                                                            <span style={{ marginLeft: 8 }}>
+                                                                                • {user.participants.length} participante{user.participants.length !== 1 ? 's' : ''}
+                                                                            </span>
+                                                                        )}
+                                                                    </Typography>
+                                                                </Box>
                                                             </Box>
-                                                        </Box>
-                                                    </TableCell>
-                                                    <TableCell>{user.email}</TableCell>
-                                                    <TableCell>{user.phone}</TableCell>
-                                                    <TableCell>
-                                                        <Chip
-                                                            label={user.isAdmin ? 'Admin' : 'Usuário'}
-                                                            color={user.isAdmin ? 'warning' : 'default'}
-                                                            size="small"
-                                                            variant="filled"
-                                                        />
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        </TableCell>
+                                                        <TableCell>{user.email}</TableCell>
+                                                        <TableCell>{user.phone}</TableCell>
+                                                        <TableCell>
                                                             <Chip
-                                                                label={user.confirmed ? 'Confirmado' : 'Pendente'}
-                                                                color={user.confirmed ? 'success' : 'default'}
+                                                                label={user.isAdmin ? 'Admin' : 'Usuário'}
+                                                                color={user.isAdmin ? 'warning' : 'default'}
                                                                 size="small"
-                                                                variant={user.confirmed ? 'filled' : 'outlined'}
-                                                                sx={{
-                                                                    fontWeight: 'normal',
-                                                                    ...(user.confirmed && {
-                                                                        backgroundColor: '#4caf50',
-                                                                        color: 'white',
-                                                                    })
+                                                                variant="filled"
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                                <Chip
+                                                                    label={user.confirmed ? 'Confirmado' : 'Pendente'}
+                                                                    color={user.confirmed ? 'success' : 'default'}
+                                                                    size="small"
+                                                                    variant={user.confirmed ? 'filled' : 'outlined'}
+                                                                    sx={{
+                                                                        fontWeight: 'normal',
+                                                                        ...(user.confirmed && {
+                                                                            backgroundColor: '#4caf50',
+                                                                            color: 'white',
+                                                                        })
+                                                                    }}
+                                                                />
+                                                            </Box>
+                                                        </TableCell>
+                                                        <TableCell align="center">
+                                                            {user._id === currentUser?._id ? (
+                                                                <Chip
+                                                                    label="Você"
+                                                                    color="primary"
+                                                                    size="small"
+                                                                    variant="outlined"
+                                                                />
+                                                            ) : (
+                                                                <>
+                                                                    <Tooltip title="Alterar Privilégios de Admin">
+                                                                        <IconButton
+                                                                            onClick={() => handleToggleAdmin(user._id, `${user.firstName} ${user.lastName}`, user.isAdmin)}
+                                                                            size="small"
+                                                                            color="info"
+                                                                        >
+                                                                            <AdminPanelSettings />
+                                                                        </IconButton>
+                                                                    </Tooltip>
+                                                                    <Tooltip title="Excluir">
+                                                                        <IconButton
+                                                                            onClick={() => handleDeleteUser(user._id, `${user.firstName} ${user.lastName}`)}
+                                                                            size="small"
+                                                                            color="error"
+                                                                        >
+                                                                            <Delete />
+                                                                        </IconButton>
+                                                                    </Tooltip>
+                                                                </>
+                                                            )}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                    
+                                                    {/* Linha do acordeão para participantes */}
+                                                    {user.participants && user.participants.length > 0 && (
+                                                        <TableRow>
+                                                            <TableCell 
+                                                                colSpan={6} 
+                                                                sx={{ 
+                                                                    py: 0,
+                                                                    border: 0,
+                                                                    backgroundColor: expandedUsers[user._id] ? 'rgba(0, 0, 0, 0.02)' : 'transparent'
                                                                 }}
-                                                            />
-                                                        </Box>
-                                                    </TableCell>
-                                                    <TableCell align="center">
-                                                        {user._id === currentUser?._id ? (
-                                                            <Chip
-                                                                label="Você"
-                                                                color="primary"
-                                                                size="small"
-                                                                variant="outlined"
-                                                            />
-                                                        ) : (
-                                                            <>
-                                                                <Tooltip title="Alterar Privilégios de Admin">
-                                                                    <IconButton
-                                                                        onClick={() => handleToggleAdmin(user._id, `${user.firstName} ${user.lastName}`, user.isAdmin)}
-                                                                        size="small"
-                                                                        color="info"
-                                                                    >
-                                                                        <AdminPanelSettings />
-                                                                    </IconButton>
-                                                                </Tooltip>
-                                                                <Tooltip title="Excluir">
-                                                                    <IconButton
-                                                                        onClick={() => handleDeleteUser(user._id, `${user.firstName} ${user.lastName}`)}
-                                                                        size="small"
-                                                                        color="error"
-                                                                    >
-                                                                        <Delete />
-                                                                    </IconButton>
-                                                                </Tooltip>
-                                                            </>
-                                                        )}
-                                                    </TableCell>
-                                                </TableRow>
+                                                            >
+                                                                <Collapse in={expandedUsers[user._id]} timeout="auto" unmountOnExit>
+                                                                    <Box sx={{ py: 2, px: 3 }}>
+                                                                        <Typography 
+                                                                            variant="subtitle2" 
+                                                                            sx={{ 
+                                                                                mb: 2,
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                gap: 1,
+                                                                                color: 'text.secondary'
+                                                                            }}
+                                                                        >
+                                                                            <Group fontSize="small" />
+                                                                            Participantes ({user.participants.length})
+                                                                        </Typography>
+                                                                        
+                                                                        <List dense sx={{ bgcolor: 'background.paper', borderRadius: 1 }}>
+                                                                            {user.participants.map((participant, index) => (
+                                                                                <ListItem 
+                                                                                    key={`${user._id}-participant-${index}`}
+                                                                                    sx={{
+                                                                                        border: '1px solid',
+                                                                                        borderColor: participant.confirmed ? 'success.light' : 'grey.200',
+                                                                                        borderRadius: 1,
+                                                                                        mb: 0.5,
+                                                                                        backgroundColor: participant.confirmed ? 'success.50' : 'transparent',
+                                                                                        '&:last-child': {
+                                                                                            mb: 0
+                                                                                        }
+                                                                                    }}
+                                                                                >
+                                                                                    <ListItemIcon sx={{ minWidth: 36 }}>
+                                                                                        {participant.confirmed ? (
+                                                                                            <CheckCircle 
+                                                                                                fontSize="small" 
+                                                                                                sx={{ color: 'success.main' }} 
+                                                                                            />
+                                                                                        ) : (
+                                                                                            <PersonOutline fontSize="small" />
+                                                                                        )}
+                                                                                    </ListItemIcon>
+                                                                                    <ListItemText 
+                                                                                        primary={
+                                                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                                                                <Typography variant="body2">
+                                                                                                    {participant.name}
+                                                                                                </Typography>
+                                                                                                <Chip
+                                                                                                    label={participant.confirmed ? 'Confirmado' : 'Pendente'}
+                                                                                                    color={participant.confirmed ? 'success' : 'default'}
+                                                                                                    size="small"
+                                                                                                    variant={participant.confirmed ? 'filled' : 'outlined'}
+                                                                                                    sx={{ fontSize: '0.7rem', height: 20 }}
+                                                                                                />
+                                                                                                {participant.source && (
+                                                                                                    <Chip
+                                                                                                        label={getParticipantSourceLabel(participant.source)}
+                                                                                                        color="info"
+                                                                                                        size="small"
+                                                                                                        variant="outlined"
+                                                                                                        sx={{ fontSize: '0.65rem', height: 18 }}
+                                                                                                    />
+                                                                                                )}
+                                                                                            </Box>
+                                                                                        }
+                                                                                    />
+                                                                                </ListItem>
+                                                                            ))}
+                                                                        </List>
+                                                                    </Box>
+                                                                </Collapse>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    )}
+                                                </React.Fragment>
                                             ))}
                                         </TableBody>
                                     </Table>
