@@ -44,7 +44,7 @@ const Footer = () => {
                     }}
                 >
                     {/* Seção de confirmação */}
-                    <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
+                    <Box sx={{ textAlign: { xs: 'center', md: 'center' } }}>
                         <Typography 
                             variant="h6" 
                             sx={{ 
@@ -74,73 +74,6 @@ const Footer = () => {
                     )}
 
                     {isMobile && <Divider sx={{ width: '100%', my: 1 }} />}
-
-                    {/* Seção dos Instagrams */}
-                    <Box sx={{ textAlign: { xs: 'center', md: 'right' } }}>
-                        <Typography 
-                            variant="h6" 
-                            sx={{ 
-                                fontWeight: 600,
-                                mb: 1,
-                                fontSize: { xs: '1rem', md: '1.25rem' }
-                            }}
-                        >
-                            Nos sigam no Instagram
-                        </Typography>
-                        <Typography 
-                            variant="body2" 
-                            color="text.secondary"
-                            sx={{ mb: 2 }}
-                        >
-                            Acompanhem nossa jornada
-                        </Typography>
-                        
-                        <Box sx={{ display: 'flex', gap: 2, justifyContent: { xs: 'center', md: 'flex-end' } }}>
-                            {/* Instagram da Noiva */}
-                            <Box sx={{ textAlign: 'center' }}>
-                                <IconButton
-                                    onClick={() => handleInstagramClick('anabeluzzo')}
-                                    sx={{
-                                        background: 'linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)',
-                                        color: 'white',
-                                        '&:hover': {
-                                            transform: 'scale(1.1)',
-                                            boxShadow: '0 4px 20px rgba(188, 24, 136, 0.4)'
-                                        },
-                                        transition: 'all 0.3s ease',
-                                        mb: 0.5
-                                    }}
-                                >
-                                    <InstagramIcon />
-                                </IconButton>
-                                <Typography variant="caption" sx={{ display: 'block', fontWeight: 600 }}>
-                                    @anabeluzzo
-                                </Typography>
-                            </Box>
-
-                            {/* Instagram do Noivo */}
-                            <Box sx={{ textAlign: 'center' }}>
-                                <IconButton
-                                    onClick={() => handleInstagramClick('fergrenteski')}
-                                    sx={{
-                                        background: 'linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)',
-                                        color: 'white',
-                                        '&:hover': {
-                                            transform: 'scale(1.1)',
-                                            boxShadow: '0 4px 20px rgba(188, 24, 136, 0.4)'
-                                        },
-                                        transition: 'all 0.3s ease',
-                                        mb: 0.5
-                                    }}
-                                >
-                                    <InstagramIcon />
-                                </IconButton>
-                                <Typography variant="caption" sx={{ display: 'block', fontWeight: 600 }}>
-                                    @fergrenteski
-                                </Typography>
-                            </Box>
-                        </Box>
-                    </Box>
                 </Box>
 
                 {/* Linha inferior */}
@@ -164,7 +97,7 @@ const Footer = () => {
                         color="text.secondary"
                         sx={{ mt: 0.5 }}
                     >
-                        © 2025 - Todos os direitos reservados
+                        © 2026 - Todos os direitos reservados
                     </Typography>
                 </Box>
             </Container>

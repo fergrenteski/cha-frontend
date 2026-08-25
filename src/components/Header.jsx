@@ -116,7 +116,7 @@ const Header = ({
                             textShadow: '0 2px 4px rgba(218, 165, 32, 0.1)'
                         }}
                     >
-                        ANA & LUIZ
+                        ISABELLE & GABRIEL
                     </Typography>
                 </Box>
 

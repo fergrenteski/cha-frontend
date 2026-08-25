@@ -261,14 +261,14 @@ const InvitePage = () => {
                                         mb: 1,
                                         textShadow: '0 2px 4px rgba(218, 165, 32, 0.2)'
                                     }}>
-                                        15/11
+                                        11/10
                                     </Typography>
                                     <Typography variant="h6" sx={{ 
                                         color: '#a0522d', 
                                         fontFamily: "'Playfair Display', serif",
                                         fontStyle: 'italic'
                                     }}>
-                                        2025
+                                        2026
                                     </Typography>
                                 </Card>
                             </Grow>
@@ -343,14 +343,14 @@ const InvitePage = () => {
                                         mb: 1,
                                         textShadow: '0 2px 4px rgba(218, 165, 32, 0.2)'
                                     }}>
-                                        13:00
+                                        12:00
                                     </Typography>
                                     <Typography variant="h6" sx={{ 
                                         color: '#a0522d', 
                                         fontFamily: "'Playfair Display', serif",
                                         fontStyle: 'italic'
                                     }}>
-                                        da tarde
+                                        da manhã    
                                     </Typography>
                                 </Card>
                             </Grow>
@@ -426,7 +426,7 @@ const InvitePage = () => {
                                         fontSize: '1.1rem',
                                         mb: 1
                                     }}>
-                                        Av. Jacob Macanhan, 3697
+                                        Rua Antônio Manosso, 1220
                                     </Typography>
                                     <Typography variant="body2" sx={{ 
                                         color: '#a0522d', 
@@ -434,7 +434,7 @@ const InvitePage = () => {
                                         fontStyle: 'italic',
                                         fontSize: '0.95rem'
                                     }}>
-                                        Atuba, Pinhais - PR
+                                        Campo Magro - PR
                                     </Typography>
                                 </Card>
                             </Grow>
@@ -658,7 +658,7 @@ const InvitePage = () => {
                                     color: '#daa520',
                                     textShadow: '0 1px 3px rgba(218, 165, 32, 0.2)'
                                 }}>
-                                    Até 05 de Novembro de 2025
+                                    Até 25 de Setembro de 2026
                                 </Typography>
                             </Box>
                         </CardContent>

@@ -409,7 +409,7 @@ export const CartProvider = ({ children }) => {
             );
             
             // Número do WhatsApp (sem espaços e caracteres especiais)
-            const phoneNumber = "5541988987128";
+            const phoneNumber = "5541996528040";
             
             // URL do WhatsApp
             const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(whatsappMessage)}`;
