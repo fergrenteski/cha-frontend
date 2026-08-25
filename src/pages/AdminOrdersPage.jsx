@@ -234,7 +234,7 @@ const AdminOrdersPage = () => {
 
 Seu presente para o nosso Chá de Casa Nova foi registrado com sucesso! 💛
 
-Estamos muito felizes em contar com você para celebrar este momento especial. Lembre-se: o evento será no dia *15 de novembro*, na *Av. Jacob Macanhan, 3697*.
+Estamos muito felizes em contar com você para celebrar este momento especial. Lembre-se: o evento será no dia *11 de outubro*, na *Rua Antônio Manosso, 1220*.
 
 🍖 Teremos um *churrasco especial*, e a única coisa que você precisa levar é a *bebida de sua preferência*.
 
