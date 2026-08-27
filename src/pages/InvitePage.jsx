@@ -606,7 +606,7 @@ const InvitePage = () => {
                                             fontFamily: "'Playfair Display', serif",
                                             fontWeight: 500
                                         }}>
-                                            PIX ou Cartão de Crédito
+                                            PIX
                                         </Typography>
                                         <Typography variant="body1" sx={{ 
                                             color: '#a0522d',
