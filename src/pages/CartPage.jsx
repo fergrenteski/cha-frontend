@@ -1014,7 +1014,7 @@ const CartPage = () => {
                                     letterSpacing: '1px'
                                 }}
                             >
-                                (41) 98898-7128
+                                (41) 99652-8040
                             </Typography>
 
                             <Button
